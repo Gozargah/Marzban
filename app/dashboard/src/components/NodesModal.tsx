@@ -50,7 +50,7 @@ import { Status } from "types/User";
 import { generateErrorMessage, generateSuccessMessage } from "utils/toastHandler";
 import { useDashboard } from "../contexts/DashboardContext";
 import { DeleteNodeModal } from "./DeleteNodeModal";
-import { DeleteIcon } from "./DeleteUserModal";
+import { DeleteIcon } from "./dashboard/delete-user-modal";
 import { ReloadIcon } from "./dashboard/filters";
 import { Icon } from "./Icon";
 import { NodeModalStatusBadge } from "./NodeModalStatusBadge";

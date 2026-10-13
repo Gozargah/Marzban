@@ -1,27 +1,14 @@
-// import { CoreSettingsModal } from "components/CoreSettingsModal";
-// import { DeleteUserModal } from "components/DeleteUserModal";
-// import { Filters } from "components/Filters";
-// import { HostsDialog } from "components/HostsDialog";
-// import { NodesDialog } from "components/NodesModal";
-// import { NodesUsage } from "components/NodesUsage";
-// import { QRCodeDialog } from "components/QRCodeDialog";
-// import { ResetAllUsageModal } from "components/ResetAllUsageModal";
-// import { ResetUserUsageModal } from "components/ResetUserUsageModal";
-// import { RevokeSubscriptionModal } from "components/RevokeSubscriptionModal";
-// import { UserDialog } from "components/UserDialog";
-// import { UsersTable } from "components/UsersTable";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/dashboard/header";
 import { fetchInbounds, FilterType, useDashboard } from "contexts/DashboardContext";
 import { FC, useEffect } from "react";
-// import { Statistics } from "../components/Statistics";
 import debounce from "lodash.debounce";
 import { router } from "@/pages/router";
 import { Statistics } from "@/components/dashboard/statistics";
 import { Filters } from "@/components/dashboard/filters";
 import { UsersTable } from "@/components/dashboard/table/users-table";
 import { UserDialog } from "@/components/dashboard/user-dialog";
-
+import { DeleteUserModal } from "@/components/dashboard/delete-user-modal";
 
 export const Dashboard: FC = () => {
   useEffect(() => {
@@ -63,9 +50,9 @@ export const Dashboard: FC = () => {
 
         {/* dialogs */}
         <UserDialog />
+        <DeleteUserModal />
         {/*
 
-        <DeleteUserModal />
         <QRCodeDialog />
         <HostsDialog />
         <ResetUserUsageModal />

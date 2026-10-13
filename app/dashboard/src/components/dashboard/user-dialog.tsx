@@ -1,42 +1,20 @@
-import {
-  Alert,
-  AlertIcon,
-  Box,
-  Button,
-  Collapse,
-  Flex,
-  FormControl,
-  FormErrorMessage,
-  FormHelperText,
-  FormLabel,
-  Grid,
-  GridItem,
-  HStack,
-  IconButton,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Select,
-  Spinner,
-  Switch,
-  Text,
-  Textarea,
-  Tooltip,
-  VStack,
-  chakra,
-  useColorMode,
-  useToast,
-} from "@chakra-ui/react";
-import { ChartPieIcon, PencilIcon, UserPlusIcon } from "@heroicons/react/24/outline";
+import { AlertCircle, ChartPie, Pencil, RefreshCw, Trash2, UserPlus } from "lucide-react";
+import { toast } from "sonner";
+import { useTheme } from "@/components/theme-provider";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Field, FieldDescription, FieldError, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { SimpleTooltip } from "@/components/ui/tooltip";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { resetStrategy } from "constants/UserSettings";
 import { FilterUsageType, useDashboard } from "contexts/DashboardContext";
 import dayjs from "dayjs";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useId, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import ReactDatePicker from "react-datepicker";
 import { Controller, FormProvider, Resolver, useForm, useWatch } from "react-hook-form";
@@ -44,34 +22,8 @@ import { useTranslation } from "react-i18next";
 import { ProxyKeys, ProxyType, User, UserCreate, UserInbounds } from "types/User";
 import { relativeExpiryDate } from "utils/dateFormatter";
 import { z } from "zod";
-import { DeleteIcon } from "../DeleteUserModal";
-import { Icon } from "../Icon";
-import { Input } from "../Input";
 import { RadioGroup } from "../RadioGroup";
 import { UsageFilter, createUsageConfig } from "../UsageFilter";
-import { ReloadIcon } from "./filters";
-import classNames from "classnames";
-
-const AddUserIcon = chakra(UserPlusIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-  },
-});
-
-const EditUserIcon = chakra(PencilIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-  },
-});
-
-const UserUsageIcon = chakra(ChartPieIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-  },
-});
 
 export type UserDialogProps = {};
 
@@ -207,10 +159,11 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const isOpen = isCreatingNewUser || isEditing;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
-  const toast = useToast();
+  const id = useId();
+  const fieldId = (name: string) => `${id}-${name}`;
   const { t, i18n } = useTranslation();
 
-  const { colorMode } = useColorMode();
+  const { resolvedTheme: colorMode } = useTheme();
 
   const [usageVisible, setUsageVisible] = useState(false);
   const handleUsageToggle = () => {
@@ -285,13 +238,13 @@ export const UserDialog: FC<UserDialogProps> = () => {
 
     methods[method](body)
       .then(() => {
-        toast({
-          title: t(isEditing ? "userDialog.userEdited" : "userDialog.userCreated", { username: values.username }),
-          status: "success",
-          isClosable: true,
-          position: "top",
-          duration: 3000,
-        });
+        toast.success(
+          t(isEditing ? "userDialog.userEdited" : "userDialog.userCreated", { username: values.username }),
+          {
+            duration: 3000,
+            closeButton: true,
+          },
+        );
         onClose();
       })
       .catch((err) => {
@@ -331,422 +284,353 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const disabled = loading;
   const isOnHold = userStatus === "on_hold";
 
-  const [randomUsernameLoading, setrandomUsernameLoading] = useState(false);
-
-  const createRandomUsername = (): string => {
-    setrandomUsernameLoading(true);
-    let result = "";
+  const createRandomUsername = () => {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    const charactersLength = characters.length;
-    let counter = 0;
-    while (counter < 6) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-      counter += 1;
-    }
-    return result;
+    const username = Array.from(
+      crypto.getRandomValues(new Uint8Array(6)),
+      (value) => characters[value % characters.length],
+    ).join("");
+    form.setValue("username", username, { shouldDirty: true, shouldValidate: true });
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
-      <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
-      <FormProvider {...form}>
-        <ModalContent mx="3">
-          <form onSubmit={form.handleSubmit(submit)}>
-            <ModalHeader pt={6}>
-              <HStack gap={2}>
-                <Icon color="primary">
-                  {isEditing ? <EditUserIcon color="white" /> : <AddUserIcon color="white" />}
-                </Icon>
-                <Text fontWeight="semibold" fontSize="lg">
-                  {isEditing ? t("userDialog.editUserTitle") : t("createNewUser")}
-                </Text>
-              </HStack>
-            </ModalHeader>
-            <ModalCloseButton mt={3} disabled={disabled} />
-            <ModalBody>
-              <Grid
-                templateColumns={{
-                  base: "repeat(1, 1fr)",
-                  md: "repeat(2, 1fr)",
-                }}
-                gap={3}
-              >
-                <GridItem>
-                  <VStack justifyContent="space-between">
-                    <Flex flexDirection="column" gridAutoRows="min-content" w="full">
-                      <Flex flexDirection="row" w="full" gap={2}>
-                        <FormControl mb={"10px"}>
-                          <FormLabel>
-                            <Flex gap={2} alignItems={"center"}>
-                              {t("username")}
-                              {!isEditing && (
-                                <ReloadIcon
-                                  cursor={"pointer"}
-                                  className={classNames({
-                                    "animate-spin": randomUsernameLoading,
-                                  })}
-                                  onClick={() => {
-                                    const randomUsername = createRandomUsername();
-                                    form.setValue("username", randomUsername);
-                                    setTimeout(() => {
-                                      setrandomUsernameLoading(false);
-                                    }, 350);
-                                  }}
-                                />
-                              )}
-                            </Flex>
-                          </FormLabel>
-                          <HStack>
-                            <Input
-                              size="sm"
-                              type="text"
-                              borderRadius="6px"
-                              error={form.formState.errors.username?.message}
-                              disabled={disabled || isEditing}
-                              {...form.register("username")}
-                            />
-                            {isEditing && (
-                              <HStack px={1}>
-                                <Controller
-                                  name="status"
-                                  control={form.control}
-                                  render={({ field }) => {
-                                    return (
-                                      <Tooltip
-                                        placement="top"
-                                        label={"status: " + t(`status.${field.value}`)}
-                                        textTransform="capitalize"
-                                      >
-                                        <Box>
-                                          <Switch
-                                            colorScheme="primary"
-                                            isChecked={field.value === "active"}
-                                            onChange={(e) => {
-                                              if (e.target.checked) {
-                                                field.onChange("active");
-                                              } else {
-                                                field.onChange("disabled");
-                                              }
-                                            }}
-                                          />
-                                        </Box>
-                                      </Tooltip>
-                                    );
-                                  }}
-                                />
-                              </HStack>
-                            )}
-                          </HStack>
-                        </FormControl>
-                        {!isEditing && (
-                          <FormControl flex="1">
-                            <FormLabel whiteSpace={"nowrap"}>{t("userDialog.onHold")}</FormLabel>
-                            <Controller
-                              name="status"
-                              control={form.control}
-                              render={({ field }) => {
-                                const status = field.value;
-                                return (
-                                  <>
-                                    {status ? (
-                                      <Switch
-                                        colorScheme="primary"
-                                        isChecked={status === "on_hold"}
-                                        onChange={(e) => {
-                                          if (e.target.checked) {
-                                            field.onChange("on_hold");
-                                          } else {
-                                            field.onChange("active");
-                                          }
-                                        }}
-                                      />
-                                    ) : (
-                                      ""
-                                    )}
-                                  </>
-                                );
-                              }}
-                            />
-                          </FormControl>
-                        )}
-                      </Flex>
-                      <FormControl mb={"10px"}>
-                        <FormLabel>{t("userDialog.dataLimit")}</FormLabel>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open && !loading) onClose();
+      }}
+    >
+      <DialogContent
+        className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-2xl"
+        showCloseButton={!loading}
+        aria-describedby={undefined}
+        dir={i18n.dir()}
+      >
+        <FormProvider {...form}>
+          <form onSubmit={form.handleSubmit(submit)} className="space-y-6" aria-busy={loading}>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-lg">
+                <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                  {isEditing ? <Pencil className="size-5" /> : <UserPlus className="size-5" />}
+                </span>
+                {isEditing ? t("userDialog.editUserTitle") : t("createNewUser")}
+              </DialogTitle>
+            </DialogHeader>
+            <fieldset disabled={disabled} className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="min-w-0 space-y-4">
+                <div className="flex items-start gap-3">
+                  <Field className="min-w-0 flex-1" data-invalid={!!form.formState.errors.username}>
+                    <div className="flex items-center gap-2">
+                      <FieldLabel htmlFor={fieldId("username")}>{t("username")}</FieldLabel>
+                      {!isEditing && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-xs"
+                          disabled={disabled}
+                          aria-label={t("userDialog.generateRandomUsername", {
+                            defaultValue: "Generate random username",
+                          })}
+                          onClick={createRandomUsername}
+                        >
+                          <RefreshCw />
+                        </Button>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Input
+                        id={fieldId("username")}
+                        autoComplete="off"
+                        disabled={disabled || isEditing}
+                        aria-invalid={!!form.formState.errors.username}
+                        aria-describedby={form.formState.errors.username ? fieldId("username-error") : undefined}
+                        {...form.register("username")}
+                      />
+                      {isEditing && (
                         <Controller
+                          name="status"
                           control={form.control}
-                          name="data_limit"
-                          render={({ field }) => {
-                            return (
-                              <Input
-                                endAdornment="GB"
-                                type="number"
-                                size="sm"
-                                borderRadius="6px"
-                                onChange={field.onChange}
+                          render={({ field }) => (
+                            <SimpleTooltip label={t(`status.${field.value}`)}>
+                              <Switch
+                                name={field.name}
+                                ref={field.ref}
+                                onBlur={field.onBlur}
                                 disabled={disabled}
-                                error={form.formState.errors.data_limit?.message}
-                                value={field.value ? String(field.value) : ""}
+                                aria-label={t(`status.${field.value}`)}
+                                checked={field.value === "active"}
+                                onCheckedChange={(checked) => field.onChange(checked ? "active" : "disabled")}
                               />
-                            );
-                          }}
+                            </SimpleTooltip>
+                          )}
                         />
-                      </FormControl>
-                      {/* @ts-expect-error this is not fully typed, must be upgraded to the latest version maybe */}
-                      <Collapse in={!!(dataLimit && dataLimit > 0)} animateOpacity style={{ width: "100%" }}>
-                        <FormControl height="66px">
-                          <FormLabel>{t("userDialog.periodicUsageReset")}</FormLabel>
-                          <Controller
-                            control={form.control}
-                            name="data_limit_reset_strategy"
-                            render={({ field }) => {
-                              return (
-                                <Select
-                                  size="sm"
-                                  {...field}
-                                  disabled={disabled}
-                                  bg={disabled ? "gray.100" : "transparent"}
-                                  _dark={{
-                                    bg: disabled ? "gray.600" : "transparent",
-                                  }}
-                                  sx={{
-                                    option: {
-                                      backgroundColor: colorMode === "dark" ? "#222C3B" : "white",
-                                    },
-                                  }}
-                                >
-                                  {resetStrategy.map((s) => {
-                                    return (
-                                      <option key={s.value} value={s.value}>
-                                        {t("userDialog.resetStrategy" + s.title)}
-                                      </option>
-                                    );
-                                  })}
-                                </Select>
-                              );
-                            }}
-                          />
-                        </FormControl>
-                      </Collapse>
-
-                      <FormControl mb={"10px"}>
-                        <FormLabel>
-                          {isOnHold ? t("userDialog.onHoldExpireDuration") : t("userDialog.expiryDate")}
-                        </FormLabel>
-
-                        {isOnHold && (
-                          <Controller
-                            control={form.control}
-                            name="on_hold_expire_duration"
-                            render={({ field }) => {
-                              return (
-                                <Input
-                                  endAdornment="Days"
-                                  type="number"
-                                  size="sm"
-                                  borderRadius="6px"
-                                  onChange={(on_hold) => {
-                                    form.setValue("expire", null);
-                                    field.onChange({
-                                      target: {
-                                        value: on_hold,
-                                      },
-                                    });
-                                  }}
-                                  disabled={disabled}
-                                  error={form.formState.errors.on_hold_expire_duration?.message}
-                                  value={field.value ? String(field.value) : ""}
-                                />
-                              );
-                            }}
+                      )}
+                    </div>
+                    <FieldError id={fieldId("username-error")} errors={[form.formState.errors.username]} />
+                  </Field>
+                  {!isEditing && (
+                    <Field className="w-auto shrink-0">
+                      <FieldLabel htmlFor={fieldId("on-hold")}>{t("userDialog.onHold")}</FieldLabel>
+                      <Controller
+                        name="status"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Switch
+                            id={fieldId("on-hold")}
+                            name={field.name}
+                            ref={field.ref}
+                            onBlur={field.onBlur}
+                            disabled={disabled}
+                            checked={field.value === "on_hold"}
+                            onCheckedChange={(checked) => field.onChange(checked ? "on_hold" : "active")}
                           />
                         )}
-                        {!isOnHold && (
-                          <Controller
-                            name="expire"
-                            control={form.control}
-                            render={({ field }) => {
-                              function createDateAsUTC(num: number) {
-                                return dayjs(
-                                  dayjs(num * 1000).utc(),
-                                  // .format("MMMM D, YYYY") // exception with: dayjs.locale(lng);
-                                ).toDate();
-                              }
-                              const { status, time } = relativeExpiryDate(field.value);
-                              return (
-                                <>
-                                  <ReactDatePicker
-                                    locale={i18n.language.toLocaleLowerCase()}
-                                    dateFormat={t("dateFormat")}
-                                    minDate={new Date()}
-                                    selected={field.value ? createDateAsUTC(field.value) : undefined}
-                                    onChange={(date: Date) => {
-                                      form.setValue("on_hold_expire_duration", null);
-                                      field.onChange({
-                                        target: {
-                                          value: date
-                                            ? dayjs(dayjs(date).set("hour", 23).set("minute", 59).set("second", 59))
-                                              .utc()
-                                              .valueOf() / 1000
-                                            : 0,
-                                          name: "expire",
-                                        },
-                                      });
-                                    }}
-                                    customInput={
-                                      <Input
-                                        size="sm"
-                                        type="text"
-                                        borderRadius="6px"
-                                        clearable
-                                        disabled={disabled}
-                                        error={form.formState.errors.expire?.message}
-                                      />
-                                    }
-                                  />
-                                  {field.value ? <FormHelperText>{t(status, { time: time })}</FormHelperText> : ""}
-                                </>
-                              );
-                            }}
-                          />
-                        )}
-                      </FormControl>
-
-                      <FormControl mb={"10px"} isInvalid={!!form.formState.errors.note}>
-                        <FormLabel>{t("userDialog.note")}</FormLabel>
-                        <Textarea {...form.register("note")} />
-                        <FormErrorMessage>{form.formState.errors?.note?.message}</FormErrorMessage>
-                      </FormControl>
-                    </Flex>
-                    {error && (
-                      <Alert status="error" display={{ base: "none", md: "flex" }}>
-                        <AlertIcon />
-                        {error}
-                      </Alert>
-                    )}
-                  </VStack>
-                </GridItem>
-                <GridItem>
-                  <FormControl isInvalid={!!form.formState.errors.selected_proxies?.message}>
-                    <FormLabel>{t("userDialog.protocols")}</FormLabel>
+                      />
+                    </Field>
+                  )}
+                </div>
+                <Controller
+                  control={form.control}
+                  name="data_limit"
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor={fieldId(field.name)}>{t("userDialog.dataLimit")}</FieldLabel>
+                      <div className="relative">
+                        <Input
+                          {...field}
+                          id={fieldId(field.name)}
+                          type="number"
+                          min={0}
+                          step="any"
+                          className="pe-12"
+                          value={field.value ?? ""}
+                          aria-invalid={fieldState.invalid}
+                          aria-describedby={fieldState.invalid ? fieldId("data-limit-error") : undefined}
+                        />
+                        <span className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                          GB
+                        </span>
+                      </div>
+                      <FieldError id={fieldId("data-limit-error")} errors={[fieldState.error]} />
+                    </Field>
+                  )}
+                />
+                {!!(dataLimit && dataLimit > 0) && (
+                  <Field>
+                    <FieldLabel htmlFor={fieldId("reset-strategy")}>{t("userDialog.periodicUsageReset")}</FieldLabel>
+                    <select
+                      id={fieldId("reset-strategy")}
+                      className="h-9 w-full rounded-md border border-input bg-background px-2.5 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+                      {...form.register("data_limit_reset_strategy")}
+                    >
+                      {resetStrategy.map((strategy) => (
+                        <option key={strategy.value} value={strategy.value}>
+                          {t("userDialog.resetStrategy" + strategy.title)}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                )}
+                <Field
+                  data-invalid={
+                    !!(isOnHold ? form.formState.errors.on_hold_expire_duration : form.formState.errors.expire)
+                  }
+                >
+                  <FieldLabel htmlFor={fieldId(isOnHold ? "on_hold_expire_duration" : "expire")}>
+                    {isOnHold ? t("userDialog.onHoldExpireDuration") : t("userDialog.expiryDate")}
+                  </FieldLabel>
+                  {isOnHold ? (
                     <Controller
                       control={form.control}
-                      name="selected_proxies"
-                      render={({ field }) => {
+                      name="on_hold_expire_duration"
+                      render={({ field, fieldState }) => (
+                        <>
+                          <div className="relative">
+                            <Input
+                              {...field}
+                              id={fieldId(field.name)}
+                              type="number"
+                              min={0.1}
+                              step="any"
+                              className="pe-14"
+                              value={field.value ?? ""}
+                              aria-invalid={fieldState.invalid}
+                              aria-describedby={fieldState.invalid ? fieldId("duration-error") : undefined}
+                              onChange={(event) => {
+                                form.setValue("expire", null);
+                                field.onChange(event);
+                              }}
+                            />
+                            <span className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                              {t("userDialog.days")}
+                            </span>
+                          </div>
+                          <FieldError id={fieldId("duration-error")} errors={[fieldState.error]} />
+                        </>
+                      )}
+                    />
+                  ) : (
+                    <Controller
+                      name="expire"
+                      control={form.control}
+                      render={({ field, fieldState }) => {
+                        const { status, time } = relativeExpiryDate(field.value);
                         return (
-                          <RadioGroup
-                            list={[
-                              {
-                                title: "vmess",
-                                description: t("userDialog.vmessDesc"),
-                              },
-                              {
-                                title: "vless",
-                                description: t("userDialog.vlessDesc"),
-                              },
-                              {
-                                title: "trojan",
-                                description: t("userDialog.trojanDesc"),
-                              },
-                              {
-                                title: "shadowsocks",
-                                description: t("userDialog.shadowsocksDesc"),
-                              },
-                            ]}
-                            disabled={disabled}
-                            {...field}
-                          />
+                          <>
+                            <div className="[&_.react-datepicker-wrapper]:w-full">
+                              <ReactDatePicker
+                                id={fieldId(field.name)}
+                                name={field.name}
+                                onBlur={field.onBlur}
+                                locale={i18n.language.toLocaleLowerCase()}
+                                dateFormat={t("dateFormat")}
+                                minDate={new Date()}
+                                disabled={disabled}
+                                isClearable={!disabled}
+                                selected={field.value ? dayjs(field.value * 1000).toDate() : null}
+                                onChange={(date: Date | null) => {
+                                  form.setValue("on_hold_expire_duration", null);
+                                  field.onChange(date ? dayjs(date).endOf("day").unix() : null);
+                                }}
+                                customInput={
+                                  <Input
+                                    ref={field.ref}
+                                    aria-invalid={fieldState.invalid}
+                                    aria-describedby={
+                                      fieldState.invalid
+                                        ? fieldId("expire-error")
+                                        : field.value
+                                          ? fieldId("expiry-description")
+                                          : undefined
+                                    }
+                                  />
+                                }
+                              />
+                            </div>
+                            {!!field.value && (
+                              <FieldDescription id={fieldId("expiry-description")}>
+                                {t(status, { time })}
+                              </FieldDescription>
+                            )}
+                            <FieldError id={fieldId("expire-error")} errors={[fieldState.error]} />
+                          </>
                         );
                       }}
                     />
-                    <FormErrorMessage>{t(form.formState.errors.selected_proxies?.message as string)}</FormErrorMessage>
-                  </FormControl>
-                </GridItem>
-                {isEditing && usageVisible && (
-                  <GridItem pt={6} colSpan={{ base: 1, md: 2 }}>
-                    <VStack gap={4}>
-                      <UsageFilter
-                        defaultValue={usageFilter}
-                        onChange={(filter, query) => {
-                          setUsageFilter(filter);
-                          fetchUsageWithFilter(query);
-                        }}
-                      />
-                      <Box width={{ base: "100%", md: "70%" }} justifySelf="center">
-                        <ReactApexChart options={usage.options} series={usage.series} type="donut" />
-                      </Box>
-                    </VStack>
-                  </GridItem>
-                )}
-              </Grid>
-              {error && (
-                <Alert mt="3" status="error" display={{ base: "flex", md: "none" }}>
-                  <AlertIcon />
-                  {error}
-                </Alert>
-              )}
-            </ModalBody>
-            <ModalFooter mt="3">
-              <HStack
-                justifyContent="space-between"
-                w="full"
-                gap={3}
-                flexDirection={{
-                  base: "column",
-                  sm: "row",
-                }}
-              >
-                <HStack
-                  justifyContent="flex-start"
-                  w={{
-                    base: "full",
-                    sm: "unset",
-                  }}
-                >
-                  {isEditing && (
-                    <>
-                      <Tooltip label={t("delete")} placement="top">
-                        <IconButton
-                          aria-label="Delete"
-                          size="sm"
-                          onClick={() => {
-                            onDeletingUser(editingUser);
-                            onClose();
-                          }}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip label={t("userDialog.usage")} placement="top">
-                        <IconButton aria-label="usage" size="sm" onClick={handleUsageToggle}>
-                          <UserUsageIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Button onClick={handleResetUsage} size="sm">
-                        {t("userDialog.resetUsage")}
-                      </Button>
-                      <Button onClick={handleRevokeSubscription} size="sm">
-                        {t("userDialog.revokeSubscription")}
-                      </Button>
-                    </>
                   )}
-                </HStack>
-                <HStack w="full" maxW={{ md: "50%", base: "full" }} justify="end">
-                  <Button
-                    type="submit"
-                    size="sm"
-                    px="8"
-                    colorScheme="primary"
-                    leftIcon={loading ? <Spinner size="xs" /> : undefined}
-                    disabled={disabled}
-                  >
-                    {isEditing ? t("userDialog.editUser") : t("createUser")}
-                  </Button>
-                </HStack>
-              </HStack>
-            </ModalFooter>
+                </Field>
+                <Field data-invalid={!!form.formState.errors.note}>
+                  <FieldLabel htmlFor={fieldId("note")}>{t("userDialog.note")}</FieldLabel>
+                  <Textarea
+                    id={fieldId("note")}
+                    aria-invalid={!!form.formState.errors.note}
+                    aria-describedby={form.formState.errors.note ? fieldId("note-error") : undefined}
+                    {...form.register("note")}
+                  />
+                  <FieldError id={fieldId("note-error")} errors={[form.formState.errors.note]} />
+                </Field>
+              </div>
+              <FieldSet
+                className="min-w-0 gap-3"
+                aria-describedby={form.formState.errors.selected_proxies ? fieldId("protocol-error") : undefined}
+              >
+                <FieldLegend variant="label">{t("userDialog.protocols")}</FieldLegend>
+                <Controller
+                  control={form.control}
+                  name="selected_proxies"
+                  render={({ field }) => (
+                    <RadioGroup
+                      list={["vmess", "vless", "trojan", "shadowsocks"].map((title) => ({
+                        title,
+                        description: t(`userDialog.${title}Desc`),
+                      }))}
+                      disabled={disabled}
+                      {...field}
+                    />
+                  )}
+                />
+                {form.formState.errors.selected_proxies?.message && (
+                  <FieldError id={fieldId("protocol-error")}>
+                    {t(form.formState.errors.selected_proxies.message)}
+                  </FieldError>
+                )}
+              </FieldSet>
+              {isEditing && usageVisible && (
+                <div className="flex min-w-0 flex-col items-center gap-4 pt-2 md:col-span-2">
+                  <UsageFilter
+                    defaultValue={usageFilter}
+                    onChange={(filter, query) => {
+                      setUsageFilter(filter);
+                      fetchUsageWithFilter(query);
+                    }}
+                  />
+                  <div className="w-full md:w-7/10">
+                    <ReactApexChart options={usage.options} series={usage.series} type="donut" />
+                  </div>
+                </div>
+              )}
+            </fieldset>
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            <DialogFooter className="flex-col gap-3 sm:justify-between">
+              <div className="flex flex-wrap items-center gap-2">
+                {isEditing && (
+                  <>
+                    <SimpleTooltip label={t("delete")}>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon-sm"
+                        disabled={disabled}
+                        aria-label={t("delete")}
+                        onClick={() => {
+                          onDeletingUser(editingUser);
+                          onClose();
+                        }}
+                      >
+                        <Trash2 />
+                      </Button>
+                    </SimpleTooltip>
+                    <SimpleTooltip label={t("userDialog.usage")}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon-sm"
+                        disabled={disabled}
+                        aria-label={t("userDialog.usage")}
+                        aria-expanded={usageVisible}
+                        onClick={handleUsageToggle}
+                      >
+                        <ChartPie />
+                      </Button>
+                    </SimpleTooltip>
+                    <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={handleResetUsage}>
+                      {t("userDialog.resetUsage")}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={disabled}
+                      onClick={handleRevokeSubscription}
+                    >
+                      {t("userDialog.revokeSubscription")}
+                    </Button>
+                  </>
+                )}
+              </div>
+              <Button type="submit" size="sm" className="self-end px-8" disabled={disabled}>
+                {loading && <Spinner />}
+                {isEditing ? t("userDialog.editUser") : t("createUser")}
+              </Button>
+            </DialogFooter>
           </form>
-        </ModalContent>
-      </FormProvider>
-    </Modal>
+        </FormProvider>
+      </DialogContent>
+    </Dialog>
   );
 };

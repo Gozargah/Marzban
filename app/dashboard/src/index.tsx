@@ -12,6 +12,7 @@ import App from "./App";
 import "./index.css";
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/sonner"
 
 
 dayjs.extend(Timezone);
@@ -25,6 +26,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <App />
+        <Toaster position="top-center" richColors />
       </TooltipProvider>
     </QueryClientProvider>
   </ThemeProvider>
