@@ -49,7 +49,7 @@ import { Icon } from "./Icon";
 import { Input } from "./Input";
 import { RadioGroup } from "./RadioGroup";
 import { UsageFilter, createUsageConfig } from "./UsageFilter";
-import { ReloadIcon } from "./Filters";
+import { ReloadIcon } from "./dashboard/filters";
 import classNames from "classnames";
 
 const AddUserIcon = chakra(UserPlusIcon, {
@@ -585,8 +585,8 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                         target: {
                                           value: date
                                             ? dayjs(dayjs(date).set("hour", 23).set("minute", 59).set("second", 59))
-                                                .utc()
-                                                .valueOf() / 1000
+                                              .utc()
+                                              .valueOf() / 1000
                                             : 0,
                                           name: "expire",
                                         },

@@ -51,7 +51,7 @@ import { generateErrorMessage, generateSuccessMessage } from "utils/toastHandler
 import { useDashboard } from "../contexts/DashboardContext";
 import { DeleteNodeModal } from "./DeleteNodeModal";
 import { DeleteIcon } from "./DeleteUserModal";
-import { ReloadIcon } from "./Filters";
+import { ReloadIcon } from "./dashboard/filters";
 import { Icon } from "./Icon";
 import { NodeModalStatusBadge } from "./NodeModalStatusBadge";
 

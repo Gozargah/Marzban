@@ -1,5 +1,5 @@
 import { router } from "@/pages/router";
-import { StatisticsQueryKey } from "components/Statistics";
+import { StatisticsQueryKey } from "@/components/dashboard/statistics";
 import debounce from "lodash.debounce";
 import { fetch } from "service/http";
 import { User, UserCreate } from "types/User";
