@@ -1,4 +1,3 @@
-import { DirectionProvider } from "@base-ui/react/direction-provider";
 import { useQueryClient } from "@tanstack/react-query";
 import { CircleDollarSign, Link2, LogOut, Menu, Moon, Network, PieChart, RotateCcw, Settings, Sun } from "lucide-react";
 import { useState, type ReactNode } from "react";

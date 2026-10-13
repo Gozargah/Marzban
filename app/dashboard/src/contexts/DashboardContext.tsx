@@ -181,14 +181,14 @@ export const useDashboard = create(
       return fetch(`/user/${user.username}`, { method: "DELETE" }).then(() => {
         set({ deletingUser: null });
         get().refetchUsers();
-        queryClient.invalidateQueries(StatisticsQueryKey);
+        queryClient.invalidateQueries({ queryKey: [StatisticsQueryKey] });
       });
     },
     createUser: (body: UserCreate) => {
       return fetch(`/user`, { method: "POST", body }).then(() => {
         set({ editingUser: null });
         get().refetchUsers();
-        queryClient.invalidateQueries(StatisticsQueryKey);
+        queryClient.invalidateQueries({ queryKey: [StatisticsQueryKey] });
       });
     },
     editUser: (body: UserCreate) => {

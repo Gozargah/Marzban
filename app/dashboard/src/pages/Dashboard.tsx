@@ -17,6 +17,7 @@ import { FC, useEffect } from "react";
 // import { Statistics } from "../components/Statistics";
 import debounce from "lodash.debounce";
 import { router } from "@/pages/router";
+import { Statistics } from "@/components/Statistics";
 
 export const Dashboard: FC = () => {
   useEffect(() => {
@@ -52,6 +53,7 @@ export const Dashboard: FC = () => {
     <div className="flex min-h-screen w-full flex-col items-center justify-between gap-4 bg-background p-3 text-foreground lg:p-6">
       <div className="w-full">
         <Header />
+        <Statistics />
         {/* <Statistics mt="4" />
         <Filters />
         <UsersTable />
