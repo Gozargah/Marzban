@@ -10,7 +10,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "utils/react-query";
 import App from "./App";
 import "./index.css";
-// import "index.scss";
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { ThemeProvider } from "@/components/theme-provider"
 
 
@@ -23,7 +23,9 @@ dayjs.extend(Duration);
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
     <QueryClientProvider client={queryClient}>
-      <App />
+      <TooltipProvider>
+        <App />
+      </TooltipProvider>
     </QueryClientProvider>
   </ThemeProvider>
 );
