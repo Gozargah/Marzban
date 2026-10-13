@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router";
 import { fetch } from "../service/http";
 import { getAuthToken } from "../utils/authStorage";
-import { Dashboard } from "./Dashboard";
+import { Dashboard } from "./dashboard";
 import { Login } from "./login";
 const fetchAdminLoader = async () => {
   return await fetch("/admin", {

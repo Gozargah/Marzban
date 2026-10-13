@@ -1,21 +1,20 @@
-import { Box, VStack } from "@chakra-ui/react";
-import { CoreSettingsModal } from "components/CoreSettingsModal";
-import { DeleteUserModal } from "components/DeleteUserModal";
-import { Filters } from "components/Filters";
+// import { CoreSettingsModal } from "components/CoreSettingsModal";
+// import { DeleteUserModal } from "components/DeleteUserModal";
+// import { Filters } from "components/Filters";
+// import { HostsDialog } from "components/HostsDialog";
+// import { NodesDialog } from "components/NodesModal";
+// import { NodesUsage } from "components/NodesUsage";
+// import { QRCodeDialog } from "components/QRCodeDialog";
+// import { ResetAllUsageModal } from "components/ResetAllUsageModal";
+// import { ResetUserUsageModal } from "components/ResetUserUsageModal";
+// import { RevokeSubscriptionModal } from "components/RevokeSubscriptionModal";
+// import { UserDialog } from "components/UserDialog";
+// import { UsersTable } from "components/UsersTable";
 import { Footer } from "@/components/footer";
-import { Header } from "components/Header";
-import { HostsDialog } from "components/HostsDialog";
-import { NodesDialog } from "components/NodesModal";
-import { NodesUsage } from "components/NodesUsage";
-import { QRCodeDialog } from "components/QRCodeDialog";
-import { ResetAllUsageModal } from "components/ResetAllUsageModal";
-import { ResetUserUsageModal } from "components/ResetUserUsageModal";
-import { RevokeSubscriptionModal } from "components/RevokeSubscriptionModal";
-import { UserDialog } from "components/UserDialog";
-import { UsersTable } from "components/UsersTable";
+import { Header } from "@/components/dashboard/header";
 import { fetchInbounds, FilterType, useDashboard } from "contexts/DashboardContext";
 import { FC, useEffect } from "react";
-import { Statistics } from "../components/Statistics";
+// import { Statistics } from "../components/Statistics";
 import debounce from "lodash.debounce";
 import { router } from "@/pages/router";
 
@@ -50,18 +49,10 @@ export const Dashboard: FC = () => {
     }, 50);
   });
   return (
-    <VStack
-      justifyContent="space-between"
-      minH="100vh"
-      p={{
-        base: "3",
-        lg: "6",
-      }}
-      rowGap={4}
-    >
-      <Box w="full">
+    <div className="flex min-h-screen w-full flex-col items-center justify-between gap-4 bg-background p-3 text-foreground lg:p-6">
+      <div className="w-full">
         <Header />
-        <Statistics mt="4" />
+        {/* <Statistics mt="4" />
         <Filters />
         <UsersTable />
         <UserDialog />
@@ -73,10 +64,10 @@ export const Dashboard: FC = () => {
         <NodesDialog />
         <NodesUsage />
         <ResetAllUsageModal />
-        <CoreSettingsModal />
-      </Box>
+        <CoreSettingsModal /> */}
+      </div>
       <Footer />
-    </VStack>
+    </div>
   );
 };
 

@@ -10,7 +10,7 @@ import { z } from "zod";
 
 import { ReactComponent as Logo } from "assets/logo.svg";
 import { Footer } from "@/components/footer";
-import { Language } from "@/components/Language";
+import { Language } from "@/components/language";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";

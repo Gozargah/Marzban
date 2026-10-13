@@ -39,13 +39,14 @@ export function Language() {
 
   return (
     <DirectionProvider direction={direction}>
-      <div dir={direction} className="flex flex-col items-end gap-2">
+      <div dir={'rtl'} className="flex flex-col items-end gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={<Button variant="outline" size="icon-lg" />}
+            render={<Button variant="outline" size="icon-sm" />}
             type="button"
             aria-label={selectedLanguage.triggerLabel}
             title={selectedLanguage.triggerLabel}
+            className={'border!'}
           >
             <Languages aria-hidden="true" />
           </DropdownMenuTrigger>

@@ -1,4 +1,3 @@
-import { ChakraProvider, localStorageManager } from "@chakra-ui/react";
 import dayjs from "dayjs";
 import Duration from "dayjs/plugin/duration";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
@@ -10,11 +9,11 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "utils/react-query";
-import { updateThemeColor } from "utils/themeColor";
-import { theme } from "../chakra.config";
 import App from "./App";
 import "./index.css";
 import "index.scss";
+import { ThemeProvider } from "@/components/theme-provider"
+
 
 dayjs.extend(Timezone);
 dayjs.extend(LocalizedFormat);
@@ -22,12 +21,10 @@ dayjs.extend(utc);
 dayjs.extend(RelativeTime);
 dayjs.extend(Duration);
 
-updateThemeColor(localStorageManager.get() || "light");
-
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  // <ChakraProvider theme={theme}>
-  <QueryClientProvider client={queryClient}>
-    <App />
-  </QueryClientProvider>
-  // </ChakraProvider>,
+  <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
+  </ThemeProvider>
 );
