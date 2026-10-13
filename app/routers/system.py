@@ -14,6 +14,12 @@ from app.utils.system import cpu_usage, memory_usage, realtime_bandwidth
 router = APIRouter(tags=["System"], prefix="/api", responses={401: responses._401})
 
 
+@router.get("/version", response_model=Dict[str, str])
+def get_version():
+    """Return the running Marzban version without requiring authentication."""
+    return {"version": __version__}
+
+
 @router.get("/system", response_model=SystemStats)
 def get_system_stats(
     db: Session = Depends(get_db), admin: Admin = Depends(Admin.get_current)

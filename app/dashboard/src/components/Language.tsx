@@ -1,72 +1,76 @@
-import {
-  chakra,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-} from "@chakra-ui/react";
-import { LanguageIcon } from "@heroicons/react/24/outline";
-import { FC, ReactNode } from "react";
+import { DirectionProvider } from "@base-ui/react/direction-provider";
+import { Languages } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-type HeaderProps = {
-  actions?: ReactNode;
-};
+const languages = [
+  { value: "en", label: "English", triggerLabel: "Change language", direction: "ltr" },
+  { value: "fa", label: "فارسی", triggerLabel: "تغییر زبان", direction: "rtl" },
+  { value: "zh-cn", label: "简体中文", triggerLabel: "切换语言", direction: "ltr" },
+  { value: "ru", label: "Русский", triggerLabel: "Изменить язык", direction: "ltr" },
+] as const;
 
-const LangIcon = chakra(LanguageIcon, {
-  baseStyle: {
-    w: 4,
-    h: 4,
-  },
-});
+export function Language() {
+  const { i18n, t } = useTranslation();
+  const [hasError, setHasError] = useState(false);
+  const languageCode = (i18n.resolvedLanguage || i18n.language || "en").toLowerCase();
+  const selectedLanguage = languages.find(({ value }) =>
+    value.split("-")[0] === languageCode.split("-")[0],
+  ) || languages[0];
+  const direction = i18n.dir();
 
-export const Language: FC<HeaderProps> = ({ actions }) => {
-  const { i18n } = useTranslation();
-
-  var changeLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
-  };
+  async function changeLanguage(value: string) {
+    if (!languages.some((language) => language.value === value)) return;
+    setHasError(false);
+    try {
+      await i18n.changeLanguage(value);
+    } catch {
+      setHasError(true);
+    }
+  }
 
   return (
-    <Menu placement="bottom-end">
-      <MenuButton
-        as={IconButton}
-        size="sm"
-        variant="outline"
-        icon={<LangIcon />}
-        position="relative"
-      />
-      <MenuList minW="100px" zIndex={9999}>
-        <MenuItem
-          maxW="100px"
-          fontSize="sm"
-          onClick={() => changeLanguage("en")}
-        >
-          English
-        </MenuItem>
-        <MenuItem
-          maxW="100px"
-          fontSize="sm"
-          onClick={() => changeLanguage("fa")}
-        >
-          فارسی
-        </MenuItem>
-        <MenuItem
-          maxW="100px"
-          fontSize="sm"
-          onClick={() => changeLanguage("zh-cn")}
-        >
-          简体中文
-        </MenuItem>
-        <MenuItem
-          maxW="100px"
-          fontSize="sm"
-          onClick={() => changeLanguage("ru")}
-        >
-          Русский
-        </MenuItem>
-      </MenuList>
-    </Menu>
+    <DirectionProvider direction={direction}>
+      <div dir={direction} className="flex flex-col items-end gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={<Button variant="outline" size="icon-lg" />}
+            type="button"
+            aria-label={selectedLanguage.triggerLabel}
+            title={selectedLanguage.triggerLabel}
+          >
+            <Languages aria-hidden="true" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" dir={direction} className="min-w-36">
+            <DropdownMenuRadioGroup
+              value={selectedLanguage.value}
+              onValueChange={changeLanguage}
+              aria-label={selectedLanguage.triggerLabel}
+            >
+              {languages.map((language) => (
+                <DropdownMenuRadioItem key={language.value} value={language.value} closeOnClick>
+                  <span lang={language.value} dir={language.direction}>
+                    {language.label}
+                  </span>
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        {hasError && (
+          <p role="alert" className="max-w-48 text-sm text-destructive">
+            {t("language.changeError", { defaultValue: "Unable to change language. Please try again." })}
+          </p>
+        )}
+      </div>
+    </DirectionProvider>
   );
-};
+}

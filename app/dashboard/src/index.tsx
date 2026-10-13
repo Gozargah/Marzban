@@ -25,9 +25,9 @@ dayjs.extend(Duration);
 updateThemeColor(localStorageManager.get() || "light");
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <ChakraProvider theme={theme}>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </ChakraProvider>,
+  // <ChakraProvider theme={theme}>
+  <QueryClientProvider client={queryClient}>
+    <App />
+  </QueryClientProvider>
+  // </ChakraProvider>,
 );

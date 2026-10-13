@@ -44,11 +44,13 @@ i18n
     },
     function (err, t) {
       dayjs.locale(i18n.language);
+      document.documentElement.lang = i18n.resolvedLanguage || i18n.language || "en";
     }
   );
 
 i18n.on("languageChanged", (lng) => {
   dayjs.locale(lng);
+  document.documentElement.lang = lng;
 });
 
 // DataPicker

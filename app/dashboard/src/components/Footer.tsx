@@ -1,28 +1,39 @@
-import { BoxProps, HStack, Link, Text } from "@chakra-ui/react";
+import type { ComponentProps } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
 import { ORGANIZATION_URL, REPO_URL } from "constants/Project";
-import { useDashboard } from "contexts/DashboardContext";
-import { FC } from "react";
+import { $fetch } from "service/http";
 
-export const Footer: FC<BoxProps> = (props) => {
-  const { version } = useDashboard();
+export function Footer({ className, ...props }: ComponentProps<"footer">) {
+  const { data } = useQuery({
+    queryKey: ["app-version"],
+    queryFn: ({ signal }) =>
+      $fetch<{ version: string }>("/version", { signal, retry: 0 }),
+    staleTime: Infinity,
+    retry: false,
+  });
+  const version = data?.version;
   return (
-    <HStack w="full" py="0" position="relative" {...props}>
-      <Text
-        display="inline-block"
-        flexGrow={1}
-        textAlign="center"
-        color="gray.500"
-        fontSize="xs"
-      >
-        <Link color="blue.400" href={REPO_URL}>
+    <footer
+      className={cn("relative w-full text-center text-xs text-muted-foreground", className)}
+      {...props}
+    >
+      <p>
+        <a
+          className="rounded-sm text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          href={REPO_URL}
+        >
           Marzban
-        </Link>
-        {version ? ` (v${version}), ` : ", "}
-        Made with ❤️ in{" "}
-        <Link color="blue.400" href={ORGANIZATION_URL}>
+        </a>
+        {version ? <> (<bdi>v{version}</bdi>), </> : ", "}
+        Made with <span role="img" aria-label="love">❤️</span> in{" "}
+        <a
+          className="rounded-sm text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          href={ORGANIZATION_URL}
+        >
           Gozargah
-        </Link>
-      </Text>
-    </HStack>
+        </a>
+      </p>
+    </footer>
   );
-};
+}
