@@ -18,17 +18,22 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    "types": [
+      "bun",
+      "@testing-library/jest-dom"
+    ],
     "paths": {
       "@/*": [
         "./src/*"
       ],
       "*": [
         "./src/*"
-      ],
+      ]
     }
   },
   "include": [
-    "src"
+    "src",
+    "test"
   ],
   "references": [
     {

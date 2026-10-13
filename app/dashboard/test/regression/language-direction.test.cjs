@@ -1,4 +1,4 @@
-const { test } = require('node:test');
+const { test } = require('bun:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -14,7 +14,7 @@ test('document direction follows initialization, live changes, and translation f
   let unsubscribe = () => {};
   try {
     const instance = createInstance();
-    const filename = path.join(__dirname, '../src/locales/i18n.ts');
+    const filename = path.join(__dirname, '../../src/locales/i18n.ts');
     const source = fs.readFileSync(filename, 'utf8')
       .replaceAll('import.meta.env.NODE_ENV', "'test'")
       .replaceAll('import.meta.env.BASE_URL', "'/'");
@@ -43,7 +43,7 @@ test('document direction follows initialization, live changes, and translation f
     assert.equal(element.dir, 'rtl');
 
     const notifications = [];
-    const hookFilename = path.join(__dirname, '../src/hooks/use-locale.ts');
+    const hookFilename = path.join(__dirname, '../../src/hooks/use-locale.ts');
     const hookOutput = ts.transpileModule(fs.readFileSync(hookFilename, 'utf8'), { compilerOptions: {
       module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, esModuleInterop: true,
     }}).outputText;

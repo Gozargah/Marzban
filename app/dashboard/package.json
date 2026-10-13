@@ -7,8 +7,12 @@
     "build": "tsc && vite build",
     "preview": "vite preview --port 3000",
     "typecheck": "tsc --noEmit",
-    "test:state": "node --test tests/state-lifecycle.test.cjs tests/language-direction.test.cjs",
-    "test:colors": "node --test tests/color-contrast.test.cjs"
+    "test:state": "bun test ./test/state ./test/regression",
+    "test:colors": "bun test ./test/unit/formatting.test.ts --test-name-pattern \"chart palette\"",
+    "test": "bun test ./test",
+    "test:watch": "bun test --watch ./test",
+    "test:coverage": "bun test --coverage ./test",
+    "test:typecheck": "tsc -p tsconfig.test.json"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
@@ -56,9 +60,14 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
+    "@happy-dom/global-registrator": "^21.0.1",
     "@rolldown/plugin-babel": "^0.2.3",
     "@tailwindcss/vite": "^4.3.0",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
     "@types/babel__core": "^7.20.5",
+    "@types/bun": "^1.4.3",
     "@types/lodash.debounce": "^4.0.7",
     "@types/react": "^19.2.16",
     "@types/react-copy-to-clipboard": "^5.0.4",

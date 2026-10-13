@@ -1,38 +1,8 @@
-const { test } = require('node:test');
+const { test } = require('bun:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const vm = require('node:vm');
-const ts = require('typescript');
-
-// Exercise the actual TS modules with deterministic network/router adapters.
-// No browser, backend, authentication, or new test dependency is required.
-function load(file, mocks = {}) {
-  const filename = path.join(__dirname, '../src', file);
-  const source = fs.readFileSync(filename, 'utf8');
-  const js = ts.transpileModule(source, { compilerOptions: {
-    module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020,
-    jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true,
-  }}).outputText;
-  const module = { exports: {} };
-  const run = vm.runInThisContext(`(function(require,module,exports){${js}\n})`, { filename });
-  run((id) => id in mocks ? mocks[id] : require(id), module, module.exports);
-  return module.exports;
-}
+const { loadSource: load } = require('../helpers/load-source');
+const { deferred, network, flushPromises: tick } = require('../helpers/network');
 const latest = load('utils/latest-request.ts');
-function deferred() {
-  let resolve, reject;
-  const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
-  return { promise, resolve, reject };
-}
-function network() {
-  const calls = [];
-  return { calls, fetch: (url, options) => {
-    const request = deferred();
-    calls.push({ url, options, ...request });
-    return request.promise;
-  }};
-}
 function dashboard(net) {
   return load('contexts/dashboard-context.tsx', {
     '@/pages/router': { router: { navigate() {} } },
@@ -43,7 +13,6 @@ function dashboard(net) {
     'utils/latest-request': latest,
   });
 }
-const tick = () => new Promise((resolve) => setImmediate(resolve));
 
 test('latest read aborts superseded work; old completion cannot cancel the new request', () => {
   const owner = latest.createLatestRequest();

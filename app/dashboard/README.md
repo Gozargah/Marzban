@@ -38,3 +38,14 @@ Copy `example.env` to `.env` then set the backend api address:
 ## Contribution
 
 Feel free to contribute. Go on and fork the project. After commiting the changes, make a PR. It means a lot to us.
+
+## Frontend tests
+
+From this directory, install dependencies with `bun install --frozen-lockfile` and run:
+
+```sh
+bun run test
+bun run test:typecheck
+```
+
+The Bun suite is in [`test`](test/README.md), with shared fixtures, isolated API adapters, headless component tests, and watch/coverage commands. No running app or backend is required.
