@@ -50,7 +50,7 @@
     "react-i18next": "^12.2.0",
     "react-json-editor-ajrm": "^2.5.14",
     "react-loading-skeleton": "^3.1.0",
-    "react-router-dom": "^6.4.3",
+    "react-router": "^8.4.0",
     "react-slick": "^0.29.0",
     "react-use-websocket": "^4.3.1",
     "rollup-plugin-visualizer": "^5.9.0",
