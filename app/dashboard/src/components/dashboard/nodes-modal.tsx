@@ -12,8 +12,8 @@ import {
   NodeType,
   useNodes,
   useNodesQuery,
-} from "contexts/NodesContext";
-import { useDashboard } from "contexts/DashboardContext";
+} from "@/contexts/nodes-context";
+import { useDashboard } from "@/contexts/dashboard-context";
 import { fetch } from "service/http";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -31,7 +31,8 @@ import { NodeModalStatusBadge } from "./node-modal-status-badge";
 function NodeForm({ node, onSaved, onDelete }: { node?: NodeType; onSaved: () => void; onDelete?: () => void }) {
   const { t } = useTranslation();
   const id = useId();
-  const { addNode, updateNode } = useNodes();
+  const addNode = useNodes((state) => state.addNode);
+  const updateNode = useNodes((state) => state.updateNode);
   const queryClient = useQueryClient();
   const form = useForm<NodeType>({
     defaultValues: node ?? { ...getNodeDefaultValues(), add_as_new_host: false },
@@ -225,7 +226,8 @@ function NodeForm({ node, onSaved, onDelete }: { node?: NodeType; onSaved: () =>
 }
 
 function NodeItem({ node }: { node: NodeType }) {
-  const { reconnectNode, setDeletingNode } = useNodes();
+  const reconnectNode = useNodes((state) => state.reconnectNode);
+  const setDeletingNode = useNodes((state) => state.setDeletingNode);
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { mutate: reconnect, isPending } = useMutation({
@@ -255,13 +257,14 @@ function NodeItem({ node }: { node: NodeType }) {
             </AlertDescription>
           </Alert>
         )}
-        <NodeForm node={node} onSaved={() => {}} onDelete={() => setDeletingNode(node)} />
+        <NodeForm node={node} onSaved={() => { }} onDelete={() => setDeletingNode(node)} />
       </AccordionContent>
     </AccordionItem>
   );
 }
 export function NodesDialog() {
-  const { isEditingNodes, onEditingNodes } = useDashboard();
+  const isEditingNodes = useDashboard((state) => state.isEditingNodes);
+  const onEditingNodes = useDashboard((state) => state.onEditingNodes);
   const { data: nodes, isLoading, isError } = useNodesQuery();
   const { t, i18n } = useTranslation();
   const [expanded, setExpanded] = useState<string[]>([]);

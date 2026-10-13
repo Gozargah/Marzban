@@ -10,7 +10,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
-import { useDashboard } from "contexts/DashboardContext";
+import { useDashboard } from "@/contexts/dashboard-context";
 import { setUsersPerPageLimitSize } from "utils/userPreferenceStorage";
 
 export type PaginationType = {
@@ -48,11 +48,9 @@ function generatePageItems(total: number, current: number, width: number = 7) {
 }
 
 export const Pagination: FC<{ className?: string }> = ({ className }) => {
-  const {
-    filters,
-    onFilterChange,
-    users: { total },
-  } = useDashboard();
+  const filters = useDashboard((state) => state.filters);
+  const onFilterChange = useDashboard((state) => state.onFilterChange);
+  const total = useDashboard((state) => state.users.total);
   const { t } = useTranslation();
 
   const perPage = filters.limit || 10;

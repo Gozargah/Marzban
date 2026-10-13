@@ -1,10 +1,11 @@
+import { createLogBuffer } from "utils/log-buffer";
 import { NativeSelect } from "@/components/ui/native-select";
 import { joinPaths } from "@remix-run/router";
 import { FC, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { getAuthToken } from "utils/authStorage";
-import { useNodesQuery } from "contexts/NodesContext";
+import { useNodesQuery } from "@/contexts/nodes-context";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
 export const MAX_NUMBER_OF_LOGS = 10_000;
@@ -65,7 +66,8 @@ const Log: FC<{ children: string }> = ({ children }) => {
 };
 
 export const NodeLogs = () => {
-  const logsTmp = useRef<string[]>([]);
+  const buffer = useRef(createLogBuffer(MAX_NUMBER_OF_LOGS));
+  const flushTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const logsDiv = useRef<HTMLDivElement | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
@@ -73,10 +75,12 @@ export const NodeLogs = () => {
   const [selectedNode, setNode] = useState<string>("");
   const { readyState } = useWebSocket(getWebsocketUrl(selectedNode), {
     onMessage: (e: any) => {
-      const newLogs = e.data.split("\n").filter((l: string) => l.trim());
-      logsTmp.current.push(...newLogs);
-      if (logsTmp.current.length > MAX_NUMBER_OF_LOGS) logsTmp.current = logsTmp.current.slice(-MAX_NUMBER_OF_LOGS);
-      setLogs([...logsTmp.current]);
+      if (typeof e.data !== "string") return;
+      buffer.current.append(e.data);
+      if (flushTimer.current === null) flushTimer.current = setTimeout(() => {
+        flushTimer.current = null;
+        setLogs(buffer.current.snapshot());
+      }, 100);
     },
     shouldReconnect: () => true,
     reconnectAttempts: 10,
@@ -85,23 +89,23 @@ export const NodeLogs = () => {
 
   useEffect(() => {
     return () => {
-      logsTmp.current = [];
+      if (flushTimer.current !== null) clearTimeout(flushTimer.current);
+      flushTimer.current = null;
+      buffer.current.clear();
     };
   }, []);
 
   const status = getStatus(readyState.toString());
 
   const handleLog = (id: string) => {
-    if (id === selectedNode) return;
-    else if (id === "host") {
-      logsTmp.current = [];
-      setNode("");
-      setLogs([]);
-    } else {
-      logsTmp.current = [];
-      setNode(id);
-      setLogs([]);
-    }
+    const next = id === "host" ? "" : id;
+    if (next === selectedNode) return;
+    if (flushTimer.current !== null) clearTimeout(flushTimer.current);
+    flushTimer.current = null;
+    buffer.current.clear();
+    shouldStick.current = true;
+    setLogs([]);
+    setNode(next);
   };
   const { t } = useTranslation();
   const virtualizedLogs = useVirtualizer({
@@ -123,7 +127,7 @@ export const NodeLogs = () => {
     if (shouldStick.current && logs.length > 0) {
       virtualizedLogs.scrollToIndex(logs.length - 1, { align: "end" });
     }
-  }, [logs.length]);
+  }, [logs, virtualizedLogs]);
 
   return (
     <>

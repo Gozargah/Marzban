@@ -1,19 +1,12 @@
 import { useTheme } from "@/components/theme-provider";
-import { forwardRef, useEffect, useRef } from "react";
+import { forwardRef, use, useEffect, useImperativeHandle, useRef } from "react";
 import { monaco, jsonDefaults } from "./monaco";
 import debounce from "lodash.debounce";
-import { use } from "react";
 
-const initHighlighter = async () => {
-  const [shiki, shikiMonaco] = await Promise.all([import("./shiki"), import("@shikijs/monaco")]);
-  shikiMonaco.shikiToMonaco(await shiki.highlighter, monaco);
-};
-const highlighterPromise = initHighlighter();
+// Cache shared language resources, not mounted editors or their DOM/models.
+const highlighterPromise = Promise.all([import("./shiki"), import("@shikijs/monaco")])
+  .then(async ([shiki, shikiMonaco]) => shikiMonaco.shikiToMonaco(await shiki.highlighter, monaco));
 const schemaImportPromise = import("@gozargah/xray-schema/full/schema.json").then((m) => m.default);
-
-// persits editor and node across mounts to preserve state and avoid costly reinitialization
-let editorInstance: monaco.editor.IStandaloneCodeEditor | null = null;
-let editorNode: HTMLDivElement | null = null;
 let schemaRegistered = false;
 
 export type JSONEditorProps = {
@@ -22,50 +15,22 @@ export type JSONEditorProps = {
   onSave?: () => void;
 };
 
-const initEditor = async (json: object, colorMode: "light" | "dark") => {
-  return new Promise<void>((resolve) => {
-    editorNode = document.createElement("div");
-    const model =
-      monaco.editor.getModel(monaco.Uri.parse("file:///config.json")) ??
-      monaco.editor.createModel(JSON.stringify(json, null, 2), "json", monaco.Uri.parse("file:///config.json"));
-
-    editorInstance = monaco.editor.create(editorNode, {
-      model,
-      language: "json",
-      scrollBeyondLastLine: false,
-      minimap: { enabled: false },
-      padding: { top: 10, bottom: 10 },
-      lineNumbersMinChars: 4.2,
-      stickyScroll: { enabled: false },
-      automaticLayout: true,
-      quickSuggestions: { other: true, comments: false, strings: true },
-      suggest: { showWords: false },
-      tabSize: 2,
-    });
-    setTimeout(() => {
-      initHighlighter();
-      setTimeout(() => {
-        monaco.editor.setTheme(colorMode === "light" ? "min-light" : "one-dark-pro");
-        resolve();
-      }, 10);
-    }, 10);
-
-    const saved = localStorage.getItem("viewState");
-    if (saved) editorInstance.restoreViewState(JSON.parse(saved));
-  });
-};
-const initializeEditorPromise = initEditor({}, "dark");
+function formatJson(json: unknown) {
+  return typeof json === "string" ? json : JSON.stringify(json, null, 2) ?? "{}";
+}
 
 export const JsonEditor = forwardRef<HTMLDivElement, JSONEditorProps>(({ json, onChange, onSave }, ref) => {
   use(highlighterPromise);
-  use(initializeEditorPromise);
   const schema = use(schemaImportPromise);
   const hostRef = useRef<HTMLDivElement>(null);
-  const { resolvedTheme: colorMode } = useTheme();
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const callbacks = useRef({ onChange, onSave });
+  const initialJson = useRef(json);
+  const { resolvedTheme } = useTheme();
+  useImperativeHandle(ref, () => hostRef.current!, []);
+  useEffect(() => { callbacks.current = { onChange, onSave }; }, [onChange, onSave]);
 
   useEffect(() => {
-    const host = hostRef.current!;
-
     if (!schemaRegistered) {
       jsonDefaults.setDiagnosticsOptions({
         validate: true,
@@ -73,54 +38,54 @@ export const JsonEditor = forwardRef<HTMLDivElement, JSONEditorProps>(({ json, o
       });
       schemaRegistered = true;
     }
-
-    if (!editorNode) {
-      editorNode = document.createElement("div");
-    }
-
-    host.appendChild(editorNode);
-
-    if (editorInstance) {
-      editorInstance.layout();
-      monaco.editor.setTheme(colorMode === "light" ? "min-light" : "one-dark-pro");
-
-      editorInstance.focus();
-
-      const editor = editorInstance;
-
-      const pasteDisposable = editor.onDidPaste(() => {
-        editor.getModel() && editor.getAction("editor.action.formatDocument")?.run();
-      });
-
-      const contentDisposable = editor.getModel()?.onDidChangeContent(debounce(() => onChange(editor.getValue()), 100));
-
-      if (onSave) {
-        editorInstance.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
-          onSave();
-        });
-      }
-
-      return () => {
-        pasteDisposable.dispose();
-        contentDisposable?.dispose();
-        editorNode?.remove();
-      };
-    }
-  }, []);
+    const model = monaco.editor.createModel(formatJson(initialJson.current), "json");
+    const editor = monaco.editor.create(hostRef.current!, {
+      model,
+      scrollBeyondLastLine: false,
+      minimap: { enabled: false },
+      padding: { top: 10, bottom: 10 },
+      lineNumbersMinChars: 4,
+      stickyScroll: { enabled: false },
+      automaticLayout: true,
+      quickSuggestions: { other: true, comments: false, strings: true },
+      suggest: { showWords: false },
+      tabSize: 2,
+    });
+    editorRef.current = editor;
+    const notifyChange = debounce(() => callbacks.current.onChange(editor.getValue()), 100);
+    const content = model.onDidChangeContent(() => notifyChange());
+    const blur = editor.onDidBlurEditorWidget(() => notifyChange.flush());
+    const paste = editor.onDidPaste(() => { void editor.getAction("editor.action.formatDocument")?.run(); });
+    const save = editor.addAction({
+      id: "marzban.save-config",
+      label: "Save configuration",
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS],
+      run: () => {
+        notifyChange.flush();
+        callbacks.current.onSave?.();
+      },
+    });
+    editor.focus();
+    return () => {
+      notifyChange.cancel();
+      content.dispose();
+      blur.dispose();
+      paste.dispose();
+      save.dispose();
+      editor.dispose();
+      model.dispose();
+      editorRef.current = null;
+    };
+  }, [schema]);
 
   useEffect(() => {
-    if (!editorInstance) return;
-    const next = JSON.stringify(json, null, 2);
-    if (editorInstance.getValue() !== next) {
-      editorInstance.setValue(next);
-    }
+    const editor = editorRef.current;
+    const next = formatJson(json);
+    if (editor && editor.getValue() !== next) editor.setValue(next);
   }, [json]);
-
   useEffect(() => {
-    monaco.editor.setTheme(colorMode === "light" ? "min-light" : "one-dark-pro");
-  }, [colorMode]);
+    monaco.editor.setTheme(resolvedTheme === "light" ? "min-light" : "one-dark-pro");
+  }, [resolvedTheme]);
 
-  return (
-    <div ref={hostRef} className="flex h-full min-h-0 grow flex-col overflow-hidden [&>div]:h-full [&>div]:grow" />
-  );
+  return <div ref={hostRef} className="h-full min-h-0 grow overflow-hidden" />;
 });

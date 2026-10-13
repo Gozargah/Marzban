@@ -1,3 +1,4 @@
+import { createLatestRequest } from "utils/latest-request";
 import { AlertCircle, ChartPie, Pencil, RefreshCw, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { useTheme } from "@/components/theme-provider";
@@ -12,9 +13,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { SimpleTooltip } from "@/components/ui/tooltip";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { resetStrategy } from "constants/UserSettings";
-import { FilterUsageType, useDashboard } from "contexts/DashboardContext";
+import { FilterUsageType, useDashboard } from "@/contexts/dashboard-context";
 import dayjs from "dayjs";
-import { FC, useEffect, useId, useState } from "react";
+import { FC, useEffect, useId, useRef, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import ReactDatePicker from "react-datepicker";
 import { Controller, FormProvider, Resolver, useForm, useWatch } from "react-hook-form";
@@ -145,16 +146,14 @@ const schema = z.discriminatedUnion("status", [
 ]);
 
 export const UserDialog: FC<UserDialogProps> = () => {
-  const {
-    editingUser,
-    isCreatingNewUser,
-    onCreateUser,
-    editUser,
-    fetchUserUsage,
-    onEditingUser,
-    createUser,
-    onDeletingUser,
-  } = useDashboard();
+  const editingUser = useDashboard((state) => state.editingUser);
+  const isCreatingNewUser = useDashboard((state) => state.isCreatingNewUser);
+  const onCreateUser = useDashboard((state) => state.onCreateUser);
+  const editUser = useDashboard((state) => state.editUser);
+  const fetchUserUsage = useDashboard((state) => state.fetchUserUsage);
+  const onEditingUser = useDashboard((state) => state.onEditingUser);
+  const createUser = useDashboard((state) => state.createUser);
+  const onDeletingUser = useDashboard((state) => state.onDeletingUser);
   const isEditing = !!editingUser;
   const isOpen = isCreatingNewUser || isEditing;
   const [loading, setLoading] = useState(false);
@@ -180,7 +179,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
       useDashboard.subscribe(
         (state) => state.inbounds,
         () => {
-          form.reset(getDefaultValues());
+          if (!useDashboard.getState().editingUser && !form.formState.isDirty) form.reset(getDefaultValues());
         },
       ),
     [],
@@ -194,8 +193,12 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const usageTitle = t("userDialog.total");
   const [usage, setUsage] = useState(createUsageConfig(colorMode, usageTitle));
   const [usageFilter, setUsageFilter] = useState("1m");
+  const usageRequest = useRef(createLatestRequest());
   const fetchUsageWithFilter = (query: FilterUsageType) => {
-    fetchUserUsage(editingUser!, query).then((data: any) => {
+    if (!editingUser) return;
+    const pending = usageRequest.current.start();
+    fetchUserUsage(editingUser, query, pending.signal).then((data: any) => {
+      if (!pending.isCurrent()) return;
       const labels = [];
       const series = [];
       for (const key in data.usages) {
@@ -203,18 +206,24 @@ export const UserDialog: FC<UserDialogProps> = () => {
         labels.push(data.usages[key].node_name);
       }
       setUsage(createUsageConfig(colorMode, usageTitle, series, labels));
-    });
+    }).catch(() => {
+      if (pending.isCurrent()) toast.error(t("userDialog.usageLoadError", { defaultValue: "Could not load usage." }));
+    }).finally(pending.finish);
   };
 
   useEffect(() => {
-    if (editingUser) {
-      form.reset(formatUser(editingUser));
+    if (editingUser) form.reset(formatUser(editingUser));
+  }, [editingUser, form]);
 
+  useEffect(() => {
+    if (editingUser && usageVisible) {
+      setUsageFilter("1m");
       fetchUsageWithFilter({
         start: dayjs().utc().subtract(30, "day").format("YYYY-MM-DDTHH:00:00"),
       });
     }
-  }, [editingUser]);
+    return () => usageRequest.current.cancel();
+  }, [editingUser, usageVisible]);
 
   const submit = (values: FormType) => {
     setLoading(true);

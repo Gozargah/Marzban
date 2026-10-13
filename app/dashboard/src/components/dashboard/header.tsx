@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DONATION_URL, REPO_URL } from "constants/Project";
-import { useDashboard } from "contexts/DashboardContext";
+import { useDashboard } from "@/contexts/dashboard-context";
 import useGetUser from "hooks/useGetUser";
 import { removeAuthToken } from "utils/authStorage";
 

@@ -30,7 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { useDashboard } from "contexts/DashboardContext";
+import { useDashboard } from "@/contexts/dashboard-context";
 import { formatBytes } from "utils/formatByte";
 import {
   ActionButtons,
@@ -50,7 +50,7 @@ function EmptySection({
   isFiltered: boolean;
   onResetFilters?: () => void;
 }) {
-  const { onCreateUser } = useDashboard();
+  const onCreateUser = useDashboard((state) => state.onCreateUser);
   const { t } = useTranslation();
 
   return (
@@ -92,13 +92,11 @@ function EmptySection({
 }
 
 export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
-  const {
-    filters,
-    users: { users },
-    users: totalUsers,
-    onEditingUser,
-    onFilterChange,
-  } = useDashboard();
+  const filters = useDashboard((state) => state.filters);
+  const users = useDashboard((state) => state.users.users);
+  const total = useDashboard((state) => state.users.total);
+  const onEditingUser = useDashboard((state) => state.onEditingUser);
+  const onFilterChange = useDashboard((state) => state.onFilterChange);
 
   const { t } = useTranslation();
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
@@ -106,7 +104,7 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
   const isFiltered = Boolean(
     filters.search ||
     filters.status ||
-    (users.length !== totalUsers.total && totalUsers.total > 0)
+    (users.length !== total && total > 0)
   );
 
   const handleSort = (column: string) => {

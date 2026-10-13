@@ -1,5 +1,5 @@
 import { Trash2 } from "lucide-react";
-import { useDashboard } from "contexts/DashboardContext";
+import { useDashboard } from "@/contexts/dashboard-context";
 import { FC, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -29,7 +29,9 @@ export const DeleteUserModal: FC<DeleteUserModalProps> = ({ deleteCallback }) =>
   const [error, setError] = useState<string | null>(null);
   const pendingRef = useRef(false);
   const cancelRef = useRef<HTMLButtonElement>(null);
-  const { deletingUser: user, onDeletingUser, deleteUser } = useDashboard();
+  const user = useDashboard((state) => state.deletingUser);
+  const onDeletingUser = useDashboard((state) => state.onDeletingUser);
+  const deleteUser = useDashboard((state) => state.deleteUser);
   const { t, i18n } = useTranslation();
 
   const onClose = () => {

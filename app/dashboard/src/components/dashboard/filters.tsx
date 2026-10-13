@@ -1,13 +1,13 @@
 import { RefreshCw, Search, X } from "lucide-react";
 import debounce from "lodash.debounce";
-import React, { FC, useEffect, useRef } from "react";
+import React, { FC, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
-import { useDashboard } from "contexts/DashboardContext";
+import { useDashboard } from "@/contexts/dashboard-context";
 
 export const ReloadIcon = React.forwardRef<
   SVGSVGElement,
@@ -19,16 +19,16 @@ ReloadIcon.displayName = "ReloadIcon";
 
 export type FilterProps = React.ComponentProps<"div">;
 
-const setSearchField = debounce((search: string) => {
-  useDashboard.getState().onFilterChange({
-    ...useDashboard.getState().filters,
-    offset: 0,
-    search,
-  });
-}, 300);
-
 export const Filters: FC<FilterProps> = ({ className, ...props }) => {
-  const { loading, filters, onFilterChange, refetchUsers, onCreateUser } = useDashboard();
+  const setSearchField = useMemo(() => debounce((search: string) => {
+    useDashboard.getState().onFilterChange({ offset: 0, search });
+  }, 300), []);
+  const usersError = useDashboard((state) => state.usersError);
+  const loading = useDashboard((state) => state.loading);
+  const filters = useDashboard((state) => state.filters);
+  const onFilterChange = useDashboard((state) => state.onFilterChange);
+  const refetchUsers = useDashboard((state) => state.refetchUsers);
+  const onCreateUser = useDashboard((state) => state.onCreateUser);
   const { t } = useTranslation();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -49,26 +49,25 @@ export const Filters: FC<FilterProps> = ({ className, ...props }) => {
   };
 
   useEffect(() => {
-    let lastSearch = useDashboard.getState().filters.search ?? "";
+    const lastSearch = useDashboard.getState().filters.search ?? "";
     if (searchInputRef.current) {
       searchInputRef.current.value = lastSearch;
     }
 
-    const unsubscribe = useDashboard.subscribe((state) => {
-      const nextSearch = state.filters.search ?? "";
-      if (nextSearch !== lastSearch) {
-        lastSearch = nextSearch;
+    const unsubscribe = useDashboard.subscribe(
+      (state) => state.filters.search ?? "",
+      (nextSearch) => {
         if (searchInputRef.current && searchInputRef.current.value !== nextSearch) {
           searchInputRef.current.value = nextSearch;
         }
-      }
-    });
+      },
+    );
 
     return () => {
       unsubscribe();
       setSearchField.cancel();
     };
-  }, []);
+  }, [setSearchField]);
 
   return (
     <div
@@ -80,6 +79,9 @@ export const Filters: FC<FilterProps> = ({ className, ...props }) => {
       )}
       {...props}
     >
+      {usersError && <p role="alert" className="col-span-full text-sm text-destructive">
+        {t("usersLoadError", { defaultValue: "Could not load users. Use refresh to try again." })}
+      </p>}
       <div className="col-span-1 order-2 md:order-1 md:col-span-2 lg:col-span-1">
         <div className="relative w-full">
           <Search

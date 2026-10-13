@@ -1,10 +1,12 @@
 import { FileMinus } from "lucide-react";
-import { useDashboard } from "contexts/DashboardContext";
+import { useDashboard } from "@/contexts/dashboard-context";
 import { Trans, useTranslation } from "react-i18next";
 import { ConfirmationDialog } from "./confirmation-dialog";
 export const ResetIcon = FileMinus;
 export function ResetAllUsageModal() {
-  const { isResetingAllUsage, onResetAllUsage, resetAllUsage } = useDashboard();
+  const isResetingAllUsage = useDashboard((state) => state.isResetingAllUsage);
+  const onResetAllUsage = useDashboard((state) => state.onResetAllUsage);
+  const resetAllUsage = useDashboard((state) => state.resetAllUsage);
   const { t } = useTranslation();
   return (
     <ConfirmationDialog

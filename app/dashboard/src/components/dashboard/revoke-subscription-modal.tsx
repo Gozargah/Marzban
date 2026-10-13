@@ -1,10 +1,11 @@
 import { RotateCcw } from "lucide-react";
-import { useDashboard } from "contexts/DashboardContext";
+import { useDashboard } from "@/contexts/dashboard-context";
 import { Trans, useTranslation } from "react-i18next";
 import { ConfirmationDialog } from "./confirmation-dialog";
 export const ResetIcon = RotateCcw;
 export function RevokeSubscriptionModal() {
-  const { revokeSubscriptionUser: user, revokeSubscription } = useDashboard();
+  const user = useDashboard((state) => state.revokeSubscriptionUser);
+  const revokeSubscription = useDashboard((state) => state.revokeSubscription);
   const { t } = useTranslation();
   return (
     <ConfirmationDialog

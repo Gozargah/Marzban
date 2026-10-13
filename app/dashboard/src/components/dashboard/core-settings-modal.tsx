@@ -4,8 +4,8 @@ import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Maximize2, Minimize2, RefreshCw, Settings } from "lucide-react";
 import { toast } from "sonner";
-import { useDashboard } from "contexts/DashboardContext";
-import { useCoreSettings } from "contexts/CoreSettingsContext";
+import { useDashboard } from "@/contexts/dashboard-context";
+import { useCoreSettings } from "@/contexts/core-settings-context";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -23,8 +23,15 @@ const JsonEditor = lazy(() => import("../JsonEditor").then((module) => ({ defaul
 export const ReloadIcon = RefreshCw;
 
 export function CoreSettingsModal() {
-  const { isEditingCore } = useDashboard();
-  const { config, version, isLoading, isPostLoading, fetchCoreSettings, updateConfig, restartCore } = useCoreSettings();
+  const isEditingCore = useDashboard((state) => state.isEditingCore);
+  const config = useCoreSettings((state) => state.config);
+  const version = useCoreSettings((state) => state.version);
+  const isLoading = useCoreSettings((state) => state.isLoading);
+  const isPostLoading = useCoreSettings((state) => state.isPostLoading);
+  const fetchCoreSettings = useCoreSettings((state) => state.fetchCoreSettings);
+  const cancelFetch = useCoreSettings((state) => state.cancelFetch);
+  const updateConfig = useCoreSettings((state) => state.updateConfig);
+  const restartCore = useCoreSettings((state) => state.restartCore);
   const { t, i18n } = useTranslation();
   const form = useForm({ defaultValues: { config: "" } });
   const formRef = useRef<HTMLFormElement>(null);
@@ -37,9 +44,10 @@ export function CoreSettingsModal() {
     if (isEditingCore) {
       dirty.current = false;
       setFullHeight(false);
-      fetchCoreSettings();
+      fetchCoreSettings().catch(() => toast.error(t("core.generalErrorMessage")));
     }
-  }, [isEditingCore, fetchCoreSettings]);
+    return cancelFetch;
+  }, [isEditingCore, fetchCoreSettings, cancelFetch]);
   useEffect(() => {
     if (isEditingCore) form.reset({ config });
   }, [config, isEditingCore, form]);
@@ -113,7 +121,7 @@ export function CoreSettingsModal() {
                   {version && <Badge variant="secondary">Xray v{version}</Badge>}
                 </div>
                 <div className="relative min-h-0 flex-1 overflow-hidden rounded-md border border-border [&>div]:h-full">
-                  {isEditingCore && (
+                  {isEditingCore && !isLoading && (
                     <Controller
                       control={form.control}
                       name="config"

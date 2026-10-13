@@ -1,15 +1,13 @@
 import { createBrowserRouter } from "react-router";
-import { fetch } from "../service/http";
-import { getAuthToken } from "../utils/authStorage";
+import { adminQueryOptions } from "utils/admin-query";
+import { queryClient } from "utils/react-query";
 import { Dashboard } from "./dashboard";
 import { Login } from "./login";
-const fetchAdminLoader = async () => {
-  return await fetch("/admin", {
-    headers: {
-      Authorization: `Bearer ${getAuthToken()}`,
-    },
-  });
-};
+const fetchAdminLoader = () => queryClient.fetchQuery({
+  ...adminQueryOptions,
+  // Revalidate access on navigation; the header consumes the same fresh cache.
+  staleTime: 0,
+});
 export const router = createBrowserRouter([
 
   {

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react"
 
 type Theme = "dark" | "light" | "system"
 
@@ -59,18 +59,16 @@ export function ThemeProvider({
     )
   }, [resolvedTheme])
 
-  const value = {
-    theme,
-    resolvedTheme,
-    setTheme: (theme: Theme) => {
-      try {
-        localStorage.setItem(storageKey, theme)
-      } catch {
-        // Theme switching still works when browser storage is unavailable.
-      }
-      setTheme(theme)
-    },
-  }
+  const updateTheme = useCallback((theme: Theme) => {
+    try {
+      localStorage.setItem(storageKey, theme)
+    } catch {
+      // Theme switching still works when browser storage is unavailable.
+    }
+    setTheme(theme)
+  }, [storageKey])
+  const value = useMemo(() => ({ theme, resolvedTheme, setTheme: updateTheme }),
+    [theme, resolvedTheme, updateTheme])
 
   return (
     <ThemeProviderContext.Provider {...props} value={value}>

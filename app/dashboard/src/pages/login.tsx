@@ -17,6 +17,7 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { fetch } from "service/http";
+import { queryClient } from "utils/react-query";
 import { removeAuthToken, setAuthToken } from "utils/authStorage";
 
 const loginSchema = z.object({
@@ -72,6 +73,7 @@ export function Login() {
 
     try {
       const { access_token } = await loginMutation.mutateAsync(values);
+      queryClient.clear();
       setAuthToken(access_token);
       await navigate("/", { replace: true });
     } catch (error: unknown) {

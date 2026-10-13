@@ -1,14 +1,20 @@
 import { lazy, Suspense, useEffect } from "react";
+import { Spinner } from "@/components/ui/spinner";
+import { useTranslation } from "react-i18next";
 import { router } from "@/pages/router";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/dashboard/header";
 import { Statistics } from "@/components/dashboard/statistics";
 import { Filters } from "@/components/dashboard/filters";
 import { UsersTable } from "@/components/dashboard/table/users-table";
-import { UserDialog } from "@/components/dashboard/user-dialog";
-import { DeleteUserModal } from "@/components/dashboard/delete-user-modal";
-import { fetchInbounds, FilterType, useDashboard } from "contexts/DashboardContext";
+import { cancelUsersRequest, fetchInbounds, FilterType, useDashboard } from "@/contexts/dashboard-context";
 
+const UserDialog = lazy(() =>
+  import("@/components/dashboard/user-dialog").then((module) => ({ default: module.UserDialog })),
+);
+const DeleteUserModal = lazy(() =>
+  import("@/components/dashboard/delete-user-modal").then((module) => ({ default: module.DeleteUserModal })),
+);
 const QRCodeDialog = lazy(() =>
   import("@/components/dashboard/qr-code-dialog").then((module) => ({ default: module.QRCodeDialog })),
 );
@@ -49,6 +55,9 @@ function restoreFilters(search: string) {
 }
 
 export function Dashboard() {
+  const { t } = useTranslation();
+  const showUserDialog = useDashboard((state) => state.isCreatingNewUser || !!state.editingUser);
+  const showDeleteUser = useDashboard((state) => !!state.deletingUser);
   const isEditingHosts = useDashboard((state) => state.isEditingHosts);
   const isEditingNodes = useDashboard((state) => state.isEditingNodes);
   const isShowingNodesUsage = useDashboard((state) => state.isShowingNodesUsage);
@@ -60,14 +69,22 @@ export function Dashboard() {
 
   useEffect(() => {
     restoreFilters(router.state.location.search);
-    fetchInbounds();
+    const controller = new AbortController();
+    fetchInbounds(controller.signal).catch(() => {
+      // Inbound settings can be retried by opening/saving the core configuration.
+    });
     // One subscription per mount, with no delayed callbacks left after unmount.
     let previousSearch = router.state.location.search;
-    return router.subscribe((state) => {
+    const unsubscribe = router.subscribe((state) => {
       if (state.location.search === previousSearch) return;
       previousSearch = state.location.search;
       if (state.historyAction === "POP") restoreFilters(previousSearch);
     });
+    return () => {
+      unsubscribe();
+      controller.abort();
+      cancelUsersRequest();
+    };
   }, []);
 
   return (
@@ -78,9 +95,10 @@ export function Dashboard() {
         <Filters />
         <UsersTable />
       </main>
-      <UserDialog />
-      <DeleteUserModal />
-      <Suspense fallback={null}>
+      <Suspense fallback={<div role="status" aria-label={t("loading", { defaultValue: "Loading…" })}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 backdrop-blur-xs"><Spinner className="size-6" /></div>}>
+        {showUserDialog && <UserDialog />}
+        {showDeleteUser && <DeleteUserModal />}
         {showQRCode && <QRCodeDialog />}
         {isEditingHosts && <HostsDialog />}
         {showResetUsage && <ResetUserUsageModal />}

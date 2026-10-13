@@ -31,7 +31,7 @@ import { Progress } from "@/components/ui/progress";
 import { SimpleTooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { resetStrategy } from "constants/UserSettings";
-import { useDashboard } from "contexts/DashboardContext";
+import { useDashboard } from "@/contexts/dashboard-context";
 import { User } from "types/User";
 import { relativeExpiryDate } from "utils/dateFormatter";
 import { formatBytes } from "utils/formatByte";
@@ -210,7 +210,9 @@ export type ActionButtonsProps = {
 };
 
 export const ActionButtons: FC<ActionButtonsProps> = ({ user, className }) => {
-  const { setQRCode, setSubLink, onEditingUser } = useDashboard();
+  const setQRCode = useDashboard((state) => state.setQRCode);
+  const setSubLink = useDashboard((state) => state.setSubLink);
+  const onEditingUser = useDashboard((state) => state.onEditingUser);
   const { t } = useTranslation();
   const proxyLinks = user.links.join("\r\n");
   const subUrl = user.subscription_url.startsWith("/")
@@ -332,7 +334,8 @@ export const ActionButtons: FC<ActionButtonsProps> = ({ user, className }) => {
 };
 
 export function UsernameHeader() {
-  const { filters, onFilterChange } = useDashboard();
+  const filters = useDashboard((state) => state.filters);
+  const onFilterChange = useDashboard((state) => state.onFilterChange);
   const { t } = useTranslation();
 
   const handleSort = () => {
@@ -365,7 +368,8 @@ export function UsernameHeader() {
 }
 
 export function StatusHeader() {
-  const { filters, onFilterChange } = useDashboard();
+  const filters = useDashboard((state) => state.filters);
+  const onFilterChange = useDashboard((state) => state.onFilterChange);
   const { t } = useTranslation();
 
   const handleSort = () => {
@@ -452,7 +456,8 @@ export function StatusHeader() {
 }
 
 export function DataUsageHeader() {
-  const { filters, onFilterChange } = useDashboard();
+  const filters = useDashboard((state) => state.filters);
+  const onFilterChange = useDashboard((state) => state.onFilterChange);
   const { t } = useTranslation();
 
   const handleSort = () => {

@@ -1,17 +1,9 @@
-import { getAuthToken } from "utils/authStorage";
-import { fetch } from "service/http";
+import { adminQueryOptions } from "utils/admin-query";
 import { UserApi, UseGetUserReturn } from "types/User";
 import { useQuery } from "@tanstack/react-query";
 
-const fetchUser = async () => {
-  return await fetch("/admin");
-}
-
 const useGetUser = (): UseGetUserReturn => {
-  const { data, isError, isLoading, isSuccess, error } = useQuery<UserApi, Error>({
-    queryFn: fetchUser,
-    queryKey: ["user"]
-  })
+  const { data, isError, isLoading, isSuccess, error } = useQuery(adminQueryOptions);
 
   const userDataEmpty: UserApi = {
     discord_webook: "",

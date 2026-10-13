@@ -4,7 +4,7 @@ import { ApexOptions } from "apexcharts";
 import ReactDatePicker from "react-datepicker";
 import { useTranslation } from "react-i18next";
 import { Calendar } from "lucide-react";
-import { FilterUsageType } from "contexts/DashboardContext";
+import { FilterUsageType } from "@/contexts/dashboard-context";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { generateDistinctColors } from "utils/color";

@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight, QrCode } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
-import { useDashboard } from "contexts/DashboardContext";
+import { useDashboard } from "@/contexts/dashboard-context";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function QRCodeDialog() {
-  const { QRcodeLinks, setQRCode, setSubLink, subscribeUrl } = useDashboard();
+  const QRcodeLinks = useDashboard((state) => state.QRcodeLinks);
+  const setQRCode = useDashboard((state) => state.setQRCode);
+  const setSubLink = useDashboard((state) => state.setSubLink);
+  const subscribeUrl = useDashboard((state) => state.subscribeUrl);
   const { t, i18n } = useTranslation();
   const [index, setIndex] = useState(0);
   useEffect(() => setIndex(0), [QRcodeLinks]);
