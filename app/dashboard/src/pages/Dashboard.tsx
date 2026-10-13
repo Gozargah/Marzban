@@ -20,6 +20,7 @@ import { router } from "@/pages/router";
 import { Statistics } from "@/components/dashboard/statistics";
 import { Filters } from "@/components/dashboard/filters";
 import { UsersTable } from "@/components/dashboard/table/users-table";
+import { UserDialog } from "@/components/dashboard/user-dialog";
 
 
 export const Dashboard: FC = () => {
@@ -59,9 +60,11 @@ export const Dashboard: FC = () => {
         <Statistics />
         <Filters />
         <UsersTable />
-        {/* <Statistics mt="4" />
 
+        {/* dialogs */}
         <UserDialog />
+        {/*
+
         <DeleteUserModal />
         <QRCodeDialog />
         <HostsDialog />

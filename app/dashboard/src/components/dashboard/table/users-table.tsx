@@ -1,5 +1,5 @@
 import { useTable } from "@tanstack/react-table";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ChevronDown,
@@ -7,7 +7,6 @@ import {
   Pencil,
   RotateCcw,
 } from "lucide-react";
-
 import { ReactComponent as AddFileIcon } from "assets/add_file.svg";
 import { OnlineBadge } from "@/components/dashboard/table/online-badge";
 import { OnlineStatus } from "@/components/dashboard/table/online-status";

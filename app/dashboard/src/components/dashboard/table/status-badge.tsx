@@ -1,15 +1,10 @@
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
+import { AlertCircle, Ban, Clock, type LucideIcon, Wifi } from "lucide-react";
 import { Status as UserStatusType } from "types/User";
 import { relativeExpiryDate } from "utils/dateFormatter";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import {
-  ClockIcon,
-  ExclamationCircleIcon,
-  NoSymbolIcon,
-  WifiIcon,
-} from "@heroicons/react/24/outline";
 
 type UserStatusProps = {
   expiryDate?: number | null;
@@ -24,17 +19,17 @@ const statusConfig: Record<
   string,
   {
     variant: "success" | "warning" | "destructive" | "purple" | "secondary";
-    icon: typeof WifiIcon;
+    icon: LucideIcon;
   }
 > = {
-  active: { variant: "success", icon: WifiIcon },
-  connected: { variant: "success", icon: WifiIcon },
-  disabled: { variant: "secondary", icon: NoSymbolIcon },
-  expired: { variant: "warning", icon: ClockIcon },
-  on_hold: { variant: "purple", icon: ClockIcon },
-  limited: { variant: "destructive", icon: ExclamationCircleIcon },
-  connecting: { variant: "warning", icon: WifiIcon },
-  error: { variant: "destructive", icon: ExclamationCircleIcon },
+  active: { variant: "success", icon: Wifi },
+  connected: { variant: "success", icon: Wifi },
+  disabled: { variant: "secondary", icon: Ban },
+  expired: { variant: "warning", icon: Clock },
+  on_hold: { variant: "purple", icon: Clock },
+  limited: { variant: "destructive", icon: AlertCircle },
+  connecting: { variant: "warning", icon: Wifi },
+  error: { variant: "destructive", icon: AlertCircle },
 };
 
 export const StatusBadge: FC<UserStatusProps> = ({
@@ -47,7 +42,7 @@ export const StatusBadge: FC<UserStatusProps> = ({
 }) => {
   const { t } = useTranslation();
   const dateInfo = relativeExpiryDate(expiryDate);
-  const config = statusConfig[userStatus] || { variant: "secondary", icon: WifiIcon };
+  const config = statusConfig[userStatus] || { variant: "secondary", icon: Wifi };
   const Icon = config.icon;
 
   return (

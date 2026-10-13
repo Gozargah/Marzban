@@ -44,12 +44,12 @@ import { useTranslation } from "react-i18next";
 import { ProxyKeys, ProxyType, User, UserCreate, UserInbounds } from "types/User";
 import { relativeExpiryDate } from "utils/dateFormatter";
 import { z } from "zod";
-import { DeleteIcon } from "./DeleteUserModal";
-import { Icon } from "./Icon";
-import { Input } from "./Input";
-import { RadioGroup } from "./RadioGroup";
-import { UsageFilter, createUsageConfig } from "./UsageFilter";
-import { ReloadIcon } from "./dashboard/filters";
+import { DeleteIcon } from "../DeleteUserModal";
+import { Icon } from "../Icon";
+import { Input } from "../Input";
+import { RadioGroup } from "../RadioGroup";
+import { UsageFilter, createUsageConfig } from "../UsageFilter";
+import { ReloadIcon } from "./filters";
 import classNames from "classnames";
 
 const AddUserIcon = chakra(UserPlusIcon, {
