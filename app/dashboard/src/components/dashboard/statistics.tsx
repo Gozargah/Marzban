@@ -1,3 +1,4 @@
+import { useLocale } from "@/hooks/use-locale";
 import { useQuery } from "@tanstack/react-query";
 import { ChartColumn, MemoryStick, Users, type LucideIcon } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
@@ -46,7 +47,8 @@ function StatisticCard({ title, content, icon: Icon }: StatisticCardProps) {
 export const StatisticsQueryKey = "statistics-query-key";
 
 export function Statistics({ className, ...props }: ComponentProps<"section">) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { direction } = useLocale();
   const { data, isPending, isError, isFetching, refetch } = useQuery({
     queryKey: [StatisticsQueryKey],
     queryFn: ({ signal }) => fetch<SystemStatistics>("/system", { signal, retry: 0 }),
@@ -61,7 +63,7 @@ export function Statistics({ className, ...props }: ComponentProps<"section">) {
     <section
       aria-label={t("statistics.title", { defaultValue: "System statistics" })}
       aria-busy={isPending}
-      dir={i18n.dir()}
+      dir={direction}
       className={cn("mt-4 space-y-4", className)}
       {...props}
     >

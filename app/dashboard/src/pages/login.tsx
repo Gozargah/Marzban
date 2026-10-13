@@ -1,3 +1,4 @@
+import { useLocale } from "@/hooks/use-locale";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { AlertCircle, LogIn } from "lucide-react";
@@ -44,7 +45,8 @@ async function authenticate(values: LoginValues): Promise<TokenResponse> {
 export function Login() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { direction, language } = useLocale();
   const {
     register,
     handleSubmit,
@@ -90,8 +92,8 @@ export function Login() {
   return (
     <div
       className="flex min-h-dvh w-full flex-col justify-between gap-8 bg-background p-6 text-foreground"
-      dir={i18n.dir()}
-      lang={i18n.resolvedLanguage || i18n.language}
+      dir={direction}
+      lang={language}
     >
       <div className="w-full">
         <div className="flex justify-end">

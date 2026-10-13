@@ -34,7 +34,7 @@ function network() {
   }};
 }
 function dashboard(net) {
-  return load('contexts/DashboardContext.tsx', {
+  return load('contexts/dashboard-context.tsx', {
     '@/pages/router': { router: { navigate() {} } },
     '@/components/dashboard/statistics': { StatisticsQueryKey: 'statistics' },
     'service/http': net,
@@ -125,7 +125,7 @@ test('unmount cancellation prevents late users data from entering the store', as
 
 test('closing hosts cancels reads; a late read cannot overwrite a successful save', async () => {
   const net = network();
-  const { useHosts: store } = load('contexts/HostsContext.tsx', {
+  const { useHosts: store } = load('contexts/hosts-context.tsx', {
     'service/http': net, 'utils/latest-request': latest,
   });
   const reading = store.getState().fetchHosts();
@@ -146,9 +146,9 @@ test('closing hosts cancels reads; a late read cannot overwrite a successful sav
 
 test('core parallel reads update atomically; closing cancels both requests', async () => {
   const net = network();
-  const { useCoreSettings: store } = load('contexts/CoreSettingsContext.tsx', {
+  const { useCoreSettings: store } = load('contexts/core-settings-context.tsx', {
     'service/http': net, 'utils/latest-request': latest,
-    '@/contexts/DashboardContext': { fetchInbounds: async () => {} },
+    '@/contexts/dashboard-context': { fetchInbounds: async () => {} },
   });
   const reading = store.getState().fetchCoreSettings();
   net.calls[0].resolve({ version: 'demo', started: true });
@@ -267,9 +267,9 @@ test('admin routing and header can share a fresh cached read', async () => {
 
 test('core config uses a stable string draft and sends a JSON object to the API', async () => {
   const net = network();
-  const { useCoreSettings: store } = load('contexts/CoreSettingsContext.tsx', {
+  const { useCoreSettings: store } = load('contexts/core-settings-context.tsx', {
     'service/http': net, 'utils/latest-request': latest,
-    '@/contexts/DashboardContext': { fetchInbounds: async () => {} },
+    '@/contexts/dashboard-context': { fetchInbounds: async () => {} },
   });
   const config = { inbounds: [], outbounds: [] };
   const reading = store.getState().fetchCoreSettings();

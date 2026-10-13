@@ -16,6 +16,16 @@ declare module "i18next" {
   }
 }
 
+function syncLanguageMetadata() {
+  const language = i18n.resolvedLanguage || i18n.language || "en";
+  dayjs.locale(language);
+  document.documentElement.lang = language;
+  document.documentElement.dir = i18n.dir(language);
+}
+
+// Update the document before React's language subscribers render translated UI.
+i18n.on("languageChanged", syncLanguageMetadata);
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
@@ -42,16 +52,8 @@ i18n
         ]),
       },
     },
-    function (err, t) {
-      dayjs.locale(i18n.language);
-      document.documentElement.lang = i18n.resolvedLanguage || i18n.language || "en";
-    }
+    syncLanguageMetadata
   );
-
-i18n.on("languageChanged", (lng) => {
-  dayjs.locale(lng);
-  document.documentElement.lang = lng;
-});
 
 // DataPicker
 registerLocale("zh-cn", zh);

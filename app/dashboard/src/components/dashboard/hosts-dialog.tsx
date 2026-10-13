@@ -1,3 +1,4 @@
+import { useLocale } from "@/hooks/use-locale";
 import { useEffect, useId, useRef, useState } from "react";
 import { Copy, ArrowDown, ArrowUp, Info, Link2, Trash2, Plus, Search, ChevronDown, Server, Undo2, Check, Layers, Settings2, X } from "lucide-react";
 import { z } from "zod";
@@ -102,13 +103,14 @@ const variableHints = [
   ["TRANSPORT", "proxyMethod"],
 ];
 function FieldHelp({ name, title }: { name: string; title: string }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { direction } = useLocale();
   return (
     <Popover>
       <PopoverTrigger aria-label={t("hostsDialog.fieldHelp", { defaultValue: "Help for {{field}}", field: title })} className="inline-flex shrink-0 text-muted-foreground">
         <Info className="size-4" />
       </PopoverTrigger>
-      <PopoverContent dir={i18n.dir()} className="max-h-[min(32rem,70dvh)] w-80 max-w-[calc(100vw-2rem)] space-y-2 overflow-y-auto overscroll-contain">
+      <PopoverContent dir={direction} className="max-h-[min(32rem,70dvh)] w-80 max-w-[calc(100vw-2rem)] space-y-2 overflow-y-auto overscroll-contain">
         {name === "remark" || name === "address" ? (
           <>
             <p>{t("hostsDialog.desc")}</p>
@@ -537,7 +539,8 @@ function CreateHostSheet({ open, keys, initialInbound, onClose, onCreate }: {
   open: boolean; keys: string[]; initialInbound: string; onClose: () => void;
   onCreate: (host: HostFormValues[string][number], targets: string[]) => void;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { direction } = useLocale();
   const [targets, setTargets] = useState<string[]>([]);
   const [discardOpen, setDiscardOpen] = useState(false);
   const cancelRef = useRef<HTMLButtonElement>(null);
@@ -555,7 +558,7 @@ function CreateHostSheet({ open, keys, initialInbound, onClose, onCreate }: {
   const allSelected = keys.length > 0 && targets.length === keys.length;
   return <>
     <Sheet open={open} onOpenChange={(next) => { if (!next) close(); }}>
-      <SheetContent dir={i18n.dir()} side={i18n.dir() === "rtl" ? "left" : "right"} className="w-full! sm:max-w-xl! gap-0 overflow-hidden">
+      <SheetContent dir={direction} side={direction === "rtl" ? "left" : "right"} className="w-full! sm:max-w-xl! gap-0 overflow-hidden">
         <SheetHeader className="shrink-0 border-b px-6 py-5 pe-14">
           <SheetTitle className="text-lg">{t("hostsDialog.addHost")}</SheetTitle>
           <SheetDescription>{t("hostsDialog.createDescription", { defaultValue: "Choose the inbounds, then configure your host. Hosts are added to your draft until you save." })}</SheetDescription>
@@ -598,7 +601,7 @@ function CreateHostSheet({ open, keys, initialInbound, onClose, onCreate }: {
       </SheetContent>
     </Sheet>
     <AlertDialog open={discardOpen} onOpenChange={setDiscardOpen}>
-      <AlertDialogContent dir={i18n.dir()} initialFocus={cancelRef}>
+      <AlertDialogContent dir={direction} initialFocus={cancelRef}>
         <AlertDialogHeader><AlertDialogTitle>{t("hostsDialog.discardTitle")}</AlertDialogTitle><AlertDialogDescription>{t("hostsDialog.discardDescription")}</AlertDialogDescription></AlertDialogHeader>
         <AlertDialogFooter><Button ref={cancelRef} variant="outline" onClick={() => setDiscardOpen(false)}>{t("hostsDialog.keepEditing")}</Button>
           <Button variant="destructive" onClick={() => { setDiscardOpen(false); onClose(); }}>{t("hostsDialog.discard")}</Button></AlertDialogFooter>
@@ -617,7 +620,8 @@ export function HostsDialog() {
   const setHosts = useHosts((state) => state.setHosts);
   const isLoading = useHosts((state) => state.isLoading);
   const isPostLoading = useHosts((state) => state.isPostLoading);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { direction } = useLocale();
   const [createOpen, setCreateOpen] = useState(false);
   const [creationVersion, setCreationVersion] = useState(0);
   const [draftVersion, setDraftVersion] = useState(0);
@@ -700,10 +704,10 @@ export function HostsDialog() {
     }
   };
   return (
-    <DirectionProvider direction={i18n.dir() === "rtl" ? "rtl" : "ltr"}>
+    <DirectionProvider direction={direction === "rtl" ? "rtl" : "ltr"}>
       <Sheet open={isEditingHosts} onOpenChange={(open) => { if (!open) close(); }}
         onOpenChangeComplete={(open) => { if (!open) { setSelectedInbound(""); setError(null); } }}>
-        <SheetContent dir={i18n.dir()} className="w-full! sm:max-w-2xl! gap-0 overflow-hidden" side={i18n.dir() === "rtl" ? "left" : "right"}
+        <SheetContent dir={direction} className="w-full! sm:max-w-2xl! gap-0 overflow-hidden" side={direction === "rtl" ? "left" : "right"}
           showCloseButton={!isPostLoading} initialFocus={titleRef}>
           <SheetHeader className="shrink-0 border-b px-5 py-5 pe-14 sm:px-6">
             <SheetTitle ref={titleRef} tabIndex={-1} className="flex items-center gap-2 text-lg outline-none"><span className="flex size-9 items-center justify-center rounded-none bg-primary text-primary-foreground"><Link2 className="size-5" /></span>{t("header.hostSettings")}</SheetTitle>
@@ -759,7 +763,7 @@ export function HostsDialog() {
           toast.success(t("hostsDialog.addedToDraft", { defaultValue: "Host added to {{count}} inbounds. Save all changes to publish it.", count: targets.length }));
         }} />
       <AlertDialog open={confirmClose} onOpenChange={setConfirmClose}>
-        <AlertDialogContent dir={i18n.dir()} initialFocus={cancelDiscardRef}>
+        <AlertDialogContent dir={direction} initialFocus={cancelDiscardRef}>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("hostsDialog.discardTitle")}</AlertDialogTitle>
             <AlertDialogDescription>{t("hostsDialog.discardDescription")}</AlertDialogDescription>

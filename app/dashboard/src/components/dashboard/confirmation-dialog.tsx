@@ -1,3 +1,4 @@
+import { useLocale } from "@/hooks/use-locale";
 import { ReactNode, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -36,7 +37,8 @@ export function ConfirmationDialog({
   icon: ReactNode;
   destructive?: boolean;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { direction } = useLocale();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const lock = useRef(false);
@@ -71,7 +73,7 @@ export function ConfirmationDialog({
         if (!next) close();
       }}
     >
-      <AlertDialogContent className="sm:max-w-sm" initialFocus={cancel} dir={i18n.dir()} aria-busy={pending}>
+      <AlertDialogContent className="sm:max-w-sm" initialFocus={cancel} dir={direction} aria-busy={pending}>
         <AlertDialogHeader>
           <span
             aria-hidden="true"

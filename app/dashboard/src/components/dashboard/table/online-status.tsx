@@ -1,3 +1,4 @@
+import { useLocale } from "@/hooks/use-locale";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
@@ -17,7 +18,8 @@ const convertDateFormat = (lastOnline: string | null): number | null => {
 };
 
 export const OnlineStatus: FC<UserStatusProps> = ({ lastOnline, className }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { language } = useLocale();
   const currentTimeInSeconds = Math.floor(Date.now() / 1000);
   const unixTime = convertDateFormat(lastOnline);
 
@@ -30,7 +32,7 @@ export const OnlineStatus: FC<UserStatusProps> = ({ lastOnline, className }) => 
       const seconds = -timeDifferenceInSeconds;
       const units = [[31536000, "year"], [2592000, "month"], [86400, "day"], [3600, "hour"], [60, "minute"], [1, "second"]] as const;
       const [size, unit] = units.find(([size]) => Math.abs(seconds) >= size) || units[units.length - 1];
-      label = new Intl.RelativeTimeFormat(i18n.resolvedLanguage || i18n.language, { numeric: "auto" }).format(Math.trunc(seconds / size), unit);
+      label = new Intl.RelativeTimeFormat(language, { numeric: "auto" }).format(Math.trunc(seconds / size), unit);
     }
   }
 

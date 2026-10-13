@@ -1,3 +1,4 @@
+import { useLocale } from "@/hooks/use-locale";
 import { Trash2 } from "lucide-react";
 import { useDashboard } from "@/contexts/dashboard-context";
 import { FC, useRef, useState } from "react";
@@ -32,7 +33,8 @@ export const DeleteUserModal: FC<DeleteUserModalProps> = ({ deleteCallback }) =>
   const user = useDashboard((state) => state.deletingUser);
   const onDeletingUser = useDashboard((state) => state.onDeletingUser);
   const deleteUser = useDashboard((state) => state.deleteUser);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { direction } = useLocale();
 
   const onClose = () => {
     if (pendingRef.current) return;
@@ -69,7 +71,7 @@ export const DeleteUserModal: FC<DeleteUserModalProps> = ({ deleteCallback }) =>
         if (!open) onClose();
       }}
     >
-      <AlertDialogContent className="sm:max-w-sm" initialFocus={cancelRef} dir={i18n.dir()} aria-busy={loading}>
+      <AlertDialogContent className="sm:max-w-sm" initialFocus={cancelRef} dir={direction} aria-busy={loading}>
         <AlertDialogHeader>
           <span
             className="mb-2 flex size-10 items-center justify-center rounded-lg bg-destructive/10 text-destructive"

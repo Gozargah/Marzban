@@ -1,3 +1,4 @@
+import { useLocale } from "@/hooks/use-locale";
 import { useState } from "react";
 import dayjs, { ManipulateType } from "dayjs";
 import { ApexOptions } from "apexcharts";
@@ -20,7 +21,8 @@ const customRanges = [
   { title: "months", values: ["1m", "2m", "3m", "6m", "8m"] },
 ];
 export function UsageFilter({ defaultValue, onChange }: UsageFilterProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { direction, language } = useLocale();
   const [value, setValue] = useState(defaultValue);
   const [open, setOpen] = useState(false);
   const [absolute, setAbsolute] = useState(false);
@@ -61,7 +63,7 @@ export function UsageFilter({ defaultValue, onChange }: UsageFilterProps) {
           {t("userDialog.custom")}
           {!ranges.includes(value) && value !== "custom" ? ` (${value})` : ""}
         </PopoverTrigger>
-        <PopoverContent side="bottom" className="w-96 max-w-[calc(100vw-2rem)] max-h-[min(32rem,70dvh)] overflow-y-auto" dir={i18n.dir()}>
+        <PopoverContent side="bottom" className="w-96 max-w-[calc(100vw-2rem)] max-h-[min(32rem,70dvh)] overflow-y-auto" dir={direction}>
           <div className="mb-3 flex gap-2">
             <Button
               type="button"
@@ -85,7 +87,7 @@ export function UsageFilter({ defaultValue, onChange }: UsageFilterProps) {
           {absolute ? (
             <div className="overflow-x-auto">
               <ReactDatePicker
-                locale={i18n.language.toLowerCase()}
+                locale={(language.startsWith("zh") ? "zh-cn" : language.split("-")[0])}
                 selected={dates[0]}
                 startDate={dates[0]}
                 endDate={dates[1]}

@@ -1,3 +1,4 @@
+import { useLocale } from "@/hooks/use-locale";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
@@ -32,7 +33,8 @@ export function CoreSettingsModal() {
   const cancelFetch = useCoreSettings((state) => state.cancelFetch);
   const updateConfig = useCoreSettings((state) => state.updateConfig);
   const restartCore = useCoreSettings((state) => state.restartCore);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { direction } = useLocale();
   const form = useForm({ defaultValues: { config: "" } });
   const formRef = useRef<HTMLFormElement>(null);
   const dirty = useRef(false);
@@ -93,10 +95,10 @@ export function CoreSettingsModal() {
         }}
       >
         <SheetContent
-          // side={i18n.dir() === "rtl" ? "left" : "right"}
+          // side={direction === "rtl" ? "left" : "right"}
           className="w-full! sm:max-w-3xl!"
           showCloseButton={!isPostLoading}
-          // dir={i18n.dir()}
+          // dir={direction}
           aria-describedby={undefined}
         >
           <SheetHeader>
@@ -187,7 +189,7 @@ export function CoreSettingsModal() {
         </SheetContent>
       </Sheet>
       <AlertDialog open={discardOpen} onOpenChange={setDiscardOpen}>
-        <AlertDialogContent initialFocus={cancelDiscardRef} dir={i18n.dir()}>
+        <AlertDialogContent initialFocus={cancelDiscardRef} dir={direction}>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("core.unsavedTitle", { defaultValue: "Unsaved changes" })}</AlertDialogTitle>
             <AlertDialogDescription>

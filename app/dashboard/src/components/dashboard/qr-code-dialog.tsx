@@ -1,3 +1,4 @@
+import { useLocale } from "@/hooks/use-locale";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight, QrCode } from "lucide-react";
@@ -11,7 +12,8 @@ export function QRCodeDialog() {
   const setQRCode = useDashboard((state) => state.setQRCode);
   const setSubLink = useDashboard((state) => state.setSubLink);
   const subscribeUrl = useDashboard((state) => state.subscribeUrl);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { direction } = useLocale();
   const [index, setIndex] = useState(0);
   useEffect(() => setIndex(0), [QRcodeLinks]);
   const close = () => {
@@ -35,7 +37,7 @@ export function QRCodeDialog() {
     >
       <DialogContent
         className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-3xl"
-        dir={i18n.dir()}
+        dir={direction}
         aria-describedby={undefined}
       >
         <DialogHeader>

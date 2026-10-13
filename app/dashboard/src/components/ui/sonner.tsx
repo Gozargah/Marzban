@@ -1,3 +1,4 @@
+import { useLocale } from "@/hooks/use-locale";
 "use client"
 
 import { useTheme } from "next-themes"
@@ -6,10 +7,12 @@ import { CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
+  const { direction } = useLocale()
 
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
+      dir={direction}
       className="toaster group"
       icons={{
         success: (

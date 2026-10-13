@@ -1,3 +1,4 @@
+import { useLocale } from "@/hooks/use-locale";
 import { createColumnHelper, tableFeatures } from "@tanstack/react-table";
 import { FC, useEffect, useRef, useState } from "react";
 import CopyToClipboard from "react-copy-to-clipboard";
@@ -172,11 +173,12 @@ export function ExpiryInfo({
   onHoldDuration?: number | null;
   className?: string;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { language } = useLocale();
   const durationLabel = (seconds: number) => {
     const units = [[31536000, "year"], [2592000, "month"], [86400, "day"], [3600, "hour"], [60, "minute"], [1, "second"]] as const;
     const [size, unit] = units.find(([size]) => Math.abs(seconds) >= size) || units[units.length - 1];
-    return new Intl.NumberFormat(i18n.resolvedLanguage || i18n.language, { style: "unit", unit, unitDisplay: "long" }).format(Math.floor(Math.abs(seconds) / size));
+    return new Intl.NumberFormat(language, { style: "unit", unit, unitDisplay: "long" }).format(Math.floor(Math.abs(seconds) / size));
   };
 
   if (status === "on_hold" && onHoldDuration) {

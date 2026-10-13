@@ -1,3 +1,4 @@
+import { useLocale } from "@/hooks/use-locale";
 import { useEffect, useId, useRef, useState } from "react";
 import { useIsMutating, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -234,7 +235,8 @@ export function NodesDialog() {
   const isEditingNodes = useDashboard((state) => state.isEditingNodes);
   const onEditingNodes = useDashboard((state) => state.onEditingNodes);
   const { data: nodes, isLoading, isError, refetch } = useNodesQuery();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { direction } = useLocale();
   // Keep an editing snapshot so polling does not overwrite unsaved form values.
   const [selected, setSelected] = useState<NodeType | "new" | null>(null);
   const [dirty, setDirty] = useState(false);
@@ -255,14 +257,14 @@ export function NodesDialog() {
   const editingNode = selected && selected !== "new" ? selected : undefined;
 
   return (
-    <DirectionProvider direction={i18n.dir() === "rtl" ? "rtl" : "ltr"}>
+    <DirectionProvider direction={direction === "rtl" ? "rtl" : "ltr"}>
       <Sheet open={isEditingNodes} onOpenChange={(open) => { if (!open) close(); }}
         onOpenChangeComplete={(open) => { if (!open) showOverview(); }}>
-        <SheetContent side={i18n.dir() === "rtl" ? "left" : "right"}
-          className="w-full! sm:max-w-xl! gap-0 overflow-hidden" dir={i18n.dir()} showCloseButton={!pending}>
+        <SheetContent side={direction === "rtl" ? "left" : "right"}
+          className="w-full! sm:max-w-xl! gap-0 overflow-hidden" dir={direction} showCloseButton={!pending}>
           <SheetHeader className="shrink-0 border-b px-6 py-5 pe-14">
             {selected && <Button type="button" variant="ghost" size="sm" className="mb-2 w-fit -ms-2" disabled={pending} onClick={() => requestLeave(showOverview)}>
-              <ArrowLeft aria-hidden="true" className={cn("size-4", i18n.dir() === "rtl" && "rotate-180")} />{t("nodes.backToNodes", { defaultValue: "All nodes" })}
+              <ArrowLeft aria-hidden="true" className={cn("size-4", direction === "rtl" && "rotate-180")} />{t("nodes.backToNodes", { defaultValue: "All nodes" })}
             </Button>}
             <SheetTitle className="flex items-center gap-2 text-lg">
               <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground"><Network aria-hidden="true" className="size-5" /></span>
@@ -303,7 +305,7 @@ export function NodesDialog() {
         </SheetContent>
       </Sheet>
       <AlertDialog open={discardOpen} onOpenChange={setDiscardOpen}>
-        <AlertDialogContent initialFocus={cancelDiscardRef} dir={i18n.dir()}>
+        <AlertDialogContent initialFocus={cancelDiscardRef} dir={direction}>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("nodes.unsavedTitle", { defaultValue: "Discard unsaved changes?" })}</AlertDialogTitle>
             <AlertDialogDescription>{t("nodes.unsavedDescription", { defaultValue: "Your node settings have not been saved. Keep editing or discard them to continue." })}</AlertDialogDescription>

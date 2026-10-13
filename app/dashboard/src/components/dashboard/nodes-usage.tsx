@@ -1,3 +1,4 @@
+import { useLocale } from "@/hooks/use-locale";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createLatestRequest } from "utils/latest-request";
 import dayjs from "dayjs";
@@ -17,7 +18,8 @@ export function NodesUsage() {
   const onShowingNodesUsage = useDashboard((state) => state.onShowingNodesUsage);
   const fetchNodesUsage = useNodes((state) => state.fetchNodesUsage);
   const { resolvedTheme } = useTheme();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { direction } = useLocale();
   const [data, setData] = useState<{ series: number[]; labels: string[] }>({ series: [], labels: [] });
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -65,7 +67,7 @@ export function NodesUsage() {
     <Dialog open={isShowingNodesUsage} onOpenChange={onShowingNodesUsage}>
       <DialogContent
         className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-2xl"
-        dir={i18n.dir()}
+        dir={direction}
         aria-describedby={undefined}
       >
         <DialogHeader>

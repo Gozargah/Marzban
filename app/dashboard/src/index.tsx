@@ -12,6 +12,7 @@ import App from "./App";
 import "./index.css";
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { ThemeProvider } from "@/components/theme-provider"
+import { LocaleProvider } from "@/components/locale-provider"
 import { Toaster } from "@/components/ui/sonner"
 
 
@@ -24,10 +25,12 @@ dayjs.extend(Duration);
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <App />
-        <Toaster position="top-center" richColors theme="light" />
-      </TooltipProvider>
+      <LocaleProvider>
+        <TooltipProvider>
+          <App />
+          <Toaster position="top-center" richColors theme="light" />
+        </TooltipProvider>
+      </LocaleProvider>
     </QueryClientProvider>
   </ThemeProvider>
 );

@@ -1,3 +1,4 @@
+import { useLocale } from "@/hooks/use-locale";
 import { DirectionProvider } from "@base-ui/react/direction-provider";
 import { Languages } from "lucide-react";
 import { useState } from "react";
@@ -18,14 +19,14 @@ const languages = [
   { value: "ru", label: "Русский", triggerLabel: "Изменить язык", direction: "ltr" },
 ] as const;
 
-export function Language() {
+export function Language({ showLabel = false }: { showLabel?: boolean }) {
   const { i18n, t } = useTranslation();
   const [hasError, setHasError] = useState(false);
-  const languageCode = (i18n.resolvedLanguage || i18n.language || "en").toLowerCase();
+  const { direction, language } = useLocale();
+  const languageCode = language.toLowerCase();
   const selectedLanguage = languages.find(({ value }) =>
     value.split("-")[0] === languageCode.split("-")[0],
   ) || languages[0];
-  const direction = i18n.dir();
 
   async function changeLanguage(value: string) {
     if (!languages.some((language) => language.value === value)) return;
@@ -39,16 +40,17 @@ export function Language() {
 
   return (
     <DirectionProvider direction={direction}>
-      <div dir={'rtl'} className="flex flex-col items-end gap-2">
+      <div dir={direction} className="flex flex-col items-end gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={<Button variant="outline" size="icon-sm" />}
+            render={<Button variant="outline" size={showLabel ? "sm" : "icon-sm"} />}
             type="button"
             aria-label={selectedLanguage.triggerLabel}
             title={selectedLanguage.triggerLabel}
             className={'border!'}
           >
             <Languages aria-hidden="true" />
+            {showLabel && <span>{selectedLanguage.label}</span>}
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" dir={direction} className="min-w-36">
             <DropdownMenuRadioGroup

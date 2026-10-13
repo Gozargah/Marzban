@@ -7,7 +7,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview --port 3000",
     "typecheck": "tsc --noEmit",
-    "test:state": "node --test tests/state-lifecycle.test.cjs",
+    "test:state": "node --test tests/state-lifecycle.test.cjs tests/language-direction.test.cjs",
     "test:colors": "node --test tests/color-contrast.test.cjs"
   },
   "dependencies": {

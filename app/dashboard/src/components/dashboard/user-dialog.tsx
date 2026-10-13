@@ -1,3 +1,4 @@
+import { useLocale } from "@/hooks/use-locale";
 import { createLatestRequest } from "utils/latest-request";
 import { AlertCircle, ChartPie, Pencil, RefreshCw, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
@@ -165,7 +166,8 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const [error, setError] = useState<string | null>("");
   const id = useId();
   const fieldId = (name: string) => `${id}-${name}`;
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { direction, language } = useLocale();
 
   const { resolvedTheme: colorMode } = useTheme();
 
@@ -343,12 +345,12 @@ export const UserDialog: FC<UserDialogProps> = () => {
         }}
       >
         <SheetContent
-          side={i18n.dir() === "rtl" ? "left" : "right"}
+          side={direction === "rtl" ? "left" : "right"}
           className="w-full! sm:max-w-md! gap-0 overflow-hidden"
           initialFocus={() => document.getElementById(fieldId(isEditing ? "data_limit" : "username"))}
           showCloseButton={!loading}
           aria-describedby={fieldId("description")}
-          dir={i18n.dir()}
+          dir={direction}
         >
           <FormProvider {...form}>
             <form onSubmit={form.handleSubmit(submit)} className="flex min-h-0 flex-1 flex-col" aria-busy={loading}>
@@ -539,7 +541,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                     id={fieldId(field.name)}
                                     name={field.name}
                                     onBlur={field.onBlur}
-                                    locale={i18n.language.toLocaleLowerCase()}
+                                    locale={(language.startsWith("zh") ? "zh-cn" : language.split("-")[0])}
                                     dateFormat={t("dateFormat")}
                                     placeholderText={t("neverExpires", { defaultValue: "Never expires" })}
                                     minDate={new Date()}
@@ -744,7 +746,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
         </SheetContent>
       </Sheet>
       <AlertDialog open={discardOpen} onOpenChange={setDiscardOpen}>
-        <AlertDialogContent initialFocus={cancelDiscardRef} dir={i18n.dir()}>
+        <AlertDialogContent initialFocus={cancelDiscardRef} dir={direction}>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("userDialog.unsavedTitle", { defaultValue: "Discard unsaved changes?" })}</AlertDialogTitle>
             <AlertDialogDescription>{t("userDialog.unsavedDescription", { defaultValue: "Your changes have not been saved. Keep editing or discard them to close this panel." })}</AlertDialogDescription>
