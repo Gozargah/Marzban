@@ -15,9 +15,9 @@ import {
   QrCode,
 } from "lucide-react";
 
-import { OnlineBadge } from "@/components/OnlineBadge";
-import { OnlineStatus } from "@/components/OnlineStatus";
-import { StatusBadge } from "@/components/StatusBadge";
+import { OnlineBadge } from "@/components/dashboard/table/online-badge";
+import { OnlineStatus } from "@/components/dashboard/table/online-status";
+import { StatusBadge } from "@/components/dashboard/table/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -123,8 +123,8 @@ export const UsageSlider: FC<UsageSliderProps> = ({
               isReached
                 ? "text-destructive"
                 : isWarning
-                ? "text-amber-500"
-                : "text-muted-foreground"
+                  ? "text-amber-500"
+                  : "text-muted-foreground"
             )}
           >
             {percent.toFixed(0)}%
@@ -139,8 +139,8 @@ export const UsageSlider: FC<UsageSliderProps> = ({
           isReached
             ? "bg-destructive"
             : isWarning
-            ? "bg-amber-500"
-            : "bg-primary"
+              ? "bg-amber-500"
+              : "bg-primary"
         }
       />
 
@@ -230,7 +230,7 @@ export const ActionButtons: FC<ActionButtonsProps> = ({ user, className }) => {
 
   const copy = (text: string, index: number) => {
     if (navigator?.clipboard?.writeText) {
-      navigator.clipboard.writeText(text).catch(() => {});
+      navigator.clipboard.writeText(text).catch(() => { });
     }
     setCopiedIndex(index);
   };

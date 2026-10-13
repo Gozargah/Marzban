@@ -9,10 +9,10 @@ import {
 } from "lucide-react";
 
 import { ReactComponent as AddFileIcon } from "assets/add_file.svg";
-import { OnlineBadge } from "@/components/OnlineBadge";
-import { OnlineStatus } from "@/components/OnlineStatus";
-import { Pagination } from "@/components/Pagination";
-import { StatusBadge } from "@/components/StatusBadge";
+import { OnlineBadge } from "@/components/dashboard/table/online-badge";
+import { OnlineStatus } from "@/components/dashboard/table/online-status";
+import { Pagination } from "@/components/dashboard/table/users-pagination";
+import { StatusBadge } from "@/components/dashboard/table/status-badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -64,11 +64,11 @@ function EmptySection({
         <p className="text-xs text-muted-foreground max-w-sm">
           {isFiltered
             ? t("usersTable.noUserMatchedHint", {
-                defaultValue: "Try adjusting your search or filters to find what you're looking for.",
-              })
+              defaultValue: "Try adjusting your search or filters to find what you're looking for.",
+            })
             : t("usersTable.noUserHint", {
-                defaultValue: "Get started by adding your first VPN user.",
-              })}
+              defaultValue: "Get started by adding your first VPN user.",
+            })}
         </p>
       </div>
       <div className="flex items-center gap-2 pt-2">
@@ -106,8 +106,8 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
 
   const isFiltered = Boolean(
     filters.search ||
-      filters.status ||
-      (users.length !== totalUsers.total && totalUsers.total > 0)
+    filters.status ||
+    (users.length !== totalUsers.total && totalUsers.total > 0)
   );
 
   const handleSort = (column: string) => {
@@ -296,8 +296,8 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
                               isReached
                                 ? "text-destructive"
                                 : isWarning
-                                ? "text-amber-500"
-                                : "text-muted-foreground"
+                                  ? "text-amber-500"
+                                  : "text-muted-foreground"
                             )}
                           >
                             {percent.toFixed(0)}%
@@ -312,8 +312,8 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
                           isReached
                             ? "bg-destructive"
                             : isWarning
-                            ? "bg-amber-500"
-                            : "bg-primary"
+                              ? "bg-amber-500"
+                              : "bg-primary"
                         }
                       />
                     </div>
