@@ -1,5 +1,6 @@
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from enum import Enum
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -165,3 +166,5 @@ class NodeUsageResponse(BaseModel):
 
 class NodesUsageResponse(BaseModel):
     usages: list[NodeUsageResponse]
+    # nic — суточные NIC / MTD hosting_used_bytes; panel — node_usages (Xray)
+    traffic_source: Literal["nic", "panel"] = "panel"

@@ -4,7 +4,7 @@ Functions for managing proxy hosts, users, user templates, nodes, and administra
 
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 from sqlalchemy import and_, delete, func, or_, select, update
 from sqlalchemy.dialects.mysql import insert as mysql_insert
@@ -1867,9 +1867,16 @@ def get_nodes(db: Session, status: NodeStatus | list | None = None, enabled: boo
     return query.all()
 
 
-def get_nodes_usage(db: Session, start: datetime, end: datetime) -> list[NodeUsageResponse]:
+def get_nodes_usage(
+    db: Session, start: datetime, end: datetime
+) -> tuple[list[NodeUsageResponse], Literal["nic", "panel"]]:
     """
     Retrieves usage data for all nodes within a specified time range.
+
+    Сначала суммирует Xray `node_usages` за период. Если sidecar заполнил
+    `node_hosting_nic_daily`, подменяет на NIC за календарные дни MSK в диапазоне.
+    Без суточных строк и без свежего hosting_used_at (отдельная панель без Prometheus)
+    остаётся только Xray. Master — только Xray.
 
     Args:
         db (Session): The database session.
@@ -1879,13 +1886,20 @@ def get_nodes_usage(db: Session, start: datetime, end: datetime) -> list[NodeUsa
     Returns:
         List[NodeUsageResponse]: A list of NodeUsageResponse objects containing usage data.
     """
+    from app.utils.hosting_nic_traffic import (
+        fallback_usage_from_db,
+        is_calendar_month_to_date_msk,
+        nic_usage_from_daily,
+    )
+
     usages = {
         0: NodeUsageResponse(  # Main Core
             node_id=None, node_name="Master", uplink=0, downlink=0
         )
     }
 
-    for node in db.query(Node).all():
+    nodes = db.query(Node).all()
+    for node in nodes:
         usages[node.id] = NodeUsageResponse(node_id=node.id, node_name=node.name, uplink=0, downlink=0)
 
     cond = and_(NodeUsage.created_at >= start, NodeUsage.created_at <= end)
@@ -1897,7 +1911,19 @@ def get_nodes_usage(db: Session, start: datetime, end: datetime) -> list[NodeUsa
         except KeyError:
             pass
 
-    return list(usages.values())
+    nic_by_node = nic_usage_from_daily(db, start, end)
+    if not nic_by_node and is_calendar_month_to_date_msk(start, end):
+        nic_by_node = fallback_usage_from_db(nodes)
+
+    for node_id, (rx, tx) in nic_by_node.items():
+        entry = usages.get(node_id)
+        if entry is None:
+            continue
+        entry.uplink = rx
+        entry.downlink = tx
+
+    traffic_source: Literal["nic", "panel"] = "nic" if nic_by_node else "panel"
+    return list(usages.values()), traffic_source
 
 
 def _sync_cascade_routes(db: Session, dbnode: Node, routes) -> None:

@@ -202,6 +202,6 @@ def get_usage(
     """Retrieve usage statistics for nodes within a specified date range."""
     start, end = validate_dates(start, end)
 
-    usages = crud.get_nodes_usage(db, start, end)
+    usages, traffic_source = crud.get_nodes_usage(db, start, end)
 
-    return {"usages": usages}
+    return {"usages": usages, "traffic_source": traffic_source}

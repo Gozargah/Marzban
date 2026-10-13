@@ -681,6 +681,11 @@ class Node(Base):
     # из репозитория бота — он единственный видит оба берега (NPVPN-2072).
     hosting_used_bytes = Column(BigInteger, nullable=True)
     hosting_used_at = Column(DateTime, nullable=True)
+    hosting_nic_daily = relationship(
+        "NodeHostingNicDaily",
+        back_populates="node",
+        cascade="all, delete-orphan",
+    )
     # NodeWeightSnapshot больше НЕ связана FK-каскадом с этой таблицей (I3,
     # NPVPN-2072) — снимок это архив журнала (app/services/address_history.py),
     # который обязан пережить удаление ноды, поэтому и ORM-relationship сюда не
@@ -856,6 +861,24 @@ class UserNodePin(Base):
     note = Column(String(500), nullable=True)
     user = relationship("User", passive_deletes=True)
     host = relationship("ProxyHost", passive_deletes=True)
+
+
+class NodeHostingNicDaily(Base):
+    """Суточный NIC in+out на VPN-ноде (календарный день MSK).
+
+    Пишет scripts/prometheus_vpn_nodes_sd.py из Prometheus; панель суммирует
+    строки за выбранный диапазон дат в «Использование узлов».
+    """
+
+    __tablename__ = "node_hosting_nic_daily"
+    __table_args__ = (UniqueConstraint("node_id", "day", name="uq_node_hosting_nic_daily"),)
+
+    id = Column(Integer, primary_key=True)
+    node_id = Column(Integer, ForeignKey("nodes.id", ondelete="CASCADE"), nullable=False, index=True)
+    node = relationship("Node", back_populates="hosting_nic_daily")
+    day = Column(Date, nullable=False, index=True)
+    used_bytes = Column(BigInteger, nullable=False, default=0, server_default=text("0"))
+    updated_at = Column(DateTime, nullable=True)
 
 
 class NodeUsage(Base):
