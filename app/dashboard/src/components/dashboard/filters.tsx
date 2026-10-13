@@ -92,6 +92,7 @@ export const Filters: FC<FilterProps> = ({ className, ...props }) => {
             ref={searchInputRef}
             type="text"
             placeholder={t("search")}
+            aria-label={t("search")}
             onChange={onChange}
             className="ps-9 pe-14"
           />

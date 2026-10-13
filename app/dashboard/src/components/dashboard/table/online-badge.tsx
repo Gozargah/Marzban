@@ -9,8 +9,8 @@ type UserStatusProps = {
 const convertDateFormat = (lastOnline?: string | null): number | null => {
   if (!lastOnline) return null;
 
-  const date = new Date(`${lastOnline}Z`);
-  return Math.floor(date.getTime() / 1000);
+  const date = new Date(/(?:Z|[+-]\d{2}:?\d{2})$/i.test(lastOnline) ? lastOnline : `${lastOnline}Z`);
+  return Number.isFinite(date.getTime()) ? Math.floor(date.getTime() / 1000) : null;
 };
 
 export const OnlineBadge: FC<UserStatusProps> = ({ lastOnline, className }) => {
@@ -19,7 +19,7 @@ export const OnlineBadge: FC<UserStatusProps> = ({ lastOnline, className }) => {
 
   if (!lastOnline || unixTime === null) {
     return (
-      <span
+      <span aria-hidden="true"
         className={cn(
           "inline-block size-2 rounded-full border border-neutral-400 dark:border-neutral-600 shrink-0",
           className
@@ -30,11 +30,11 @@ export const OnlineBadge: FC<UserStatusProps> = ({ lastOnline, className }) => {
 
   const timeDifferenceInSeconds = currentTimeInSeconds - unixTime;
 
-  if (timeDifferenceInSeconds <= 60) {
+  if (timeDifferenceInSeconds >= -60 && timeDifferenceInSeconds <= 60) {
     return (
-      <span
+      <span aria-hidden="true"
         className={cn(
-          "inline-block size-2 rounded-full bg-emerald-500 shadow-[0_0_0_2px_rgba(16,185,129,0.3)] shrink-0 animate-pulse",
+          "inline-block size-2 rounded-full bg-success shrink-0",
           className
         )}
       />
@@ -42,7 +42,7 @@ export const OnlineBadge: FC<UserStatusProps> = ({ lastOnline, className }) => {
   }
 
   return (
-    <span
+    <span aria-hidden="true"
       className={cn(
         "inline-block size-2 rounded-full bg-neutral-400 dark:bg-neutral-600 shrink-0",
         className

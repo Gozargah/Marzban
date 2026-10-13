@@ -1,49 +1,23 @@
-import { ChangeEvent, FC } from "react";
+import { ChangeEvent, FC, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Pagination as ShadcnPagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Pagination as ShadcnPagination, PaginationContent, PaginationEllipsis, PaginationItem } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
 import { useDashboard } from "@/contexts/dashboard-context";
 import { setUsersPerPageLimitSize } from "utils/userPreferenceStorage";
 
 export type PaginationType = {
-  count?: number;
-  perPage?: number;
-  page?: number;
-  onChange?: (page: number) => void;
-  className?: string;
+  count?: number; perPage?: number; page?: number;
+  onChange?: (page: number) => void; className?: string;
 };
 
-const MINIMAL_PAGE_ITEM_COUNT = 5;
-
-function generatePageItems(total: number, current: number, width: number = 7) {
-  if (total <= 0) return [0];
-  if (width < MINIMAL_PAGE_ITEM_COUNT) width = MINIMAL_PAGE_ITEM_COUNT;
-  if (total <= width) {
-    return Array.from({ length: total }, (_, i) => i);
-  }
-
-  const left = Math.max(
-    0,
-    Math.min(total - width, current - Math.floor(width / 2))
-  );
-  const items: (string | number)[] = Array.from({ length: width }, (_, i) => i + left);
-
-  if (Number(items[0]) > 0) {
-    items[0] = 0;
-    items[1] = "prev-more";
-  }
-  if (Number(items[items.length - 1]) < total - 1) {
-    items[items.length - 1] = total - 1;
-    items[items.length - 2] = "next-more";
-  }
+function generatePageItems(total: number, current: number) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i);
+  const left = Math.max(0, Math.min(total - 7, current - 3));
+  const items: (string | number)[] = Array.from({ length: 7 }, (_, i) => i + left);
+  if (left > 0) { items[0] = 0; items[1] = "prev-more"; }
+  if (left + 7 < total) { items[6] = total - 1; items[5] = "next-more"; }
   return items;
 }
 
@@ -51,110 +25,65 @@ export const Pagination: FC<{ className?: string }> = ({ className }) => {
   const filters = useDashboard((state) => state.filters);
   const onFilterChange = useDashboard((state) => state.onFilterChange);
   const total = useDashboard((state) => state.users.total);
+  const loading = useDashboard((state) => state.loading);
+  const usersError = useDashboard((state) => state.usersError);
   const { t } = useTranslation();
-
   const perPage = filters.limit || 10;
   const offset = filters.offset || 0;
-  const currentPage = Math.floor(offset / perPage);
-  const noPages = Math.ceil(total / perPage) || 1;
-  const pages = generatePageItems(noPages, currentPage, 7);
+  const noPages = Math.max(1, Math.ceil(total / perPage));
+  const currentPage = Math.min(Math.floor(offset / perPage), noPages - 1);
 
-  const startItem = total === 0 ? 0 : offset + 1;
-  const endItem = Math.min(offset + perPage, total);
+  // Keep the last page usable when deleting its final user or reducing results.
+  useEffect(() => {
+    if (!loading && !usersError && offset > 0 && offset >= total) {
+      onFilterChange({ offset: Math.max(0, Math.ceil(total / perPage) - 1) * perPage });
+    }
+  }, [loading, usersError, offset, total, perPage, onFilterChange]);
 
-  const changePage = (newPage: number) => {
-    if (newPage < 0 || newPage >= noPages || newPage === currentPage) return;
-    onFilterChange({
-      ...filters,
-      offset: newPage * perPage,
-    });
+  const changePage = (page: number) => {
+    if (loading || page < 0 || page >= noPages || page === currentPage) return;
+    onFilterChange({ offset: page * perPage });
   };
-
-  const handlePageSizeChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const newLimit = parseInt(e.target.value, 10);
-    onFilterChange({
-      ...filters,
-      limit: newLimit,
-      offset: 0,
-    });
-    setUsersPerPageLimitSize(String(newLimit));
+  const changePageSize = (event: ChangeEvent<HTMLSelectElement>) => {
+    const limit = Number(event.target.value);
+    onFilterChange({ limit, offset: 0 });
+    setUsersPerPageLimitSize(String(limit));
   };
 
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-4 pt-4 sm:flex-row sm:items-center sm:justify-between",
-        className
-      )}
-    >
-      {/* Items per page selector & range counter */}
-      <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground order-2 sm:order-1">
-        <div className="flex items-center gap-2">
-          <select
-            value={perPage}
-            onChange={handlePageSizeChange}
-            aria-label={t("itemsPerPage")}
-            className="h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs font-medium text-foreground shadow-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
-          >
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="30">30</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
+    <div className={cn("flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between", className)}>
+      <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
+        <label className="flex items-center gap-2">
+          <select value={perPage} onChange={changePageSize} disabled={loading}
+            className="h-8 rounded-none border border-input bg-background px-2 text-xs text-foreground outline-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 disabled:opacity-50">
+            {[10, 20, 30, 50, 100].map((size) => <option key={size} value={size}>{size}</option>)}
           </select>
-          <span className="whitespace-nowrap">{t("itemsPerPage")}</span>
-        </div>
-
-        {total > 0 && (
-          <span className="text-muted-foreground/80 hidden md:inline">
-            ({startItem}–{endItem} / {total})
-          </span>
-        )}
+          <span>{t("itemsPerPage")}</span>
+        </label>
+        <span dir="ltr" className="tabular-nums">{total === 0 ? 0 : Math.min(offset + 1, total)}–{Math.min(offset + perPage, total)} / {total}</span>
       </div>
-
-      {/* Pagination control buttons */}
-      <div className="order-1 sm:order-2 flex justify-center sm:justify-end">
-        <ShadcnPagination className="mx-0 w-auto">
-          <PaginationContent className="gap-1">
-            <PaginationItem>
-              <PaginationPrevious
-                disabled={currentPage === 0 || total === 0}
-                onClick={() => changePage(currentPage - 1)}
-                text={t("previous")}
-              />
+      <ShadcnPagination className="mx-0 w-auto">
+        <PaginationContent className="gap-1">
+          <PaginationItem>
+            <Button variant="ghost" size="icon" aria-label={t("previous")} disabled={loading || currentPage === 0 || total === 0} onClick={() => changePage(currentPage - 1)}>
+              <ChevronLeft className="size-4 rtl:rotate-180" />
+            </Button>
+          </PaginationItem>
+          {generatePageItems(noPages, currentPage).map((page) => typeof page === "string" ? (
+            <PaginationItem key={page} className="hidden sm:block"><PaginationEllipsis /></PaginationItem>
+          ) : (
+            <PaginationItem key={page} className={cn(page !== currentPage && "hidden sm:block")}>
+              <Button variant={page === currentPage ? "outline" : "ghost"} size="icon" disabled={loading}
+                aria-current={page === currentPage ? "page" : undefined} aria-label={t("usersTable.pageLabel", { page: page + 1 })} onClick={() => changePage(page)}>{page + 1}</Button>
             </PaginationItem>
-
-            {pages.map((pageIndex, idx) => {
-              if (typeof pageIndex === "string") {
-                return (
-                  <PaginationItem key={`ellipsis-${pageIndex}-${idx}`}>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                );
-              }
-
-              return (
-                <PaginationItem key={`page-${pageIndex}`}>
-                  <PaginationLink
-                    isActive={pageIndex === currentPage}
-                    onClick={() => changePage(pageIndex)}
-                  >
-                    {pageIndex + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              );
-            })}
-
-            <PaginationItem>
-              <PaginationNext
-                disabled={currentPage + 1 >= noPages || total === 0}
-                onClick={() => changePage(currentPage + 1)}
-                text={t("next")}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </ShadcnPagination>
-      </div>
+          ))}
+          <PaginationItem>
+            <Button variant="ghost" size="icon" aria-label={t("next")} disabled={loading || currentPage + 1 >= noPages || total === 0} onClick={() => changePage(currentPage + 1)}>
+              <ChevronRight className="size-4 rtl:rotate-180" />
+            </Button>
+          </PaginationItem>
+        </PaginationContent>
+      </ShadcnPagination>
     </div>
   );
 };

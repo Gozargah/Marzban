@@ -33,6 +33,7 @@ const InboundCard: FC<{
       )}
     >
       <div className="flex items-center gap-2 min-w-0">
+
         <Checkbox
           checked={isChecked}
           disabled={disabled}

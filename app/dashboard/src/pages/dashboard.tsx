@@ -56,12 +56,8 @@ function restoreFilters(search: string) {
 
 export function Dashboard() {
   const { t } = useTranslation();
-  const showUserDialog = useDashboard((state) => state.isCreatingNewUser || !!state.editingUser);
   const showDeleteUser = useDashboard((state) => !!state.deletingUser);
-  const isEditingHosts = useDashboard((state) => state.isEditingHosts);
-  const isEditingNodes = useDashboard((state) => state.isEditingNodes);
   const isShowingNodesUsage = useDashboard((state) => state.isShowingNodesUsage);
-  const isEditingCore = useDashboard((state) => state.isEditingCore);
   const showQRCode = useDashboard((state) => state.QRcodeLinks !== null);
   const showResetUsage = useDashboard((state) => !!state.resetUsageUser);
   const showRevokeSubscription = useDashboard((state) => !!state.revokeSubscriptionUser);
@@ -97,16 +93,19 @@ export function Dashboard() {
       </main>
       <Suspense fallback={<div role="status" aria-label={t("loading", { defaultValue: "Loading…" })}
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 backdrop-blur-xs"><Spinner className="size-6" /></div>}>
-        {showUserDialog && <UserDialog />}
         {showDeleteUser && <DeleteUserModal />}
         {showQRCode && <QRCodeDialog />}
-        {isEditingHosts && <HostsDialog />}
         {showResetUsage && <ResetUserUsageModal />}
         {showRevokeSubscription && <RevokeSubscriptionModal />}
-        {isEditingNodes && <NodesDialog />}
         {isShowingNodesUsage && <NodesUsage />}
         {isResetingAllUsage && <ResetAllUsageModal />}
-        {isEditingCore && <CoreSettingsModal />}
+      </Suspense>
+      {/* Keep the sheet mounted so Base UI can animate its open and closed states. */}
+      <Suspense fallback={null}>
+        <CoreSettingsModal />
+        <UserDialog />
+        <NodesDialog />
+        <HostsDialog />
       </Suspense>
       <Footer />
     </div>

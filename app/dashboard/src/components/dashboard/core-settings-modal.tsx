@@ -93,10 +93,10 @@ export function CoreSettingsModal() {
         }}
       >
         <SheetContent
-          side={i18n.dir() === "rtl" ? "left" : "right"}
+          // side={i18n.dir() === "rtl" ? "left" : "right"}
           className="w-full! sm:max-w-3xl!"
           showCloseButton={!isPostLoading}
-          dir={i18n.dir()}
+          // dir={i18n.dir()}
           aria-describedby={undefined}
         >
           <SheetHeader>
@@ -134,6 +134,7 @@ export function CoreSettingsModal() {
                           }
                         >
                           <JsonEditor
+
                             json={config}
                             onSave={() => {
                               if (!isPostLoading && !isLoading) formRef.current?.requestSubmit();

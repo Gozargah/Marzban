@@ -18,18 +18,18 @@ type UserStatusProps = {
 const statusConfig: Record<
   string,
   {
-    variant: "success" | "warning" | "destructive" | "purple" | "secondary";
+    className: string;
     icon: LucideIcon;
   }
 > = {
-  active: { variant: "success", icon: Wifi },
-  connected: { variant: "success", icon: Wifi },
-  disabled: { variant: "secondary", icon: Ban },
-  expired: { variant: "warning", icon: Clock },
-  on_hold: { variant: "purple", icon: Clock },
-  limited: { variant: "destructive", icon: AlertCircle },
-  connecting: { variant: "warning", icon: Wifi },
-  error: { variant: "destructive", icon: AlertCircle },
+  active: { className: "border-success-border bg-success-soft text-success", icon: Wifi },
+  connected: { className: "border-success-border bg-success-soft text-success", icon: Wifi },
+  disabled: { className: "border-border bg-secondary text-secondary-foreground", icon: Ban },
+  expired: { className: "border-warning-border bg-warning-soft text-warning", icon: Clock },
+  on_hold: { className: "border-border bg-muted text-muted-foreground", icon: Clock },
+  limited: { className: "border-destructive/20 bg-destructive/10 text-destructive", icon: AlertCircle },
+  connecting: { className: "border-warning-border bg-warning-soft text-warning", icon: Wifi },
+  error: { className: "border-destructive/20 bg-destructive/10 text-destructive", icon: AlertCircle },
 };
 
 export const StatusBadge: FC<UserStatusProps> = ({
@@ -42,15 +42,16 @@ export const StatusBadge: FC<UserStatusProps> = ({
 }) => {
   const { t } = useTranslation();
   const dateInfo = relativeExpiryDate(expiryDate);
-  const config = statusConfig[userStatus] || { variant: "secondary", icon: Wifi };
+  const config = statusConfig[userStatus] || { className: "border-border bg-secondary text-secondary-foreground", icon: Wifi };
   const Icon = config.icon;
 
   return (
     <span className={cn("inline-flex items-center flex-wrap gap-1.5", className)}>
       <Badge
-        variant={config.variant}
+        variant="secondary"
         className={cn(
-          "gap-1 font-medium capitalize",
+          "rounded-none gap-1 font-medium capitalize",
+          config.className,
           compact ? "px-2 py-0.5 text-[0.7rem]" : "px-2.5 py-1 text-xs"
         )}
       >

@@ -61,7 +61,7 @@ export function UsageFilter({ defaultValue, onChange }: UsageFilterProps) {
           {t("userDialog.custom")}
           {!ranges.includes(value) && value !== "custom" ? ` (${value})` : ""}
         </PopoverTrigger>
-        <PopoverContent side="bottom" className="w-96" dir={i18n.dir()}>
+        <PopoverContent side="bottom" className="w-96 max-w-[calc(100vw-2rem)] max-h-[min(32rem,70dvh)] overflow-y-auto" dir={i18n.dir()}>
           <div className="mb-3 flex gap-2">
             <Button
               type="button"

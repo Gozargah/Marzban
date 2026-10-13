@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import {
   ChevronDown,
   Filter,
-  Pencil,
   RotateCcw,
 } from "lucide-react";
 import AddFileIcon from "assets/add_file.svg?react";
@@ -20,7 +19,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Progress } from "@/components/ui/progress";
 import {
   Table,
   TableBody,
@@ -31,7 +29,6 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { useDashboard } from "@/contexts/dashboard-context";
-import { formatBytes } from "utils/formatByte";
 import {
   ActionButtons,
   columns,
@@ -39,6 +36,7 @@ import {
   features,
   getResetStrategy,
   Sort,
+  UsageSlider,
 } from "./columns";
 
 export type UsersTableProps = React.ComponentProps<"div">;
@@ -94,7 +92,8 @@ function EmptySection({
 export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
   const filters = useDashboard((state) => state.filters);
   const users = useDashboard((state) => state.users.users);
-  const total = useDashboard((state) => state.users.total);
+  const loading = useDashboard((state) => state.loading);
+  const usersError = useDashboard((state) => state.usersError);
   const onEditingUser = useDashboard((state) => state.onEditingUser);
   const onFilterChange = useDashboard((state) => state.onFilterChange);
 
@@ -103,13 +102,12 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
 
   const isFiltered = Boolean(
     filters.search ||
-    filters.status ||
-    (users.length !== total && total > 0)
+    filters.status
   );
 
   const handleSort = (column: string) => {
     let newSort = filters.sort;
-    if (newSort.includes(column)) {
+    if (newSort === column || newSort === `-${column}`) {
       if (newSort.startsWith("-")) {
         newSort = "-created_at";
       } else {
@@ -120,12 +118,14 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
     }
     onFilterChange({
       sort: newSort,
+      offset: 0,
     });
   };
 
   const handleStatusFilter = (status?: string) => {
     onFilterChange({
-      status: status && status.length > 0 ? (status as any) : undefined,
+      status: status && status.length > 0 ? (status as "active" | "disabled" | "limited" | "expired" | "on_hold") : undefined,
+      offset: 0,
     });
   };
 
@@ -141,7 +141,6 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
       search: "",
       status: undefined,
       offset: 0,
-      sort: "-created_at",
     });
   };
 
@@ -152,18 +151,26 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
   });
 
   return (
-    <div id="users-table" className={cn("w-full space-y-4", className)} {...props}>
-      {/* Mobile view: Modern Card List */}
+    <div aria-busy={loading} id="users-table" className={cn("w-full space-y-4", className)} {...props}>
+      <span role="status" className="sr-only">{loading ? t("loading", { defaultValue: "Loading" }) : ""}</span>
+      {loading && users.length === 0 ? (
+        <div className="border border-border bg-card p-4 space-y-6" aria-hidden="true">
+          {Array.from({ length: 5 }, (_, index) => <div key={index} className="flex gap-6 motion-safe:animate-pulse">
+            <div className="h-10 w-1/3 bg-muted" /><div className="h-10 w-1/4 bg-muted" /><div className="h-10 flex-1 bg-muted" />
+          </div>)}
+        </div>
+      ) : usersError && users.length === 0 ? null : <>
+      {/* Mobile list */}
       <div className="block md:hidden space-y-3">
         {/* Mobile toolbar */}
-        <div className="flex items-center justify-between gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold shadow-xs">
+        <div className="flex items-center justify-between flex-wrap gap-1.5 rounded-none border border-border bg-card px-3 py-2 text-xs font-semibold">
           <button
             type="button"
             onClick={() => handleSort("username")}
             className={cn(
-              "inline-flex items-center gap-1 rounded-md px-2 py-1 transition-colors cursor-pointer",
+              "inline-flex items-center gap-1 rounded-none px-2 py-1 transition-colors cursor-pointer outline-none focus-visible:ring-1 focus-visible:ring-ring",
               filters.sort.includes("username")
-                ? "bg-primary/10 text-primary-text font-bold"
+                ? "bg-primary/10 text-foreground font-bold"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -175,9 +182,9 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
             <DropdownMenuTrigger
               type="button"
               className={cn(
-                "inline-flex items-center gap-1 rounded-md px-2 py-1 uppercase tracking-wider transition-colors outline-none cursor-pointer",
+                "inline-flex items-center gap-1 rounded-none px-2 py-1 transition-colors outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer",
                 filters.status
-                  ? "bg-primary/10 text-primary-text font-bold"
+                  ? "bg-primary/10 text-foreground font-bold"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -219,9 +226,9 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
             type="button"
             onClick={() => handleSort("used_traffic")}
             className={cn(
-              "inline-flex items-center gap-1 rounded-md px-2 py-1 transition-colors cursor-pointer",
+              "inline-flex items-center gap-1 rounded-none px-2 py-1 transition-colors cursor-pointer outline-none focus-visible:ring-1 focus-visible:ring-ring",
               filters.sort.includes("used_traffic")
-                ? "bg-primary/10 text-primary-text font-bold"
+                ? "bg-primary/10 text-foreground font-bold"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -235,36 +242,32 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
           <div className="space-y-2.5">
             {users.map((user) => {
               const isExpanded = Boolean(expandedRows[user.username]);
-              const isUnlimited = user.data_limit === 0 || user.data_limit === null;
-              const percent = isUnlimited
-                ? 100
-                : Math.min((user.used_traffic / (user.data_limit || 1)) * 100, 100);
-              const isReached = !isUnlimited && (user.used_traffic / (user.data_limit || 1)) * 100 >= 100;
-              const isWarning = !isUnlimited && percent >= 85 && !isReached;
               const resetTitle = getResetStrategy(user.data_limit_reset_strategy);
 
               return (
                 <div
                   key={user.username}
-                  className="rounded-xl border border-border bg-card p-3 shadow-xs transition-colors hover:border-border/80"
+                  className="rounded-none border border-border bg-card p-3 transition-colors hover:border-border/80"
                 >
                   {/* Card header (tap to toggle) */}
-                  <div
-                    className="cursor-pointer select-none space-y-2.5"
+                  <button
+                    type="button"
+                    aria-expanded={isExpanded}
+                    aria-controls={isExpanded ? `user-details-${user.username}` : undefined}
+                    className="w-full text-start cursor-pointer select-none space-y-2.5 outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     onClick={() => toggleRow(user.username)}
                   >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="flex items-center gap-2 min-w-0">
                         <OnlineBadge lastOnline={user.online_at} className="shrink-0" />
                         <span className="font-semibold text-sm text-foreground truncate">
                           {user.username}
                         </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      </span>
+                      <span className="flex items-center gap-1.5 shrink-0">
                         <StatusBadge
                           compact
                           showDetail={true}
-                          expiryDate={user.expire}
                           status={user.status}
                         />
                         <ChevronDown
@@ -273,52 +276,21 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
                             isExpanded && "rotate-180"
                           )}
                         />
-                      </div>
-                    </div>
+                      </span>
+                    </span>
 
-                    {/* Bandwidth summary bar */}
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-xs font-medium">
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <span className="font-semibold text-foreground">
-                            {formatBytes(user.used_traffic)}
-                          </span>
-                          <span>/</span>
-                          <span>{isUnlimited ? "∞" : formatBytes(user.data_limit || 0)}</span>
-                        </div>
-                        {!isUnlimited && (
-                          <span
-                            className={cn(
-                              "text-[11px] font-semibold tabular-nums",
-                              isReached
-                                ? "text-destructive"
-                                : isWarning
-                                  ? "text-warning"
-                                  : "text-muted-foreground"
-                            )}
-                          >
-                            {percent.toFixed(0)}%
-                          </span>
-                        )}
-                      </div>
-
-                      <Progress
-                        value={percent}
-                        className="h-1.5 w-full bg-secondary"
-                        indicatorClassName={
-                          isReached
-                            ? "bg-destructive"
-                            : isWarning
-                              ? "bg-warning"
-                              : "bg-primary"
-                        }
-                      />
-                    </div>
+                  </button>
+                  <div className="mt-3">
+                    <UsageSlider used={user.used_traffic} total={user.data_limit} totalUsedTraffic={user.lifetime_used_traffic} />
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t pt-2">
+                    <ExpiryInfo className="whitespace-normal" expire={user.expire} status={user.status} onHoldDuration={user.on_hold_expire_duration} />
+                    <ActionButtons user={user} />
                   </div>
 
                   {/* Expanded details */}
                   {isExpanded && (
-                    <div className="mt-3 pt-3 border-t border-border/60 space-y-3 animate-in fade-in-0 duration-150">
+                    <div id={`user-details-${user.username}`} className="mt-3 pt-3 border-t border-border/60 space-y-3 animate-in fade-in-0 duration-150">
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="space-y-0.5">
                           <span className="text-[11px] text-muted-foreground">
@@ -326,28 +298,6 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
                           </span>
                           <div>
                             <OnlineStatus lastOnline={user.online_at} className="m-0 font-medium" />
-                          </div>
-                        </div>
-
-                        <div className="space-y-0.5">
-                          <span className="text-[11px] text-muted-foreground">
-                            {t("expiration", { defaultValue: "Expiration" })}:
-                          </span>
-                          <div>
-                            <ExpiryInfo
-                              expire={user.expire}
-                              status={user.status}
-                              onHoldDuration={user.on_hold_expire_duration}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-0.5">
-                          <span className="text-[11px] text-muted-foreground">
-                            {t("usersTable.total")}:
-                          </span>
-                          <div className="font-medium tabular-nums text-foreground">
-                            {formatBytes(user.lifetime_used_traffic)}
                           </div>
                         </div>
 
@@ -366,27 +316,12 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
                       </div>
 
                       {user.note && (
-                        <div className="rounded-md bg-muted/40 p-2 text-xs text-muted-foreground">
+                        <div className="rounded-none bg-muted/40 p-2 text-xs text-muted-foreground">
                           <span className="font-semibold">{t("note", { defaultValue: "Note" })}:</span>{" "}
                           {user.note}
                         </div>
                       )}
 
-                      {/* Action buttons toolbar */}
-                      <div className="flex items-center justify-between pt-2 border-t border-border/40">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="gap-1.5 h-8 text-xs font-medium"
-                          onClick={() => onEditingUser(user)}
-                        >
-                          <Pencil className="size-3.5" />
-                          <span>{t("edit", { defaultValue: "Edit" })}</span>
-                        </Button>
-
-                        <ActionButtons user={user} />
-                      </div>
                     </div>
                   )}
                 </div>
@@ -394,14 +329,14 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
             })}
           </div>
         ) : (
-          <div className="rounded-xl border border-border bg-card p-6 shadow-xs">
+          <div className="rounded-none border border-border bg-card p-6">
             <EmptySection isFiltered={isFiltered} onResetFilters={resetFilters} />
           </div>
         )}
       </div>
 
-      {/* Desktop view: Professional Data Table */}
-      <div className="hidden md:block rounded-xl border border-border bg-card shadow-xs overflow-hidden">
+      {/* Desktop table */}
+      <div className="hidden md:block rounded-none border border-border bg-card overflow-hidden">
         <Table>
           <TableHeader className="bg-muted/50">
             {table.getHeaderGroups().map((headerGroup) => (
@@ -415,12 +350,13 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
                   return (
                     <TableHead
                       key={header.id}
+                      aria-sort={filters.sort === (isStatus ? "expire" : header.id) ? "ascending" : filters.sort === `-${isStatus ? "expire" : header.id}` ? "descending" : undefined}
                       className={cn(
                         "bg-muted/50 font-semibold py-3 border-b border-border",
-                        isUsername && "w-[26%] min-w-[190px]",
-                        isStatus && "w-[30%] min-w-[220px]",
-                        isUsage && "w-[30%] min-w-[220px]",
-                        isActions && "w-[14%] min-w-[140px] text-end"
+                        isUsername && "w-[25%] min-w-[180px]",
+                        isStatus && "w-[25%] min-w-[170px]",
+                        isUsage && "w-[28%] min-w-[210px]",
+                        isActions && "w-[22%] min-w-[160px] text-end"
                       )}
                     >
                       {header.isPlaceholder ? null : (
@@ -464,7 +400,7 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
         </Table>
       </div>
 
-      {/* Pagination */}
+      </>}
       <Pagination />
     </div>
   );

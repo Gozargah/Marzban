@@ -1,6 +1,7 @@
 import { createColumnHelper, tableFeatures } from "@tanstack/react-table";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import CopyToClipboard from "react-copy-to-clipboard";
+import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import {
   ArrowUpDown,
@@ -28,7 +29,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
-import { SimpleTooltip } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { resetStrategy } from "constants/UserSettings";
 import { useDashboard } from "@/contexts/dashboard-context";
@@ -46,10 +47,10 @@ export type SortType = {
 
 export const Sort: FC<SortType> = ({ sort, column }) => {
   if (sort === column) {
-    return <ChevronUp className="size-3.5 shrink-0 text-primary-text" />;
+    return <ChevronUp className="size-3.5 shrink-0 text-foreground" />;
   }
   if (sort === `-${column}`) {
-    return <ChevronDown className="size-3.5 shrink-0 text-primary-text" />;
+    return <ChevronDown className="size-3.5 shrink-0 text-foreground" />;
   }
   return <ArrowUpDown className="size-3 shrink-0 opacity-40" />;
 };
@@ -88,7 +89,7 @@ export const UsageSlider: FC<UsageSliderProps> = ({
 }) => {
   const { t } = useTranslation();
   const isUnlimited = total === 0 || total === null;
-  const percent = isUnlimited ? 100 : Math.min((used / (total || 1)) * 100, 100);
+  const percent = isUnlimited ? 0 : Math.max(0, Math.min((used / (total || 1)) * 100, 100));
   const isReached = !isUnlimited && (used / (total || 1)) * 100 >= 100;
   const isWarning = !isUnlimited && percent >= 85 && !isReached;
   const resetTitle = getResetStrategy(dataLimitResetStrategy);
@@ -104,7 +105,7 @@ export const UsageSlider: FC<UsageSliderProps> = ({
             {formatBytes(used)}
           </span>
           <span className="text-muted-foreground/60">/</span>
-          <span className="text-muted-foreground">
+          <span className="text-muted-foreground" aria-label={isUnlimited ? t("usersTable.unlimitedUsage", { defaultValue: "{{used}} used, unlimited allowance", used: formatBytes(used) }) : undefined}>
             {isUnlimited ? "∞" : formatBytes(total)}
           </span>
           {resetLabel && (
@@ -132,9 +133,13 @@ export const UsageSlider: FC<UsageSliderProps> = ({
         )}
       </div>
 
-      <Progress
+      {isUnlimited ? (
+        <div className="h-1.5 w-full bg-muted" aria-hidden="true" />
+      ) : <Progress
         value={percent}
-        className="h-1.5 w-full bg-secondary"
+        aria-label={t("usersTable.dataUsage")}
+
+        className="h-1.5 w-full rounded-none bg-secondary rtl:rotate-180"
         indicatorClassName={
           isReached
             ? "bg-destructive"
@@ -142,7 +147,7 @@ export const UsageSlider: FC<UsageSliderProps> = ({
               ? "bg-warning"
               : "bg-primary"
         }
-      />
+      />}
 
       <div className="flex items-center justify-between text-[11px] text-muted-foreground">
         <span>
@@ -167,14 +172,18 @@ export function ExpiryInfo({
   onHoldDuration?: number | null;
   className?: string;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const durationLabel = (seconds: number) => {
+    const units = [[31536000, "year"], [2592000, "month"], [86400, "day"], [3600, "hour"], [60, "minute"], [1, "second"]] as const;
+    const [size, unit] = units.find(([size]) => Math.abs(seconds) >= size) || units[units.length - 1];
+    return new Intl.NumberFormat(i18n.resolvedLanguage || i18n.language, { style: "unit", unit, unitDisplay: "long" }).format(Math.floor(Math.abs(seconds) / size));
+  };
 
   if (status === "on_hold" && onHoldDuration) {
-    const days = Math.round(onHoldDuration / 86400);
     return (
       <span className={cn("text-[11px] text-muted-foreground flex items-center gap-1", className)}>
         <Clock className="size-3 shrink-0 opacity-70" />
-        <span>{days} {t("days", { defaultValue: "days" })} ({t("on_hold", { defaultValue: "on hold" })})</span>
+        <span>{durationLabel(onHoldDuration)} ({t("on_hold", { defaultValue: "on hold" })})</span>
       </span>
     );
   }
@@ -199,7 +208,7 @@ export function ExpiryInfo({
       )}
     >
       <Clock className="size-3 shrink-0 opacity-70" />
-      <span>{t(dateInfo.status, { time: dateInfo.time })}</span>
+      <span>{t(dateInfo.status, { time: durationLabel(expire - Date.now() / 1000) })}</span>
     </span>
   );
 }
@@ -220,115 +229,62 @@ export const ActionButtons: FC<ActionButtonsProps> = ({ user, className }) => {
     : user.subscription_url;
 
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    if (copiedIndex !== null) {
-      const timer = setTimeout(() => {
-        setCopiedIndex(null);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [copiedIndex]);
+  useEffect(() => () => {
+    if (copyTimer.current) clearTimeout(copyTimer.current);
+  }, []);
 
-  const copy = (text: string, index: number) => {
-    if (navigator?.clipboard?.writeText) {
-      navigator.clipboard.writeText(text).catch(() => { });
+  const onCopy = (index: number, success: boolean) => {
+    if (!success) {
+      toast.error(t("usersTable.copyFailed", { defaultValue: "Could not copy. Please try again." }));
+      return;
     }
+    if (copyTimer.current) clearTimeout(copyTimer.current);
     setCopiedIndex(index);
+    copyTimer.current = setTimeout(() => setCopiedIndex(null), 1500);
   };
 
+  const actions = [
+    { label: t("usersTable.copyLink"), icon: Link2, text: subUrl },
+    { label: t("usersTable.copyConfigs"), icon: Copy, text: proxyLinks },
+    { label: t("usersTable.qrCode", { defaultValue: "QR code" }), icon: QrCode,
+      onClick: () => { setQRCode(user.links); setSubLink(user.subscription_url); } },
+    { label: t("userDialog.editUser", { defaultValue: "Edit user" }), icon: Pencil,
+      onClick: () => onEditingUser(user) },
+  ];
+
   return (
-    <div
-      className={cn("flex items-center justify-end gap-1", className)}
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}
-    >
-      <CopyToClipboard text={subUrl} onCopy={() => setCopiedIndex(0)}>
-        <SimpleTooltip
-          label={copiedIndex === 0 ? t("usersTable.copied") : t("usersTable.copyLink")}
-        >
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label={t("usersTable.copyLink")}
-            title={copiedIndex === 0 ? t("usersTable.copied") : t("usersTable.copyLink")}
-            className="size-8 text-muted-foreground hover:text-foreground"
-            onClick={(e) => {
-              e.stopPropagation();
-              copy(subUrl, 0);
-            }}
-          >
-            {copiedIndex === 0 ? (
-              <Check className="size-4 text-success" />
-            ) : (
-              <Link2 className="size-4" />
-            )}
-          </Button>
-        </SimpleTooltip>
-      </CopyToClipboard>
-
-      <CopyToClipboard text={proxyLinks} onCopy={() => setCopiedIndex(1)}>
-        <SimpleTooltip
-          label={copiedIndex === 1 ? t("usersTable.copied") : t("usersTable.copyConfigs")}
-        >
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label={t("usersTable.copyConfigs")}
-            title={copiedIndex === 1 ? t("usersTable.copied") : t("usersTable.copyConfigs")}
-            className="size-8 text-muted-foreground hover:text-foreground"
-            onClick={(e) => {
-              e.stopPropagation();
-              copy(proxyLinks, 1);
-            }}
-          >
-            {copiedIndex === 1 ? (
-              <Check className="size-4 text-success" />
-            ) : (
-              <Copy className="size-4" />
-            )}
-          </Button>
-        </SimpleTooltip>
-      </CopyToClipboard>
-
-      <SimpleTooltip label="QR Code">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          aria-label="QR Code"
-          title="QR Code"
-          className="size-8 text-muted-foreground hover:text-foreground"
-          onClick={(e) => {
-            e.stopPropagation();
-            setQRCode(user.links);
-            setSubLink(user.subscription_url);
-          }}
-        >
-          <QrCode className="size-4" />
-        </Button>
-      </SimpleTooltip>
-
-      <SimpleTooltip label={t("userDialog.editUser", { defaultValue: "Edit user" })}>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          aria-label={t("userDialog.editUser", { defaultValue: "Edit user" })}
-          title={t("userDialog.editUser", { defaultValue: "Edit user" })}
-          className="size-8 text-muted-foreground hover:text-foreground"
-          onClick={(e) => {
-            e.stopPropagation();
-            onEditingUser(user);
-          }}
-        >
-          <Pencil className="size-4" />
-        </Button>
-      </SimpleTooltip>
+    <div className={cn("flex items-center justify-end gap-1", className)}
+      onClick={(event) => event.stopPropagation()}>
+      {actions.map((action, index) => {
+        const copied = copiedIndex === index;
+        const Icon = copied ? Check : action.icon;
+        const trigger = (
+          <TooltipTrigger render={
+            <Button type="button" variant="ghost" size="icon-sm"
+              aria-label={`${action.label}: ${user.username}`}
+              disabled={action.text !== undefined && !action.text}
+              className="size-9 text-muted-foreground hover:text-foreground"
+              onClick={action.onClick}>
+              <Icon aria-hidden="true" className={cn("size-4", copied && "text-success")} />
+            </Button>
+          } />
+        );
+        return (
+          <Tooltip key={action.label}>
+            {action.text !== undefined ? (
+              <CopyToClipboard text={action.text} onCopy={(_text, success) => onCopy(index, success)}>
+                {trigger}
+              </CopyToClipboard>
+            ) : trigger}
+            <TooltipContent className="rounded-none">{copied ? t("usersTable.copied") : action.label}</TooltipContent>
+          </Tooltip>
+        );
+      })}
+      <span role="status" aria-live="polite" className="sr-only">
+        {copiedIndex !== null ? t("usersTable.copied") : ""}
+      </span>
     </div>
   );
 };
@@ -340,30 +296,30 @@ export function UsernameHeader() {
 
   const handleSort = () => {
     let newSort = filters.sort;
-    if (newSort.includes("username")) {
+    if (newSort === "username" || newSort === "-username") {
       newSort = newSort.startsWith("-") ? "-created_at" : "-username";
     } else {
       newSort = "username";
     }
-    onFilterChange({ sort: newSort });
+    onFilterChange({ sort: newSort, offset: 0 });
   };
 
-  const isActive = filters.sort.includes("username");
+  const isActive = filters.sort === "username" || filters.sort === "-username";
 
   return (
-    <button
+    <Button variant="ghost" size="sm"
       type="button"
       onClick={handleSort}
       className={cn(
-        "inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider rounded-md px-1.5 py-1 transition-colors cursor-pointer select-none",
+        "inline-flex items-center gap-1.5 text-xs font-semibold rounded-none px-1.5 py-1 transition-colors cursor-pointer select-none",
         isActive
-          ? "text-primary-text font-bold bg-primary/10"
+          ? "text-foreground font-bold bg-primary/10"
           : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
       )}
     >
       <span>{t("username")}</span>
       <Sort sort={filters.sort} column="username" />
-    </button>
+    </Button>
   );
 }
 
@@ -374,17 +330,18 @@ export function StatusHeader() {
 
   const handleSort = () => {
     let newSort = filters.sort;
-    if (newSort.includes("expire")) {
+    if (newSort === "expire" || newSort === "-expire") {
       newSort = newSort.startsWith("-") ? "-created_at" : "-expire";
     } else {
       newSort = "expire";
     }
-    onFilterChange({ sort: newSort });
+    onFilterChange({ sort: newSort, offset: 0 });
   };
 
   const handleStatusFilter = (status?: string) => {
     onFilterChange({
-      status: status && status.length > 0 ? (status as any) : undefined,
+      status: status && status.length > 0 ? (status as "active" | "disabled" | "limited" | "expired" | "on_hold") : undefined,
+      offset: 0,
     });
   };
 
@@ -396,9 +353,9 @@ export function StatusHeader() {
         <DropdownMenuTrigger
           type="button"
           className={cn(
-            "inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider rounded-md px-2 py-1 transition-colors outline-none cursor-pointer",
+            "inline-flex items-center gap-1.5 text-xs font-semibold rounded-none px-2 py-1 transition-colors outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer",
             hasFilter
-              ? "bg-primary/10 text-primary-text hover:bg-primary/20 font-bold"
+              ? "bg-primary/10 text-foreground hover:bg-primary/20 font-bold"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
           )}
         >
@@ -438,19 +395,19 @@ export function StatusHeader() {
 
       <span className="text-muted-foreground/40">|</span>
 
-      <button
+      <Button variant="ghost" size="sm"
         type="button"
         onClick={handleSort}
         className={cn(
-          "inline-flex items-center gap-1 text-xs font-semibold rounded-md px-1.5 py-1 transition-colors cursor-pointer",
+          "inline-flex items-center gap-1 text-xs font-semibold rounded-none px-1.5 py-1 transition-colors cursor-pointer",
           filters.sort.includes("expire")
-            ? "text-primary-text font-bold bg-primary/10"
+            ? "text-foreground font-bold bg-primary/10"
             : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
         )}
       >
         <span>{t("expire", { defaultValue: "Expiry" })}</span>
         <Sort sort={filters.sort} column="expire" />
-      </button>
+      </Button>
     </div>
   );
 }
@@ -462,31 +419,43 @@ export function DataUsageHeader() {
 
   const handleSort = () => {
     let newSort = filters.sort;
-    if (newSort.includes("used_traffic")) {
+    if (newSort === "used_traffic" || newSort === "-used_traffic") {
       newSort = newSort.startsWith("-") ? "-created_at" : "-used_traffic";
     } else {
       newSort = "used_traffic";
     }
-    onFilterChange({ sort: newSort });
+    onFilterChange({ sort: newSort, offset: 0 });
   };
 
-  const isActive = filters.sort.includes("used_traffic");
+  const isActive = filters.sort === "used_traffic" || filters.sort === "-used_traffic";
 
   return (
-    <button
+    <Button variant="ghost" size="sm"
       type="button"
       onClick={handleSort}
       className={cn(
-        "inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider rounded-md px-1.5 py-1 transition-colors cursor-pointer select-none",
+        "inline-flex items-center gap-1.5 text-xs font-semibold rounded-none px-1.5 py-1 transition-colors cursor-pointer select-none",
         isActive
-          ? "text-primary-text font-bold bg-primary/10"
+          ? "text-foreground font-bold bg-primary/10"
           : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
       )}
     >
       <span>{t("usersTable.dataUsage")}</span>
       <Sort sort={filters.sort} column="used_traffic" />
-    </button>
+    </Button>
   );
+}
+
+function ActionsHeader() {
+  const { t } = useTranslation();
+  return <span className="sr-only">{t("actions", { defaultValue: "Actions" })}</span>;
+}
+
+function UsernameButton({ user }: { user: User }) {
+  const onEditingUser = useDashboard((state) => state.onEditingUser);
+  return <Button variant="link" className="h-auto max-w-56 justify-start p-0 text-sm text-foreground" onClick={(event) => { event.stopPropagation(); onEditingUser(user); }}>
+    <span className="truncate">{user.username}</span>
+  </Button>;
 }
 
 export const columns = helper.columns([
@@ -498,18 +467,16 @@ export const columns = helper.columns([
         <div className="flex items-center gap-2.5 py-1">
           <OnlineBadge lastOnline={user.online_at} className="shrink-0" />
           <div className="flex flex-col min-w-0">
-            <span className="font-semibold text-foreground text-sm truncate leading-tight">
-              {user.username}
-            </span>
+            <UsernameButton user={user} />
             <div className="flex items-center gap-1.5 mt-0.5">
               <OnlineStatus lastOnline={user.online_at} className="m-0 text-[11px]" />
               {user.note && (
-                <span
-                  className="text-[11px] text-muted-foreground/70 truncate max-w-[140px]"
-                  title={user.note}
-                >
-                  • {user.note}
-                </span>
+                <Tooltip>
+                  <TooltipTrigger render={<span tabIndex={0} className="max-w-[140px] truncate text-[11px] text-muted-foreground/70 focus-visible:rounded-none focus-visible:outline-2 focus-visible:outline-ring" />}>
+                    • {user.note}
+                  </TooltipTrigger>
+                  <TooltipContent className="rounded-none break-words">{user.note}</TooltipContent>
+                </Tooltip>
               )}
             </div>
           </div>
@@ -524,7 +491,7 @@ export const columns = helper.columns([
       const user = row.original;
       return (
         <div className="flex flex-col gap-1 py-1">
-          <StatusBadge expiryDate={user.expire} status={user.status} showDetail={true} />
+          <StatusBadge status={user.status} showDetail={true} />
           <ExpiryInfo
             expire={user.expire}
             status={user.status}
@@ -552,7 +519,7 @@ export const columns = helper.columns([
   }),
   helper.display({
     id: "actions",
-    header: () => <span className="sr-only">Actions</span>,
+    header: () => <ActionsHeader />,
     cell: ({ row }) => {
       const user = row.original;
       return (
