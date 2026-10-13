@@ -194,6 +194,7 @@
   "userDialog.absolute": "مطلق",
   "userDialog.custom": "انتخابی",
   "userDialog.dataLimit": "حد مصرف داده",
+  "userDialog.bsDataLimit": "ترافیک اضافی BS",
   "userDialog.deviceLimit": "حداکثر دستگاه",
   "userDialog.devicesButton": "دستگاه‌ها",
   "userDialog.devicesTitle": "دستگاه‌ها",

@@ -231,6 +231,7 @@
   "userDialog.absolute": "Абсолютно",
   "userDialog.custom": "Пользовательский",
   "userDialog.dataLimit": "Лимит трафика",
+  "userDialog.bsDataLimit": "Дополнительный БС трафик",
   "userDialog.deviceLimit": "Лимит устройств",
   "userDialog.devicesButton": "Устройства",
   "userDialog.devicesTitle": "Устройства",

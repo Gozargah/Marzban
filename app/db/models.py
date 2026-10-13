@@ -253,28 +253,37 @@ class User(Base):
     def lifetime_used_traffic(self) -> int:
         return int(sum([log.used_traffic_at_reset for log in self.usage_logs]) + self.used_traffic)
 
-    @property
-    def bs_monthly_limit_total(self) -> int | None:
-        """Месячный БС-потолок (лимит панели + купленный пул), None если лимит не задан.
+    def _bs_pool_state(self) -> tuple[int, int] | None:
+        """(месячный лимит панели, нормализованный купленный пул) или None, если лимит не задан.
 
         Пул берём с самого инстанса — оба атрибута уже загружены, и внутри месяца
-        свойство не делает ни одного запроса кроме (закешированного на сессию)
+        метод не делает ни одного запроса кроме (закешированного на сессию)
         чтения глобального лимита. В БД за расходом идём только когда период пула
         отстал: тогда нужен агрегат ещё не списанного расхода прошлого месяца.
+
+        Результат кешируется на инстансе по (пул, период, лимит, текущий месяц),
+        чтобы список пользователей не ходил в БД дважды, а смена месяца на живом
+        объекте не отдавала вчерашний пересчёт.
         """
         from sqlalchemy.orm import object_session
 
         from app.services.panel_settings import get_bs_monthly_limit
-        from app.xray.bs_limit import carry_over_pool, monthly_effective_limit, period_keys
+        from app.xray.bs_limit import carry_over_pool, period_keys
 
         db = object_session(self)
         monthly_limit = get_bs_monthly_limit(db)
         if not monthly_limit:
             return None
 
-        pool = int(self.bs_extra or 0)
+        raw_pool = int(self.bs_extra or 0)
         period = cast("str | None", self.bs_extra_period)
         yyyymm = period_keys(datetime.utcnow())
+        cache_key = (raw_pool, period, monthly_limit, yyyymm)
+        cached = self.__dict__.get("_bs_pool_state_cache")
+        if cached is not None and cached[0] == cache_key:
+            return cached[1]
+
+        pool = raw_pool
         # Без сессии (detached-объект) агрегат не достать — отдаём заведомо
         # ненормализованный пул: если период отстал, потолок будет завышен до
         # ближайшего тика джобы учёта.
@@ -283,7 +292,32 @@ class User(Base):
 
             stale_used = get_bs_usage_totals_stale(db, cast(int, self.id), yyyymm, period)
             pool = carry_over_pool(pool, stale_used, monthly_limit)
+        state = (monthly_limit, pool)
+        self.__dict__["_bs_pool_state_cache"] = (cache_key, state)
+        return state
+
+    @property
+    def bs_monthly_limit_total(self) -> int | None:
+        """Месячный БС-потолок (лимит панели + купленный пул), None если лимит не задан."""
+        from app.xray.bs_limit import monthly_effective_limit
+
+        state = self._bs_pool_state()
+        if state is None:
+            return None
+        monthly_limit, pool = state
         return monthly_effective_limit(monthly_limit, pool)
+
+    @property
+    def bs_extra_effective(self) -> int:
+        """Купленный БС-пул текущего месяца без базового лимита панели.
+
+        0, если пользователь ничего не докупал или лимит панели не задан.
+        Период прошлого месяца уже приведён: из пула вычтен перерасход.
+        """
+        state = self._bs_pool_state()
+        if state is None:
+            return 0
+        return state[1]
 
     @property
     def bs_monthly_used(self) -> int:

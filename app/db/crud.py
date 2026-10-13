@@ -776,6 +776,9 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
     Returns:
         User: The updated user object.
     """
+    if modify.bs_extra is not None and modify.bs_limit_total is not None:
+        raise ValueError("Нельзя задать bs_extra и bs_limit_total одновременно")
+
     added_proxies: dict[ProxyTypes, Proxy] = {}
     if modify.proxies:
         for proxy_type, settings in modify.proxies.items():
@@ -867,6 +870,11 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
         )
     elif dbuser.next_plan is not None:
         db.delete(dbuser.next_plan)
+
+    if modify.bs_extra is not None:
+        set_user_bs_extra_amount(db, dbuser, modify.bs_extra)
+    elif modify.bs_limit_total is not None:
+        set_user_bs_limit_total(db, dbuser, modify.bs_limit_total)
 
     dbuser.edit_at = datetime.utcnow()
 
@@ -2169,6 +2177,46 @@ def _bot_settings_for_user(db: Session, dbuser: User) -> dict[str, Any]:
         return apply_bot_settings_fallback(None)
     data = db.query(BotSettings.data).filter(BotSettings.bot_id == dbuser.bot_id).scalar()
     return apply_bot_settings_fallback(data)
+
+
+def set_user_bs_extra_amount(db: Session, dbuser: User, extra_bytes: int) -> None:
+    """Задать купленный БС-пул (bs_extra), без базового месячного лимита панели."""
+    from app.services.panel_settings import get_bs_monthly_limit
+    from app.xray.bs_limit import period_keys
+
+    user_id = cast(int, dbuser.id)
+    monthly_limit = get_bs_monthly_limit(db)
+    yyyymm = period_keys(datetime.utcnow())
+    if not monthly_limit:
+        if extra_bytes:
+            raise ValueError("Месячный лимит БС в настройках панели не задан (0)")
+        new_extra = 0
+    else:
+        normalize_bs_extra_period(db, user_id, monthly_limit, yyyymm, persist=True)
+        new_extra = max(0, int(extra_bytes))
+
+    db.execute(update(User).where(User.id == user_id).values(bs_extra=new_extra, bs_extra_period=yyyymm))
+
+
+def set_user_bs_limit_total(db: Session, dbuser: User, limit_total: int) -> None:
+    """Задать суммарный месячный БС-потолок (база панели + купленный пул bs_extra)."""
+    from app.services.panel_settings import get_bs_monthly_limit
+    from app.xray.bs_limit import period_keys
+
+    user_id = cast(int, dbuser.id)
+    monthly_limit = get_bs_monthly_limit(db)
+    yyyymm = period_keys(datetime.utcnow())
+    if not monthly_limit:
+        if limit_total:
+            raise ValueError("Месячный лимит БС в настройках панели не задан (0)")
+        new_extra = 0
+    else:
+        normalize_bs_extra_period(db, user_id, monthly_limit, yyyymm, persist=True)
+        if int(limit_total) < monthly_limit:
+            raise ValueError("Суммарный БС-лимит не может быть меньше месячного лимита панели")
+        new_extra = int(limit_total) - monthly_limit
+
+    db.execute(update(User).where(User.id == user_id).values(bs_extra=new_extra, bs_extra_period=yyyymm))
 
 
 def reset_user_bs_extra_pool(db: Session, dbuser: User, *, commit: bool = True) -> User:

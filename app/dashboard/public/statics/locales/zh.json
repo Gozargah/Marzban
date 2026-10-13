@@ -189,6 +189,7 @@
   "userDialog.absolute": "选择范围",
   "userDialog.custom": "自定义",
   "userDialog.dataLimit": "流量限制",
+  "userDialog.bsDataLimit": "额外 BS 流量",
   "userDialog.deviceLimit": "设备数量上限",
   "userDialog.devicesButton": "设备",
   "userDialog.devicesTitle": "设备",

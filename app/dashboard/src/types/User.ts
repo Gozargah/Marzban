@@ -54,6 +54,8 @@ export type User = {
   online_at: string;
   bs_monthly_used?: number | null;
   bs_monthly_limit_total?: number | null;
+  /** Купленный БС-трафик без базового лимита панели, байты */
+  bs_extra_effective?: number | null;
 };
 
 export type UserCreate = Pick<
@@ -69,7 +71,10 @@ export type UserCreate = Pick<
   | "status"
   | "note"
   | "bot_username"
->;
+> & {
+  /** Купленный БС-трафик (байты), только при редактировании пользователя */
+  bs_extra?: number | null;
+};
 
 export type UserApi = {
   discord_webook: string;

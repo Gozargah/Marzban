@@ -231,6 +231,7 @@
   "userDialog.absolute": "Absolute",
   "userDialog.custom": "Custom",
   "userDialog.dataLimit": "Data Limit",
+  "userDialog.bsDataLimit": "Additional white list traffic",
   "userDialog.deviceLimit": "Device Limit",
   "userDialog.devicesButton": "Devices",
   "userDialog.devicesTitle": "Devices",

@@ -55,6 +55,11 @@ import {
   UserDevicesResponse,
 } from "types/User";
 import { Bot } from "types/Bot";
+import {
+  GIB,
+  bsExtraGbSchema,
+  shouldSubmitBsExtra,
+} from "utils/bsExtraForm";
 import { relativeExpiryDate } from "utils/dateFormatter";
 import { z } from "zod";
 import { DeleteIcon } from "./DeleteUserModal";
@@ -92,8 +97,12 @@ const UserUsageIcon = chakra(ChartPieIcon, {
 
 export type UserDialogProps = {};
 
-export type FormType = Pick<UserCreate, keyof UserCreate> & {
+export type FormType = Omit<UserCreate, "bs_extra"> & {
   selected_proxies: ProxyKeys;
+  /** Купленный БС-трафик в ГБ (в API уходит как bs_extra в байтах) */
+  bs_extra?: number | null;
+  /** Пользователь менял поле — слать введённое, даже если цифра совпала с отображаемой */
+  bs_extra_dirty?: boolean;
 };
 
 interface BotOption {
@@ -106,8 +115,13 @@ const formatUser = (user: User): FormType => {
     ...user,
     bot_username: user.bot_username ?? "",
     data_limit: user.data_limit
-      ? Number((user.data_limit / 1073741824).toFixed(5))
+      ? Number((user.data_limit / GIB).toFixed(5))
       : user.data_limit,
+    bs_extra:
+      user.bs_monthly_limit_total != null && user.bs_monthly_limit_total > 0
+        ? Number(((user.bs_extra_effective ?? 0) / GIB).toFixed(5))
+        : null,
+    bs_extra_dirty: false,
     device_limit: user.device_limit ?? null,
     on_hold_expire_duration: user.on_hold_expire_duration
       ? Number(user.on_hold_expire_duration / (24 * 60 * 60))
@@ -124,6 +138,8 @@ const getDefaultValues = (): FormType => {
   return {
     selected_proxies: Object.keys(defaultInbounds) as ProxyKeys,
     data_limit: null,
+    bs_extra: null,
+    bs_extra_dirty: false,
     device_limit: null,
     expire: null,
     username: "",
@@ -187,9 +203,11 @@ const baseSchema = {
     .or(z.number())
     .nullable()
     .transform((str) => {
-      if (str) return Number((parseFloat(String(str)) * 1073741824).toFixed(5));
+      if (str) return Number((parseFloat(String(str)) * GIB).toFixed(5));
       return 0;
     }),
+  bs_extra: bsExtraGbSchema,
+  bs_extra_dirty: z.boolean().optional(),
   device_limit: z
     .string()
     .min(0)
@@ -339,7 +357,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
     const method = isEditing ? "edited" : "created";
     setError(null);
 
-    const { selected_proxies, ...rest } = values;
+    const { selected_proxies, bs_extra, bs_extra_dirty, ...rest } = values;
 
     let body: UserCreate = {
       ...rest,
@@ -356,6 +374,9 @@ export const UserDialog: FC<UserDialogProps> = () => {
           ? values.status
           : "active",
     };
+    if (isEditing && shouldSubmitBsExtra(bs_extra, bs_extra_dirty)) {
+      body.bs_extra = bs_extra;
+    }
 
     methods[method](body)
       .then(() => {
@@ -660,6 +681,43 @@ export const UserDialog: FC<UserDialogProps> = () => {
                             }}
                           />
                         </FormControl>
+                        {isEditing &&
+                          editingUser?.bs_monthly_limit_total != null &&
+                          editingUser.bs_monthly_limit_total > 0 && (
+                            <FormControl mb={"10px"}>
+                              <FormLabel>{t("userDialog.bsDataLimit")}</FormLabel>
+                              <Controller
+                                control={form.control}
+                                name="bs_extra"
+                                render={({ field }) => {
+                                  return (
+                                    <Input
+                                      endAdornment="GB"
+                                      type="number"
+                                      size="sm"
+                                      borderRadius="6px"
+                                      onChange={(v) => {
+                                        form.setValue("bs_extra_dirty", true, {
+                                          shouldValidate: false,
+                                        });
+                                        field.onChange(v);
+                                      }}
+                                      disabled={disabled}
+                                      error={
+                                        form.formState.errors.bs_extra?.message
+                                      }
+                                      value={
+                                        field.value === null ||
+                                        field.value === undefined
+                                          ? ""
+                                          : String(field.value)
+                                      }
+                                    />
+                                  );
+                                }}
+                              />
+                            </FormControl>
+                          )}
                         <FormControl mb={"10px"}>
                           <FormLabel>{t("userDialog.deviceLimit")}</FormLabel>
                           <Controller
