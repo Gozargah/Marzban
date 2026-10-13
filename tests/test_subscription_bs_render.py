@@ -204,8 +204,8 @@ def _host(
 def xray_stub(monkeypatch):
     """xray.config.inbounds_by_tag / xray.hosts — единственное, что share берёт из xray."""
 
-    def _apply(hosts: list[dict]):
-        inbound = _inbound()
+    def _apply(hosts: list[dict], inbound: dict | None = None):
+        inbound = inbound or _inbound()
         monkeypatch.setattr(
             share.xray,
             "config",
@@ -233,6 +233,31 @@ def _render(conf, bs: BsContext, stub: StubEndpoint = ZERO_STUB, subset=None, bs
         subset=subset,
         bs_usage_suffix=bs_usage_suffix,
     )
+
+
+def _xhttp_inbound(extra: dict) -> dict:
+    return {**_inbound(), "network": "xhttp", "xhttp_extra": extra}
+
+
+def test_host_xhttp_extra_overrides_inbound_extra(xray_stub):
+    host = _host("x.example.com", node_ids=[42])
+    host["xhttp_extra"] = {"xPaddingMethod": "tokenish"}
+    xray_stub([host], inbound=_xhttp_inbound({"scMaxConcurrentPosts": 10}))
+    conf = _FakeConf()
+
+    _render(conf, BsContext.empty())
+
+    assert conf.calls[0]["inbound"]["xhttp_extra"] == {"xPaddingMethod": "tokenish"}
+
+
+def test_host_without_xhttp_extra_falls_back_to_inbound_extra(xray_stub):
+    """NPVPN-2169: без extra на хосте клиент получает только заданное в инбаунде."""
+    xray_stub([_host("x.example.com", node_ids=[42])], inbound=_xhttp_inbound({"scMaxConcurrentPosts": 10}))
+    conf = _FakeConf()
+
+    _render(conf, BsContext.empty())
+
+    assert conf.calls[0]["inbound"]["xhttp_extra"] == {"scMaxConcurrentPosts": 10}
 
 
 def _blocked_ctx() -> BsContext:

@@ -558,7 +558,7 @@ def process_inbounds_and_tags(
                         "fragment_setting": host["fragment_setting"],
                         "noise_setting": host["noise_setting"],
                         "random_user_agent": host["random_user_agent"],
-                        "xhttp_extra": host["xhttp_extra"],
+                        "xhttp_extra": host["xhttp_extra"] or inbound.get("xhttp_extra"),
                     }
                 )
 

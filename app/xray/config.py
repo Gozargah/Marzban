@@ -14,6 +14,7 @@ from app.models.proxy import ProxyTypes
 from app.models.user import UserStatus
 from app.utils.crypto import get_cert_SANs
 from app.xray.node_config import _NodeJsonCache, inline_local_certificates
+from app.xray.xhttp_extra import inbound_xhttp_extra
 from config import DEBUG, XRAY_EXCLUDE_INBOUND_TAGS, XRAY_FALLBACKS_INBOUND_TAG
 
 
@@ -284,14 +285,9 @@ class XRayConfig(dict):
                     settings["path"] = net_settings.get("path", "")
                     host = net_settings.get("host", "")
                     settings["host"] = [host]
-                    settings["scMaxEachPostBytes"] = net_settings.get("scMaxEachPostBytes", 1000000)
-                    settings["scMaxConcurrentPosts"] = net_settings.get("scMaxConcurrentPosts", 100)
-                    settings["scMinPostsIntervalMs"] = net_settings.get("scMinPostsIntervalMs", 30)
-                    settings["xPaddingBytes"] = net_settings.get("xPaddingBytes", "100-1000")
-                    settings["xmux"] = net_settings.get("xmux", {})
                     settings["mode"] = net_settings.get("mode", "auto")
-                    settings["noGRPCHeader"] = net_settings.get("noGRPCHeader", False)
-                    settings["keepAlivePeriod"] = net_settings.get("keepAlivePeriod", 0)
+                    # Хост может переопределить это значение (см. subscription/share.py).
+                    settings["xhttp_extra"] = inbound_xhttp_extra(net_settings)
 
                 elif net == "kcp":
                     header = net_settings.get("header", {})
