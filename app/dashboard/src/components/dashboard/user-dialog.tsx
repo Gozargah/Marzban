@@ -23,7 +23,7 @@ import { ProxyKeys, ProxyType, User, UserCreate, UserInbounds } from "types/User
 import { relativeExpiryDate } from "utils/dateFormatter";
 import { z } from "zod";
 import { RadioGroup } from "../RadioGroup";
-import { UsageFilter, createUsageConfig } from "../UsageFilter";
+import { UsageFilter, createUsageConfig } from "./usage-filter";
 
 export type UserDialogProps = {};
 

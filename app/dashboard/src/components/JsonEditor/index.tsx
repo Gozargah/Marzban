@@ -1,4 +1,4 @@
-import { Box, useColorMode } from "@chakra-ui/react";
+import { useTheme } from "@/components/theme-provider";
 import { forwardRef, useEffect, useRef } from "react";
 import { monaco, jsonDefaults } from "./monaco";
 import debounce from "lodash.debounce";
@@ -61,7 +61,7 @@ export const JsonEditor = forwardRef<HTMLDivElement, JSONEditorProps>(({ json, o
   use(initializeEditorPromise);
   const schema = use(schemaImportPromise);
   const hostRef = useRef<HTMLDivElement>(null);
-  const { colorMode } = useColorMode();
+  const { resolvedTheme: colorMode } = useTheme();
 
   useEffect(() => {
     const host = hostRef.current!;
@@ -121,36 +121,6 @@ export const JsonEditor = forwardRef<HTMLDivElement, JSONEditorProps>(({ json, o
   }, [colorMode]);
 
   return (
-    <Box
-      ref={hostRef}
-      height="full"
-      flexGrow={1}
-      display="flex"
-      flexDirection="column"
-      overflow="hidden"
-      css={{ "& > div": { height: "100% !important", flexGrow: 1 } }}
-      _light={{
-        "&  .lines-content.monaco-editor-background": {
-          bg: "#F9F9F9",
-        },
-        "& .margin-view-overlays": {
-          bg: "#f6f6f6",
-        },
-        ".monaco-editor .view-overlays .current-line": {
-          bg: "#f1f1f1 !important",
-        },
-      }}
-      _dark={{
-        "&  .lines-content.monaco-editor-background": {
-          bg: "#1D2127",
-        },
-        "& .margin-view-overlays": {
-          bg: "#1D2127",
-        },
-        ".monaco-editor .view-overlays .current-line": {
-          bg: "#2b2f37 !important",
-        },
-      }}
-    />
+    <div ref={hostRef} className="flex h-full min-h-0 grow flex-col overflow-hidden [&>div]:h-full [&>div]:grow" />
   );
 });

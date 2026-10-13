@@ -49,10 +49,7 @@ export const StatusBadge: FC<UserStatusProps> = ({
     <span className={cn("inline-flex items-center flex-wrap gap-1.5", className)}>
       <Badge
         variant={config.variant}
-        className={cn(
-          "gap-1 font-medium capitalize",
-          compact ? "px-2 py-0.5 text-[0.7rem]" : "px-2.5 py-1 text-xs"
-        )}
+        className={cn("gap-1 font-medium capitalize", compact ? "px-2 py-0.5 text-[0.7rem]" : "px-2.5 py-1 text-xs")}
       >
         <Icon className={cn(compact ? "size-3" : "size-3.5")} />
         {showDetail && (
