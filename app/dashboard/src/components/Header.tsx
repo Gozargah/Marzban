@@ -29,7 +29,7 @@ import isValid from "date-fns/isValid";
 import { FC, ReactNode, useState } from "react";
 import GitHubButton from "react-github-btn";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { updateThemeColor } from "utils/themeColor";
 import { Language } from "./Language";
 import useGetUser from "hooks/useGetUser";

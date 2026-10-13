@@ -17,7 +17,7 @@ import { fetchInbounds, FilterType, useDashboard } from "contexts/DashboardConte
 import { FC, useEffect } from "react";
 import { Statistics } from "../components/Statistics";
 import debounce from "lodash.debounce";
-import { router } from "@/pages/Router";
+import { router } from "@/pages/router";
 
 export const Dashboard: FC = () => {
   useEffect(() => {

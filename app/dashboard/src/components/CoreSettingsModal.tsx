@@ -19,7 +19,7 @@ import { useDashboard } from "contexts/DashboardContext";
 import { FC, lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { useMutation } from "react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Icon } from "./Icon";
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Loader2Icon, PanelRightCloseIcon, XIcon } from "lucide-react";
@@ -70,7 +70,9 @@ const CoreSettingModalContent: FC = () => {
   }, [isEditingCore]);
   "".startsWith;
 
-  const { mutate: handleRestartCore, isLoading: isRestarting } = useMutation(restartCore);
+  const { mutate: handleRestartCore, isPending: isRestarting } = useMutation({
+    mutationFn: restartCore,
+  });
 
   const handleOnSave = ({ config }: any) => {
     updateConfig(config)

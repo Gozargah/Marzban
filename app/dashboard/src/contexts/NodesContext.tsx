@@ -1,4 +1,4 @@
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 import { fetch } from "service/http";
 import { z } from "zod";
 import { create } from "zustand";
@@ -54,7 +54,7 @@ export type NodeStore = {
 export const useNodesQuery = () => {
   const { isEditingNodes } = useDashboard();
   return useQuery({
-    queryKey: FetchNodesQueryKey,
+    queryKey: [FetchNodesQueryKey],
     queryFn: useNodes.getState().fetchNodes,
     refetchInterval: isEditingNodes ? 3000 : undefined,
     refetchOnWindowFocus: false,

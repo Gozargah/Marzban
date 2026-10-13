@@ -7,7 +7,7 @@ import {
 import { useDashboard } from "contexts/DashboardContext";
 import { FC, PropsWithChildren, ReactElement, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 import { fetch } from "service/http";
 import { formatBytes, numberWithCommas } from "utils/formatByte";
 
@@ -120,8 +120,8 @@ export const StatisticsQueryKey = "statistics-query-key";
 export const Statistics: FC<BoxProps> = (props) => {
   const { version } = useDashboard();
   const { data: systemData } = useQuery({
-    queryKey: StatisticsQueryKey,
-    queryFn: () => fetch("/system"),
+    queryKey: [StatisticsQueryKey],
+    queryFn: () => fetch<SystemData>("/system"),
     refetchInterval: 5000,
     onSuccess: ({ version: currentVersion }) => {
       if (version !== currentVersion)

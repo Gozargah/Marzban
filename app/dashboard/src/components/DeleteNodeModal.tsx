@@ -14,7 +14,7 @@ import {
 import { FetchNodesQueryKey, useNodes } from "contexts/NodesContext";
 import { FC } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   generateErrorMessage,
   generateSuccessMessage,
@@ -33,14 +33,15 @@ export const DeleteNodeModal: FC<DeleteUserModalProps> = ({
     setDeletingNode(null);
   };
 
-  const { isLoading, mutate: onDelete } = useMutation(deleteNode, {
+  const { isPending, mutate: onDelete } = useMutation({
+    mutationFn: deleteNode,
     onSuccess: () => {
       generateSuccessMessage(
-        t("deleteNode.deleteSuccess", {name: deletingNode && deletingNode.name}),
+        t("deleteNode.deleteSuccess", { name: deletingNode && deletingNode.name }),
         toast
       );
       setDeletingNode(null);
-      queryClient.invalidateQueries(FetchNodesQueryKey);
+      queryClient.invalidateQueries({ queryKey: [FetchNodesQueryKey] });
       deleteCallback && deleteCallback();
     },
     onError: (e) => {
@@ -70,7 +71,7 @@ export const DeleteNodeModal: FC<DeleteUserModalProps> = ({
               color="gray.600"
             >
               <Trans components={{ b: <b /> }}>
-                {t("deleteNode.prompt", {name: deletingNode.name})}
+                {t("deleteNode.prompt", { name: deletingNode.name })}
               </Trans>
             </Text>
           )}
@@ -84,7 +85,7 @@ export const DeleteNodeModal: FC<DeleteUserModalProps> = ({
             w="full"
             colorScheme="red"
             onClick={() => onDelete()}
-            leftIcon={isLoading ? <Spinner size="xs" /> : undefined}
+            leftIcon={isPending ? <Spinner size="xs" /> : undefined}
           >
             {t("delete")}
           </Button>

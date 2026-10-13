@@ -1,4 +1,4 @@
-import { router } from "@/pages/Router";
+import { router } from "@/pages/router";
 import { StatisticsQueryKey } from "components/Statistics";
 import debounce from "lodash.debounce";
 import { fetch } from "service/http";
