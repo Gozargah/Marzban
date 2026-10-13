@@ -31,7 +31,7 @@ function StatisticCard({ title, content, icon: Icon }: StatisticCardProps) {
       <CardContent className="p-6">
         <dl className="flex flex-wrap items-center justify-between gap-4">
           <dt className="flex items-center gap-3 text-sm font-medium text-muted-foreground">
-            <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20">
+            <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-text ring-1 ring-primary/20">
               <Icon className="size-5" />
             </span>
             {title}

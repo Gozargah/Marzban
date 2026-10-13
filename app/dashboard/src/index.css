@@ -26,6 +26,19 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-border: var(--success-border);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-border: var(--warning-border);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-info-border: var(--info-border);
+  --color-purple: var(--purple);
+  --color-purple-soft: var(--purple-soft);
+  --color-purple-border: var(--purple-border);
+
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -34,6 +47,8 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-text: var(--primary-text);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -51,39 +66,53 @@
 
 :root {
   --app-font-sans: 'Inter Variable', sans-serif;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  /* Marzban primary.500: #396fe4 */
-  --primary: oklch(0.57076 0.18728 263.130);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
+  /* Shadcn neutral surfaces; Marzban blue is reserved for actions and focus. */
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --popover: #ffffff;
+  --primary: #396fe4;
+  --primary-hover: #2f61d0;
+  --primary-text: #2f61d0;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f5f5f5;
+  --muted-foreground: #6b6b6b;
+  --accent: #f5f5f5;
+  --accent-foreground: #171717;
+  --destructive: #b91c1c;
+  --border: #e5e5e5;
+  --input: #e5e5e5;
   --ring: var(--primary);
-  --chart-1: oklch(0.828 0.111 230.318);
-  --chart-2: oklch(0.685 0.169 237.323);
-  --chart-3: oklch(0.588 0.158 241.966);
-  --chart-4: oklch(0.5 0.134 242.749);
-  --chart-5: oklch(0.443 0.11 240.79);
-  --radius: 0.45rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
+  --success: #047857;
+  --success-soft: #ecfdf5;
+  --success-border: #c7e8d8;
+  --warning: #92400e;
+  --warning-soft: #fffbeb;
+  --warning-border: #f0dfb3;
+  --info: #1d4ed8;
+  --info-soft: #eff6ff;
+  --info-border: #d2e0f7;
+  --purple: #7e22ce;
+  --purple-soft: #faf5ff;
+  --purple-border: #e7d7f3;
+  --chart-1: #396fe4;
+  --chart-2: #047857;
+  --chart-3: #92400e;
+  --chart-4: #7e22ce;
+  --chart-5: #be185d;
+  --sidebar: #fafafa;
+  --card-foreground: var(--foreground);
+  --popover-foreground: var(--foreground);
+  --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
+  --radius: 0.45rem;
 }
 
 :lang(en) {
@@ -101,37 +130,51 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  /* Marzban primary.200: #749aec */
-  --primary: oklch(0.69327 0.12843 264.422);
-  --primary-foreground: oklch(0.145 0 0);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  /* Shadcn neutral surfaces; Marzban blue is reserved for actions and focus. */
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --card: #171717;
+  --popover: #171717;
+  --primary: #749aec;
+  --primary-hover: #86a8ef;
+  --primary-text: var(--primary);
+  --primary-foreground: #0a0a0a;
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --muted: #262626;
+  --muted-foreground: #a3a3a3;
+  --accent: #262626;
+  --accent-foreground: #fafafa;
+  --destructive: #f87171;
+  --border: #2e2e2e;
+  --input: #383838;
   --ring: var(--primary);
-  --chart-1: oklch(0.828 0.111 230.318);
-  --chart-2: oklch(0.685 0.169 237.323);
-  --chart-3: oklch(0.588 0.158 241.966);
-  --chart-4: oklch(0.5 0.134 242.749);
-  --chart-5: oklch(0.443 0.11 240.79);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
+  --success: #6ee7b7;
+  --success-soft: #1a2721;
+  --success-border: #30463b;
+  --warning: #fcd34d;
+  --warning-soft: #2b251b;
+  --warning-border: #4b402b;
+  --info: #93b4f4;
+  --info-soft: #202735;
+  --info-border: #35445f;
+  --purple: #d8b4fe;
+  --purple-soft: #292332;
+  --purple-border: #49395d;
+  --chart-1: #749aec;
+  --chart-2: #6ee7b7;
+  --chart-3: #fcd34d;
+  --chart-4: #d8b4fe;
+  --chart-5: #f9a8d4;
+  --sidebar: #171717;
+  --card-foreground: var(--foreground);
+  --popover-foreground: var(--foreground);
+  --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
 }
 
@@ -156,5 +199,22 @@
   .monaco-editor,
   .monaco-editor>div {
     @apply rounded-sm;
+  }
+}
+
+/* An opaque outline remains distinguishable on both raised and tinted surfaces. */
+:where(button, a, input, textarea, select, [role="button"], [role="switch"], [role="checkbox"]):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+@media (forced-colors: active) {
+  :focus-visible {
+    outline-color: Highlight;
   }
 }

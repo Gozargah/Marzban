@@ -20,7 +20,7 @@ export function Footer({ className, ...props }: ComponentProps<"footer">) {
     >
       <p>
         <a
-          className="rounded-sm text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="rounded-sm text-primary-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           href={REPO_URL}
         >
           Marzban
@@ -28,7 +28,7 @@ export function Footer({ className, ...props }: ComponentProps<"footer">) {
         {version ? <> (<bdi>v{version}</bdi>), </> : ", "}
         Made with <span role="img" aria-label="love">❤️</span> in{" "}
         <a
-          className="rounded-sm text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="rounded-sm text-primary-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           href={ORGANIZATION_URL}
         >
           Gozargah

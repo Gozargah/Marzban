@@ -40,7 +40,7 @@ export function QRCodeDialog() {
       >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg">
-            <QrCode className="size-5 text-primary" />
+            <QrCode className="size-5 text-primary-text" />
             {t("qrcodeDialog.title", { defaultValue: "QR codes" })}
           </DialogTitle>
         </DialogHeader>

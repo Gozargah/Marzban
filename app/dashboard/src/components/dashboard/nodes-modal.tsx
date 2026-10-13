@@ -289,7 +289,7 @@ export function NodesDialog() {
         >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg">
-              <Network className="size-5 text-primary" />
+              <Network className="size-5 text-primary-text" />
               {t("header.nodeSettings")}
             </DialogTitle>
             <DialogDescription>{t("nodes.title")}</DialogDescription>

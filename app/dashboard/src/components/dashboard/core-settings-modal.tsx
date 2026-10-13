@@ -101,7 +101,7 @@ export function CoreSettingsModal() {
         >
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2 text-lg">
-              <Settings className="size-5 text-primary" />
+              <Settings className="size-5 text-primary-text" />
               {t("core.title")}
             </SheetTitle>
           </SheetHeader>

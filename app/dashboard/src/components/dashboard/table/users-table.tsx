@@ -163,7 +163,7 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
             className={cn(
               "inline-flex items-center gap-1 rounded-md px-2 py-1 transition-colors cursor-pointer",
               filters.sort.includes("username")
-                ? "bg-primary/10 text-primary font-bold"
+                ? "bg-primary/10 text-primary-text font-bold"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -177,7 +177,7 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
               className={cn(
                 "inline-flex items-center gap-1 rounded-md px-2 py-1 uppercase tracking-wider transition-colors outline-none cursor-pointer",
                 filters.status
-                  ? "bg-primary/10 text-primary font-bold"
+                  ? "bg-primary/10 text-primary-text font-bold"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -202,11 +202,11 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
                   <span
                     className={cn(
                       "size-2 rounded-full",
-                      st === "active" && "bg-emerald-500",
+                      st === "active" && "bg-success",
                       st === "on_hold" && "bg-purple-500",
                       st === "disabled" && "bg-neutral-400",
                       st === "limited" && "bg-destructive",
-                      st === "expired" && "bg-amber-500"
+                      st === "expired" && "bg-warning"
                     )}
                   />
                   <span>{t(`status.${st}`, { defaultValue: st })}</span>
@@ -221,7 +221,7 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
             className={cn(
               "inline-flex items-center gap-1 rounded-md px-2 py-1 transition-colors cursor-pointer",
               filters.sort.includes("used_traffic")
-                ? "bg-primary/10 text-primary font-bold"
+                ? "bg-primary/10 text-primary-text font-bold"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -293,7 +293,7 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
                               isReached
                                 ? "text-destructive"
                                 : isWarning
-                                  ? "text-amber-500"
+                                  ? "text-warning"
                                   : "text-muted-foreground"
                             )}
                           >
@@ -309,7 +309,7 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
                           isReached
                             ? "bg-destructive"
                             : isWarning
-                              ? "bg-amber-500"
+                              ? "bg-warning"
                               : "bg-primary"
                         }
                       />

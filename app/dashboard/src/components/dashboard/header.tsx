@@ -90,7 +90,7 @@ export function Header({ actions }: HeaderProps) {
             >
               <Menu aria-hidden="true" />
               {showDonationNotif && (
-                <span aria-hidden="true" className="absolute -end-0.5 -top-0.5 size-2 rounded-full bg-amber-500" />
+                <span aria-hidden="true" className="absolute -end-0.5 -top-0.5 size-2 rounded-full bg-warning" />
               )}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" dir={direction} className="min-w-48">
@@ -120,7 +120,7 @@ export function Header({ actions }: HeaderProps) {
                 >
                   <CircleDollarSign aria-hidden="true" /> {t("header.donation")}
                   {showDonationNotif && (
-                    <span aria-hidden="true" className="ms-auto size-2 rounded-full bg-amber-500" />
+                    <span aria-hidden="true" className="ms-auto size-2 rounded-full bg-warning" />
                   )}
                 </DropdownMenuItem>
                 <DropdownMenuItem render={<Link to="/login" />} onClick={logout}>

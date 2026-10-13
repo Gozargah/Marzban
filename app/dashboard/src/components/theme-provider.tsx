@@ -55,7 +55,7 @@ export function ThemeProvider({
     // Remove legacy body classes; shadcn's theme is controlled on the root.
     document.body.classList.remove("light", "dark")
     document.querySelector('meta[name="theme-color"]')?.setAttribute(
-      "content", resolvedTheme === "dark" ? "#0a0a0a" : "#ffffff"
+      "content", getComputedStyle(root).getPropertyValue("--background").trim()
     )
   }, [resolvedTheme])
 

@@ -46,10 +46,10 @@ export type SortType = {
 
 export const Sort: FC<SortType> = ({ sort, column }) => {
   if (sort === column) {
-    return <ChevronUp className="size-3.5 shrink-0 text-primary" />;
+    return <ChevronUp className="size-3.5 shrink-0 text-primary-text" />;
   }
   if (sort === `-${column}`) {
-    return <ChevronDown className="size-3.5 shrink-0 text-primary" />;
+    return <ChevronDown className="size-3.5 shrink-0 text-primary-text" />;
   }
   return <ArrowUpDown className="size-3 shrink-0 opacity-40" />;
 };
@@ -123,7 +123,7 @@ export const UsageSlider: FC<UsageSliderProps> = ({
               isReached
                 ? "text-destructive"
                 : isWarning
-                  ? "text-amber-500"
+                  ? "text-warning"
                   : "text-muted-foreground"
             )}
           >
@@ -139,7 +139,7 @@ export const UsageSlider: FC<UsageSliderProps> = ({
           isReached
             ? "bg-destructive"
             : isWarning
-              ? "bg-amber-500"
+              ? "bg-warning"
               : "bg-primary"
         }
       />
@@ -262,7 +262,7 @@ export const ActionButtons: FC<ActionButtonsProps> = ({ user, className }) => {
             }}
           >
             {copiedIndex === 0 ? (
-              <Check className="size-4 text-emerald-500" />
+              <Check className="size-4 text-success" />
             ) : (
               <Link2 className="size-4" />
             )}
@@ -287,7 +287,7 @@ export const ActionButtons: FC<ActionButtonsProps> = ({ user, className }) => {
             }}
           >
             {copiedIndex === 1 ? (
-              <Check className="size-4 text-emerald-500" />
+              <Check className="size-4 text-success" />
             ) : (
               <Copy className="size-4" />
             )}
@@ -357,7 +357,7 @@ export function UsernameHeader() {
       className={cn(
         "inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider rounded-md px-1.5 py-1 transition-colors cursor-pointer select-none",
         isActive
-          ? "text-primary font-bold bg-primary/10"
+          ? "text-primary-text font-bold bg-primary/10"
           : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
       )}
     >
@@ -398,7 +398,7 @@ export function StatusHeader() {
           className={cn(
             "inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider rounded-md px-2 py-1 transition-colors outline-none cursor-pointer",
             hasFilter
-              ? "bg-primary/10 text-primary hover:bg-primary/20 font-bold"
+              ? "bg-primary/10 text-primary-text hover:bg-primary/20 font-bold"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
           )}
         >
@@ -423,11 +423,11 @@ export function StatusHeader() {
               <span
                 className={cn(
                   "size-2 rounded-full",
-                  st === "active" && "bg-emerald-500",
+                  st === "active" && "bg-success",
                   st === "on_hold" && "bg-purple-500",
                   st === "disabled" && "bg-neutral-400",
                   st === "limited" && "bg-destructive",
-                  st === "expired" && "bg-amber-500"
+                  st === "expired" && "bg-warning"
                 )}
               />
               <span>{t(`status.${st}`, { defaultValue: st })}</span>
@@ -444,7 +444,7 @@ export function StatusHeader() {
         className={cn(
           "inline-flex items-center gap-1 text-xs font-semibold rounded-md px-1.5 py-1 transition-colors cursor-pointer",
           filters.sort.includes("expire")
-            ? "text-primary font-bold bg-primary/10"
+            ? "text-primary-text font-bold bg-primary/10"
             : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
         )}
       >
@@ -479,7 +479,7 @@ export function DataUsageHeader() {
       className={cn(
         "inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider rounded-md px-1.5 py-1 transition-colors cursor-pointer select-none",
         isActive
-          ? "text-primary font-bold bg-primary/10"
+          ? "text-primary-text font-bold bg-primary/10"
           : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
       )}
     >

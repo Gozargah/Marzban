@@ -260,7 +260,7 @@ function HostCard({
         </button>
         <Controller name={`${prefix}.is_disabled`} control={form.control} render={({ field }) => (
           <div className="flex shrink-0 items-center gap-2">
-            <span className={`hidden text-xs sm:inline ${field.value ? "text-muted-foreground" : "text-primary"}`}>
+            <span className={`hidden text-xs sm:inline ${field.value ? "text-muted-foreground" : "text-primary-text"}`}>
               {t(field.value ? "hostsDialog.disabledStatus" : "hostsDialog.enabledStatus")}
             </span>
             <Switch name={field.name} ref={field.ref} onBlur={field.onBlur} checked={!field.value}
@@ -419,7 +419,7 @@ function InboundNavigation({ keys, activeInbound, onSelect }: {
           const invalid = !!form.formState.errors[key];
           return <button key={key} type="button" onClick={() => onSelect(key)}
             aria-current={activeInbound === key ? "true" : undefined}
-            className={`flex min-w-40 items-center gap-3 rounded-lg border p-3 text-start text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring md:min-w-0 ${activeInbound === key ? "border-primary/20 bg-background text-primary shadow-sm" : "border-transparent text-muted-foreground hover:bg-muted"}`}>
+            className={`flex min-w-40 items-center gap-3 rounded-lg border p-3 text-start text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring md:min-w-0 ${activeInbound === key ? "border-primary/20 bg-background text-primary-text shadow-sm" : "border-transparent text-muted-foreground hover:bg-muted"}`}>
             <Server className="size-4 shrink-0" />
             <span className="min-w-0 flex-1"><span className="block truncate font-medium" title={key}>{key}</span>
               <span className="mt-1 block text-xs text-muted-foreground">{t("hostsDialog.hostCount", { count: total })} · {t("hostsDialog.enabledCount", { count: enabled })}</span>
@@ -504,7 +504,7 @@ export function HostsDialog() {
         <DialogContent className="flex h-[min(850px,calc(100dvh-2rem))] max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-5xl"
           dir={i18n.dir()} showCloseButton={!isPostLoading}>
           <DialogHeader className="shrink-0 border-b px-5 py-5 pe-14 sm:px-6">
-            <DialogTitle className="flex items-center gap-2 text-lg"><Link2 className="size-5 text-primary" />{t("header.hostSettings")}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2 text-lg"><Link2 className="size-5 text-primary-text" />{t("header.hostSettings")}</DialogTitle>
             <DialogDescription>{t("hostsDialog.editorDescription")}</DialogDescription>
           </DialogHeader>
           <FormProvider {...form}>
@@ -528,7 +528,7 @@ export function HostsDialog() {
                 {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <p role="status" className="flex items-center gap-2 text-xs text-muted-foreground">
-                    {form.formState.isDirty ? <span className="size-2 rounded-full bg-amber-500" /> : <Check className="size-4" />}
+                    {form.formState.isDirty ? <span className="size-2 rounded-full bg-warning" /> : <Check className="size-4" />}
                     {t(form.formState.isDirty ? "hostsDialog.unsavedChanges" : "hostsDialog.savedState")}
                   </p>
                   <div className="flex gap-2">

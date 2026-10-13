@@ -38,10 +38,10 @@ const getWebsocketUrl = (nodeID: string) => {
 };
 
 const LOG_LEVEL_COLORS: Record<string, string> = {
-  Info: "text-[#1d57c2] dark:text-[#5988e0]",
-  Warning: "text-[#b36908] dark:text-[#fbbf24]",
-  Error: "text-[#c21d1d] dark:text-[#f87171]",
-  Debug: "text-[#a78bf2] dark:text-[#a78bf2]",
+  Info: "text-info",
+  Warning: "text-warning",
+  Error: "text-destructive",
+  Debug: "text-purple",
 } as const;
 
 const LOG_RE = /^(\d{4}\/\d{2}\/\d{2} [\d:.]+)(?: (\[(Info|Warning|Error|Debug)\]))? (.*)$/;

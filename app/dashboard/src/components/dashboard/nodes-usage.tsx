@@ -70,7 +70,7 @@ export function NodesUsage() {
       >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg">
-            <ChartPie className="size-5 text-primary" />
+            <ChartPie className="size-5 text-primary-text" />
             {t("header.nodesUsage")}
           </DialogTitle>
         </DialogHeader>

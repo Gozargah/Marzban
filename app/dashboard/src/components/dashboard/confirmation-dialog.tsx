@@ -78,7 +78,7 @@ export function ConfirmationDialog({
             className={
               destructive
                 ? "mb-2 flex size-10 items-center justify-center rounded-lg bg-destructive/10 text-destructive"
-                : "mb-2 flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary"
+                : "mb-2 flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary-text"
             }
           >
             {icon}
