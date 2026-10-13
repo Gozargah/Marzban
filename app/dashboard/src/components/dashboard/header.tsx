@@ -2,11 +2,12 @@ import { useLocale } from "@/hooks/use-locale";
 import { DirectionProvider } from "@base-ui/react/direction-provider";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowUpRight, ChevronRight, CircleDollarSign, Code, Link2, LogOut, Menu, Moon, Network, PieChart, RotateCcw, Settings, Sun } from "lucide-react";
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { Language } from "@/components/language";
 import { useTheme } from "@/components/theme-provider";
+import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
@@ -56,6 +57,13 @@ export function Header({ actions }: HeaderProps) {
     { label: t("header.nodesUsage"), icon: PieChart, description: t("header.usageHint", { defaultValue: "Review traffic across your servers." }), action: () => onShowingNodesUsage(true) },
   ];
 
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 768px)");
+    const closeMobileMenu = () => { if (desktop.matches) setMenuOpen(false); };
+    desktop.addEventListener("change", closeMobileMenu);
+    return () => desktop.removeEventListener("change", closeMobileMenu);
+  }, []);
+
   function openDestination(action: () => void) {
     // Let the navigation Sheet release its focus trap before opening another panel.
     nextAction.current = action;
@@ -80,11 +88,15 @@ export function Header({ actions }: HeaderProps) {
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             {actions}
-            <Language />
+            <Language showLabel />
             <Button type="button" variant="outline" size="icon-sm" aria-label={themeLabel} title={themeLabel}
               onClick={() => setTheme(colorMode === "dark" ? "light" : "dark")}>
               {colorMode === "light" ? <Moon aria-hidden="true" /> : <Sun aria-hidden="true" />}
             </Button>
+            <div className="hidden min-w-0 items-center gap-3 border-s border-border ps-3 md:flex">
+              <span className="max-w-32 truncate text-xs text-muted-foreground" title={userData.username}>{userData.username}</span>
+              <Link to="/login" className={cn(buttonVariants({ variant: "outline", size: "sm" }))} onClick={logout}><LogOut aria-hidden="true" />{t("header.logout")}</Link>
+            </div>
             <Sheet open={menuOpen} onOpenChange={(open) => { if (open) nextAction.current = null; setMenuOpen(open); }} onOpenChangeComplete={(open) => {
               if (!open) {
                 const action = nextAction.current;
@@ -92,10 +104,9 @@ export function Header({ actions }: HeaderProps) {
                 action?.();
               }
             }}>
-              <SheetTrigger render={<Button type="button" variant="outline" size="sm" />} aria-label={menuLabel}>
+              <SheetTrigger className="md:hidden" render={<Button type="button" variant="outline" size="sm" />} aria-label={menuLabel}>
                 <Menu aria-hidden="true" />
-                <span className="md:hidden">{t("header.navigation", { defaultValue: "Menu" })}</span>
-                <span className="hidden md:inline">{t("header.more", { defaultValue: "More" })}</span>
+                <span>{t("header.navigation", { defaultValue: "Menu" })}</span>
               </SheetTrigger>
               <SheetContent dir={direction} side={direction === "rtl" ? "left" : "right"} className="w-full! sm:max-w-sm! gap-0 overflow-hidden">
                 <SheetHeader className="shrink-0 border-b px-5 py-5 pe-14">
@@ -138,10 +149,10 @@ export function Header({ actions }: HeaderProps) {
                   <section className="space-y-2" aria-labelledby="header-support-title">
                     <h2 id="header-support-title" className="text-xs font-medium text-muted-foreground">{t("header.project", { defaultValue: "Project & support" })}</h2>
                     <div className="flex flex-col divide-y border border-border">
-                      <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: "ghost", className: "h-10 justify-start px-3" })}>
+                      <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "ghost", className: "h-10 justify-start px-3" }))}>
                         <Code aria-hidden="true" />{t("header.github", { defaultValue: "View on GitHub" })}<ArrowUpRight aria-hidden="true" className="ms-auto" />
                       </a>
-                      <a href={DONATION_URL} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: "ghost", className: "h-10 justify-start px-3" })} onClick={acknowledgeDonation}>
+                      <a href={DONATION_URL} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "ghost", className: "h-10 justify-start px-3" }))} onClick={acknowledgeDonation}>
                         <CircleDollarSign aria-hidden="true" />{t("header.donation")}
                         {showDonationNotif && <span aria-hidden="true" className="size-1.5 rounded-full bg-warning" />}
                         <ArrowUpRight aria-hidden="true" className="ms-auto" />
@@ -155,16 +166,34 @@ export function Header({ actions }: HeaderProps) {
                       <p className="text-xs text-muted-foreground">{t("header.signedInAs", { defaultValue: "Signed in as" })}</p>
                       <p className="truncate text-sm font-medium">{userData.username || "—"}</p>
                     </div>
-                    <Link to="/login" className={buttonVariants({ variant: "outline", size: "sm" })} onClick={logout}><LogOut aria-hidden="true" />{t("header.logout")}</Link>
+                    <Link to="/login" className={cn(buttonVariants({ variant: "outline", size: "sm" }))} onClick={logout}><LogOut aria-hidden="true" />{t("header.logout")}</Link>
                   </div>
                 </SheetFooter>
               </SheetContent>
             </Sheet>
           </div>
         </div>
-        {isSudo && <nav aria-label={t("header.manage", { defaultValue: "Manage" })} className="hidden flex-wrap items-center gap-2 md:flex">
-          {destinations.map(({ label, icon: Icon, action }) => <Button key={label} type="button" variant="outline" size="sm" onClick={action}><Icon aria-hidden="true" />{label}</Button>)}
-        </nav>}
+        <div className={`hidden gap-x-6 gap-y-4 md:grid md:grid-cols-2 ${isSudo ? "xl:grid-cols-[minmax(0,1fr)_auto_auto]" : "md:grid-cols-1"}`}>
+          {isSudo && <nav aria-label={t("header.manage", { defaultValue: "Manage" })} className="space-y-2 md:col-span-2 xl:col-span-1">
+            <p className="text-xs font-medium text-muted-foreground">{t("header.manage", { defaultValue: "Manage" })}</p>
+            <div className="flex flex-wrap gap-2">
+              {destinations.map(({ label, icon: Icon, action }) => <Button key={label} type="button" variant="outline" size="sm" onClick={action}><Icon aria-hidden="true" />{label}</Button>)}
+            </div>
+          </nav>}
+          {isSudo && <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">{t("header.maintenance", { defaultValue: "Maintenance" })}</p>
+            <Button type="button" variant="outline" size="sm" className="border-destructive/20 text-destructive hover:bg-destructive/5 hover:text-destructive" title={t("header.resetHint")} onClick={() => onResetAllUsage(true)}>
+              <RotateCcw aria-hidden="true" />{t("resetAllUsage")}
+            </Button>
+          </div>}
+          <nav aria-label={t("header.project", { defaultValue: "Project & support" })} className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">{t("header.project", { defaultValue: "Project & support" })}</p>
+            <div className="flex flex-wrap gap-2">
+              <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}><Code aria-hidden="true" />{t("header.github", { defaultValue: "View on GitHub" })}<ArrowUpRight aria-hidden="true" /></a>
+              <a href={DONATION_URL} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline", size: "sm" }))} onClick={acknowledgeDonation}><CircleDollarSign aria-hidden="true" />{t("header.donation")}<ArrowUpRight aria-hidden="true" /></a>
+            </div>
+          </nav>
+        </div>
       </header>
     </DirectionProvider>
   );
