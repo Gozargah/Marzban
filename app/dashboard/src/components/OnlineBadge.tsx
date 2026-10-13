@@ -1,8 +1,9 @@
-import { Box } from "@chakra-ui/react";
 import { FC } from "react";
+import { cn } from "@/lib/utils";
 
 type UserStatusProps = {
   lastOnline?: string | null;
+  className?: string;
 };
 
 const convertDateFormat = (lastOnline?: string | null): number | null => {
@@ -12,17 +13,17 @@ const convertDateFormat = (lastOnline?: string | null): number | null => {
   return Math.floor(date.getTime() / 1000);
 };
 
-export const OnlineBadge: FC<UserStatusProps> = ({ lastOnline }) => {
+export const OnlineBadge: FC<UserStatusProps> = ({ lastOnline, className }) => {
   const currentTimeInSeconds = Math.floor(Date.now() / 1000);
   const unixTime = convertDateFormat(lastOnline);
 
   if (!lastOnline || unixTime === null) {
     return (
-      <Box
-        border="1px solid"
-        borderColor="gray.400"
-        _dark={{ borderColor: "gray.600" }}
-        className="circle"
+      <span
+        className={cn(
+          "inline-block size-2 rounded-full border border-neutral-400 dark:border-neutral-600 shrink-0",
+          className
+        )}
       />
     );
   }
@@ -31,13 +32,21 @@ export const OnlineBadge: FC<UserStatusProps> = ({ lastOnline }) => {
 
   if (timeDifferenceInSeconds <= 60) {
     return (
-      <Box
-        bg="green.300"
-        _dark={{ bg: "green.500" }}
-        className="circle pulse green"
+      <span
+        className={cn(
+          "inline-block size-2 rounded-full bg-emerald-500 shadow-[0_0_0_2px_rgba(16,185,129,0.3)] shrink-0 animate-pulse",
+          className
+        )}
       />
     );
   }
 
-  return <Box bg="gray.400" _dark={{ bg: "gray.600" }} className="circle" />;
+  return (
+    <span
+      className={cn(
+        "inline-block size-2 rounded-full bg-neutral-400 dark:bg-neutral-600 shrink-0",
+        className
+      )}
+    />
+  );
 };

@@ -5,13 +5,12 @@ import RelativeTime from "dayjs/plugin/relativeTime";
 import Timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import "locales/i18n";
-import React from "react";
 import ReactDOM from "react-dom/client";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "utils/react-query";
 import App from "./App";
 import "./index.css";
-import "index.scss";
+// import "index.scss";
 import { ThemeProvider } from "@/components/theme-provider"
 
 

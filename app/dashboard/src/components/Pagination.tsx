@@ -1,69 +1,41 @@
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  chakra,
-  HStack,
-  Select,
-  Text,
-} from "@chakra-ui/react";
-import {
-  ArrowLongLeftIcon,
-  ArrowLongRightIcon,
-} from "@heroicons/react/24/outline";
-import { useDashboard } from "contexts/DashboardContext";
 import { ChangeEvent, FC } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  Pagination as ShadcnPagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { cn } from "@/lib/utils";
+import { useDashboard } from "contexts/DashboardContext";
 import { setUsersPerPageLimitSize } from "utils/userPreferenceStorage";
 
-const PrevIcon = chakra(ArrowLongLeftIcon, {
-  baseStyle: {
-    w: 4,
-    h: 4,
-  },
-});
-const NextIcon = chakra(ArrowLongRightIcon, {
-  baseStyle: {
-    w: 4,
-    h: 4,
-  },
-});
-
 export type PaginationType = {
-  count: number;
-  perPage: number;
-  page: number;
+  count?: number;
+  perPage?: number;
+  page?: number;
   onChange?: (page: number) => void;
+  className?: string;
 };
 
 const MINIMAL_PAGE_ITEM_COUNT = 5;
 
-/**
- * Generate numeric page items around current page.
- *   - Always include first and last page
- *   - Add ellipsis if needed
- */
-function generatePageItems(total: number, current: number, width: number) {
-  if (width < MINIMAL_PAGE_ITEM_COUNT) {
-    throw new Error(
-      `Must allow at least ${MINIMAL_PAGE_ITEM_COUNT} page items`,
-    );
+function generatePageItems(total: number, current: number, width: number = 7) {
+  if (total <= 0) return [0];
+  if (width < MINIMAL_PAGE_ITEM_COUNT) width = MINIMAL_PAGE_ITEM_COUNT;
+  if (total <= width) {
+    return Array.from({ length: total }, (_, i) => i);
   }
-  if (width % 2 === 0) {
-    throw new Error(`Must allow odd number of page items`);
-  }
-  if (total < width) {
-    return [...new Array(total).keys()];
-  }
+
   const left = Math.max(
     0,
-    Math.min(total - width, current - Math.floor(width / 2)),
+    Math.min(total - width, current - Math.floor(width / 2))
   );
-  const items: (string | number)[] = new Array(width);
-  for (let i = 0; i < width; i += 1) {
-    items[i] = i + left;
-  }
-  // replace non-ending items with placeholders
+  const items: (string | number)[] = Array.from({ length: width }, (_, i) => i + left);
+
   if (Number(items[0]) > 0) {
     items[0] = 0;
     items[1] = "prev-more";
@@ -75,99 +47,116 @@ function generatePageItems(total: number, current: number, width: number) {
   return items;
 }
 
-export const Pagination: FC = () => {
+export const Pagination: FC<{ className?: string }> = ({ className }) => {
   const {
     filters,
     onFilterChange,
     users: { total },
   } = useDashboard();
-  const { limit: perPage, offset } = filters;
+  const { t } = useTranslation();
 
-  const page = (offset || 0) / (perPage || 1);
-  const noPages = Math.ceil(total / (perPage || 1));
-  const pages = generatePageItems(noPages, page, 7);
+  const perPage = filters.limit || 10;
+  const offset = filters.offset || 0;
+  const currentPage = Math.floor(offset / perPage);
+  const noPages = Math.ceil(total / perPage) || 1;
+  const pages = generatePageItems(noPages, currentPage, 7);
 
-  const changePage = (page: number) => {
+  const startItem = total === 0 ? 0 : offset + 1;
+  const endItem = Math.min(offset + perPage, total);
+
+  const changePage = (newPage: number) => {
+    if (newPage < 0 || newPage >= noPages || newPage === currentPage) return;
     onFilterChange({
       ...filters,
-      offset: page * (perPage as number),
+      offset: newPage * perPage,
     });
   };
 
   const handlePageSizeChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    const newLimit = parseInt(e.target.value, 10);
     onFilterChange({
       ...filters,
-      limit: parseInt(e.target.value),
+      limit: newLimit,
+      offset: 0,
     });
-    setUsersPerPageLimitSize(e.target.value);
+    setUsersPerPageLimitSize(String(newLimit));
   };
 
-  const { t } = useTranslation();
-
   return (
-    <HStack
-      justifyContent="space-between"
-      mt={4}
-      w="full"
-      display="flex"
-      columnGap={{ lg: 4, md: 0 }}
-      rowGap={{ md: 0, base: 4 }}
-      flexDirection={{ md: "row", base: "column" }}
+    <div
+      className={cn(
+        "flex flex-col gap-4 pt-4 sm:flex-row sm:items-center sm:justify-between",
+        className
+      )}
     >
-      <Box order={{ base: 2, md: 1 }}>
-        <HStack>
-          <Select
-            minW="60px"
+      {/* Items per page selector & range counter */}
+      <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground order-2 sm:order-1">
+        <div className="flex items-center gap-2">
+          <select
             value={perPage}
             onChange={handlePageSizeChange}
-            size="sm"
-            rounded="md"
+            aria-label={t("itemsPerPage")}
+            className="h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs font-medium text-foreground shadow-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
           >
-            <option>10</option>
-            <option>20</option>
-            <option>30</option>
-          </Select>
-          <Text whiteSpace={"nowrap"} fontSize="sm">
-            {t("itemsPerPage")}
-          </Text>
-        </HStack>
-      </Box>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+          <span className="whitespace-nowrap">{t("itemsPerPage")}</span>
+        </div>
 
-      <ButtonGroup
-        size="sm"
-        isAttached
-        variant="outline"
-        order={{ base: 1, md: 2 }}
-      >
-        <Button
-          leftIcon={<PrevIcon />}
-          onClick={changePage.bind(null, page - 1)}
-          isDisabled={page === 0 || noPages === 0}
-        >
-          {t("previous")}
-        </Button>
-        {pages.map((pageIndex) => {
-          if (typeof pageIndex === "string")
-            return <Button key={pageIndex}>...</Button>;
-          return (
-            <Button
-              key={pageIndex}
-              variant={(pageIndex as number) === page ? "solid" : "outline"}
-              onClick={changePage.bind(null, pageIndex)}
-            >
-              {(pageIndex as number) + 1}
-            </Button>
-          );
-        })}
+        {total > 0 && (
+          <span className="text-muted-foreground/80 hidden md:inline">
+            ({startItem}–{endItem} / {total})
+          </span>
+        )}
+      </div>
 
-        <Button
-          rightIcon={<NextIcon />}
-          onClick={changePage.bind(null, page + 1)}
-          isDisabled={page + 1 === noPages || noPages === 0}
-        >
-          {t("next")}
-        </Button>
-      </ButtonGroup>
-    </HStack>
+      {/* Pagination control buttons */}
+      <div className="order-1 sm:order-2 flex justify-center sm:justify-end">
+        <ShadcnPagination className="mx-0 w-auto">
+          <PaginationContent className="gap-1">
+            <PaginationItem>
+              <PaginationPrevious
+                disabled={currentPage === 0 || total === 0}
+                onClick={() => changePage(currentPage - 1)}
+                text={t("previous")}
+              />
+            </PaginationItem>
+
+            {pages.map((pageIndex, idx) => {
+              if (typeof pageIndex === "string") {
+                return (
+                  <PaginationItem key={`ellipsis-${pageIndex}-${idx}`}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                );
+              }
+
+              return (
+                <PaginationItem key={`page-${pageIndex}`}>
+                  <PaginationLink
+                    isActive={pageIndex === currentPage}
+                    onClick={() => changePage(pageIndex)}
+                  >
+                    {pageIndex + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              );
+            })}
+
+            <PaginationItem>
+              <PaginationNext
+                disabled={currentPage + 1 >= noPages || total === 0}
+                onClick={() => changePage(currentPage + 1)}
+                text={t("next")}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </ShadcnPagination>
+      </div>
+    </div>
   );
 };

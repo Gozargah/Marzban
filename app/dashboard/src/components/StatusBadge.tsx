@@ -1,10 +1,15 @@
-import { Badge, Text } from "@chakra-ui/react";
-
-import { statusColors } from "constants/UserSettings";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Status as UserStatusType } from "types/User";
 import { relativeExpiryDate } from "utils/dateFormatter";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import {
+  ClockIcon,
+  ExclamationCircleIcon,
+  NoSymbolIcon,
+  WifiIcon,
+} from "@heroicons/react/24/outline";
 
 type UserStatusProps = {
   expiryDate?: number | null;
@@ -12,56 +17,61 @@ type UserStatusProps = {
   compact?: boolean;
   showDetail?: boolean;
   extraText?: string | null;
+  className?: string;
 };
+
+const statusConfig: Record<
+  string,
+  {
+    variant: "success" | "warning" | "destructive" | "purple" | "secondary";
+    icon: typeof WifiIcon;
+  }
+> = {
+  active: { variant: "success", icon: WifiIcon },
+  connected: { variant: "success", icon: WifiIcon },
+  disabled: { variant: "secondary", icon: NoSymbolIcon },
+  expired: { variant: "warning", icon: ClockIcon },
+  on_hold: { variant: "purple", icon: ClockIcon },
+  limited: { variant: "destructive", icon: ExclamationCircleIcon },
+  connecting: { variant: "warning", icon: WifiIcon },
+  error: { variant: "destructive", icon: ExclamationCircleIcon },
+};
+
 export const StatusBadge: FC<UserStatusProps> = ({
   expiryDate,
   status: userStatus,
   compact = false,
   showDetail = true,
   extraText,
+  className,
 }) => {
   const { t } = useTranslation();
   const dateInfo = relativeExpiryDate(expiryDate);
-  const Icon = statusColors[userStatus].icon;
+  const config = statusConfig[userStatus] || { variant: "secondary", icon: WifiIcon };
+  const Icon = config.icon;
+
   return (
-    <>
+    <span className={cn("inline-flex items-center flex-wrap gap-1.5", className)}>
       <Badge
-        colorScheme={statusColors[userStatus].statusColor}
-        rounded="full"
-        display="inline-flex"
-        px={3}
-        py={1}
-        columnGap={compact ? 1 : 2}
-        alignItems="center"
+        variant={config.variant}
+        className={cn(
+          "gap-1 font-medium capitalize",
+          compact ? "px-2 py-0.5 text-[0.7rem]" : "px-2.5 py-1 text-xs"
+        )}
       >
-        <Icon w={compact ? 3 : 4} />
+        <Icon className={cn(compact ? "size-3" : "size-3.5")} />
         {showDetail && (
-          <Text
-            textTransform="capitalize"
-            fontSize={compact ? ".7rem" : ".875rem"}
-            lineHeight={compact ? "1rem" : "1.25rem"}
-            fontWeight="medium"
-            letterSpacing="tighter"
-          >
+          <span>
             {userStatus && t(`status.${userStatus}`)}
             {extraText && `: ${extraText}`}
-          </Text>
+          </span>
         )}
       </Badge>
       {showDetail && expiryDate && (
-        <Text
-          display="inline-block"
-          fontSize="xs"
-          fontWeight="medium"
-          ml="2"
-          color="gray.600"
-          _dark={{
-            color: "gray.400",
-          }}
-        >
+        <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
           {t(dateInfo.status, { time: dateInfo.time })}
-        </Text>
+        </span>
       )}
-    </>
+    </span>
   );
 };

@@ -19,6 +19,8 @@ import debounce from "lodash.debounce";
 import { router } from "@/pages/router";
 import { Statistics } from "@/components/dashboard/statistics";
 import { Filters } from "@/components/dashboard/filters";
+import { UsersTable } from "@/components/dashboard/table/users-table";
+
 
 export const Dashboard: FC = () => {
   useEffect(() => {
@@ -56,10 +58,9 @@ export const Dashboard: FC = () => {
         <Header />
         <Statistics />
         <Filters />
-
-        {/* <Statistics mt="4" />
-        <Filters />
         <UsersTable />
+        {/* <Statistics mt="4" />
+
         <UserDialog />
         <DeleteUserModal />
         <QRCodeDialog />
