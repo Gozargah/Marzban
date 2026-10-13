@@ -217,12 +217,24 @@ class XRayConfig(dict):
                     settings['tls'] = 'reality'
                     settings['sni'] = tls_settings.get('serverNames', [])
 
-                    pvk = tls_settings.get('privateKey')
-                    if not pvk:
-                        raise ValueError(
-                            f"You need to provide privateKey in realitySettings of {inbound['tag']}")
+                    settings['pbk'] = tls_settings.get('publicKey')
+                    if not settings['pbk']:
+                        pvk = tls_settings.get('privateKey')
+                        if not pvk:
+                            raise ValueError(
+                                f"You need to provide privateKey or publicKey in realitySettings of {inbound['tag']}")
 
-                    settings['pbk'] = get_x25519_public_key(pvk)
+                        try:
+                            settings['pbk'] = get_x25519_public_key(pvk)
+                        except Exception:
+                            try:
+                                from app.xray import core
+                                x25519 = core.get_x25519(pvk)
+                                if x25519:
+                                    settings['pbk'] = x25519.get('public_key')
+                            except Exception:
+                                pass
+
                     if not settings.get('pbk'):
                         raise ValueError(
                             f"You need to provide publicKey in realitySettings of {inbound['tag']}")
