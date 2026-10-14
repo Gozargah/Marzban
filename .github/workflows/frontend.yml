@@ -1,0 +1,44 @@
+name: Frontend checks
+
+on:
+  pull_request:
+    paths:
+      - 'app/dashboard/**'
+      - '.github/workflows/frontend.yml'
+      - '.github/workflows/build.yml'
+  push:
+    branches: [master, main]
+    paths:
+      - 'app/dashboard/**'
+      - '.github/workflows/frontend.yml'
+      - '.github/workflows/build.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: app/dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.3'
+      - name: Install locked dependencies
+        run: bun install --frozen-lockfile
+      - name: Check source and test types
+        run: bun run typecheck
+      - name: Run frontend tests
+        run: bun run test
+      - name: Build frontend
+        run: bun run build
+        env:
+          VITE_BASE_API: /api/
