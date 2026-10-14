@@ -28,6 +28,11 @@ async function credentials() {
 }
 
 describe("login", () => {
+  test("inputs have visible associated labels", () => {
+    setup();
+    expect(screen.getByRole("textbox", { name: "Username" })).toHaveAttribute("autocomplete", "username");
+    expect(screen.getByLabelText("Password")).toHaveAttribute("type", "password");
+  });
   test("clears stale authentication when mounted", () => {
     localStorage.setItem("token", "stale"); setup();
     expect(localStorage.getItem("token")).toBeNull();

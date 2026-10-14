@@ -12,7 +12,7 @@ function setup() {
   const { NodesUsage } = loadSource<typeof import("../../src/components/dashboard/nodes-usage")>("components/dashboard/nodes-usage.tsx", {
     ...localeAdapter, "@/contexts/dashboard-context": { useDashboard: dashboard }, "@/contexts/nodes-context": { useNodes: nodes },
     "@/components/theme-provider": { useTheme: () => ({ resolvedTheme: "dark" }) },
-    "react-apexcharts": ({ series, options }: any) => <output data-testid="usage-chart">{JSON.stringify({ series, labels: options.labels })}</output>,
+    "@/features/shared/traffic-chart": { TrafficChart: ({ usage }: any) => <output data-testid="usage-chart">{JSON.stringify({ series: usage.series, labels: usage.labels })}</output> },
   });
   return { ...renderFrontend(<NodesUsage />), net };
 }

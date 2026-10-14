@@ -1,70 +1,77 @@
-import { describe, test, expect, mock } from "bun:test";
-import { network } from "../helpers/network";
-import { loadSource } from "../helpers/load-source";
-
-describe("hosts failures", () => {
-  test("read failure clears loading and preserves existing hosts", async () => {
-    const net = network();
-    const { useHosts } = loadSource<typeof import("../../src/contexts/hosts-context")>("contexts/hosts-context.tsx", { "service/http": net });
-    const hosts = { edge: [] };
-    useHosts.setState({ hosts });
-    const pending = useHosts.getState().fetchHosts();
-    net.calls[0].reject(new Error("offline")); await expect(pending).rejects.toThrow("offline");
-    expect(useHosts.getState()).toMatchObject({ hosts, isLoading: false });
-  });
-  test("failed save releases pending state and preserves saved values", async () => {
-    const net = network();
-    const { useHosts } = loadSource<typeof import("../../src/contexts/hosts-context")>("contexts/hosts-context.tsx", { "service/http": net });
-    const pending = useHosts.getState().setHosts({ edge: [] });
-    expect(useHosts.getState().isPostLoading).toBe(true);
-    net.calls[0].reject(new Error("offline")); await expect(pending).rejects.toThrow("offline");
-    expect(useHosts.getState()).toMatchObject({ hosts: {}, isPostLoading: false });
-  });
+import { afterEach, test, expect, mock } from "bun:test";
+import { QueryClient } from "@tanstack/react-query";
+import { createHostsResource } from "../../src/features/hosts/resource";
+import { createCoreResource, type CoreSettings } from "../../src/features/core/resource";
+import { queryKeys } from "../../src/features/shared/query-keys";
+import { network, flushPromises } from "../helpers/network";
+const clients: QueryClient[] = [];
+afterEach(() => { clients.forEach((client) => client.clear()); clients.length = 0; });
+function setup() {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } }); clients.push(client);
+  const net = network(), refresh = mock(async () => {});
+  return { client, net, refresh, hosts: createHostsResource(client, net.fetch), core: createCoreResource(client, net.fetch, refresh) };
+}
+test("hosts failure preserves last successful data; cancelled late read cannot overwrite save", async () => {
+  const { client, net, hosts } = setup();
+  client.setQueryData(queryKeys.hosts, { existing: [] });
+  const reading = client.fetchQuery({ ...hosts.options(), staleTime: 0 });
+  net.calls[0].reject(new Error("offline")); await expect(reading).rejects.toThrow("offline");
+  expect(client.getQueryData(queryKeys.hosts)).toEqual({ existing: [] });
+  const old = client.fetchQuery({ ...hosts.options(), staleTime: 0 }).catch(() => {});
+  const saving = hosts.save({ saved: [] }); await flushPromises();
+  expect(net.calls[1].options.signal.aborted).toBe(true);
+  net.calls[2].resolve({}); await saving;
+  net.calls[1].resolve({ late: [] }); await old;
+  expect(client.getQueryData(queryKeys.hosts)).toEqual({ saved: [] });
+});
+test("failed hosts save keeps cache unchanged", async () => {
+  const { client, net, hosts } = setup(); client.setQueryData(queryKeys.hosts, { saved: [] });
+  const saving = hosts.save({ draft: [] }); await flushPromises();
+  net.calls[0].reject(new Error("offline")); await expect(saving).rejects.toThrow("offline");
+  expect(client.getQueryData(queryKeys.hosts)).toEqual({ saved: [] });
+});
+test("core reads publish atomically and failed read aborts sibling", async () => {
+  const { client, net, core } = setup();
+  const reading = client.fetchQuery(core.options());
+  net.calls[0].resolve({ version: "1", started: true, logs_websocket: "/logs" }); await flushPromises();
+  expect(client.getQueryData(queryKeys.core)).toBeUndefined();
+  net.calls[1].resolve({ inbounds: [] }); await reading;
+  expect(client.getQueryData(queryKeys.core)).toMatchObject({ version: "1", config: JSON.stringify({ inbounds: [] }, null, 2) });
+  const failed = client.fetchQuery({ ...core.options(), staleTime: 0 });
+  net.calls[2].reject(new Error("offline")); await expect(failed).rejects.toThrow("offline");
+  expect(net.calls[3].options.signal.aborted).toBe(true); net.calls[3].resolve({});
+  expect(client.getQueryData(queryKeys.core)).toHaveProperty("version", "1");
+});
+test("cancelling core closes both requests and ignores late responses", async () => {
+  const { client, net, core } = setup();
+  const reading = client.fetchQuery(core.options()).catch(() => {});
+  await core.cancel();
+  expect(net.calls[0].options.signal.aborted).toBe(true); expect(net.calls[1].options.signal.aborted).toBe(true);
+  net.calls[0].resolve({ version: "late" }); net.calls[1].resolve({}); await reading;
+  expect(client.getQueryData(queryKeys.core)).toBeUndefined();
+});
+test("core save validates JSON, sends an object and tolerates inbound refresh failure", async () => {
+  const { client, net, core, refresh } = setup();
+  await expect(core.save("{bad")).rejects.toThrow(); expect(net.calls).toHaveLength(0);
+  client.setQueryData<CoreSettings>(queryKeys.core, { version: "1", started: true, logs_websocket: null, config: "{}" });
+  refresh.mockRejectedValueOnce(new Error("offline"));
+  const saving = core.save('{"inbounds":[]}'); await flushPromises();
+  expect(net.calls[0].options.body).toEqual({ inbounds: [] }); net.calls[0].resolve({}); await saving;
+  expect(client.getQueryData(queryKeys.core)).toHaveProperty("config", JSON.stringify({ inbounds: [] }, null, 2));
+});
+test("failed core save preserves cached config and does not refresh inbounds", async () => {
+  const { client, net, core, refresh } = setup();
+  client.setQueryData(queryKeys.core, { config: "{}" });
+  const saving = core.save('{"changed":true}'); await flushPromises();
+  net.calls[0].reject(new Error("invalid")); await expect(saving).rejects.toThrow("invalid");
+  expect(client.getQueryData(queryKeys.core)).toEqual({ config: "{}" }); expect(refresh).not.toHaveBeenCalled();
+});
+test("restart sends POST and propagates failures", async () => {
+  const { net, core } = setup(); const restarting = core.restart();
+  expect(net.calls[0]).toMatchObject({ url: "/core/restart", options: { method: "POST", retry: 0 } });
+  net.calls[0].reject(new Error("offline")); await expect(restarting).rejects.toThrow("offline");
 });
 
-describe("core settings failures", () => {
-  function setup() {
-    const net = network();
-    const fetchInbounds = mock(async () => {});
-    const { useCoreSettings } = loadSource<typeof import("../../src/contexts/core-settings-context")>("contexts/core-settings-context.tsx", {
-      "service/http": net, "@/contexts/dashboard-context": { fetchInbounds },
-    });
-    return { net, fetchInbounds, store: useCoreSettings };
-  }
-  test("failed parallel read aborts its sibling and releases loading", async () => {
-    const { store, net } = setup();
-    const pending = store.getState().fetchCoreSettings();
-    net.calls[0].reject(new Error("offline")); await expect(pending).rejects.toThrow("offline");
-    expect(net.calls[1].options.signal.aborted).toBe(true);
-    net.calls[1].resolve({});
-    expect(store.getState()).toMatchObject({ isLoading: false, config: "", version: null });
-  });
-  test("invalid JSON never reaches the API", async () => {
-    const { store, net } = setup();
-    await expect(store.getState().updateConfig("{broken")).rejects.toThrow();
-    expect(net.calls).toHaveLength(0);
-    expect(store.getState().isPostLoading).toBe(false);
-  });
-  test("failed save keeps draft and never refreshes protocols", async () => {
-    const { store, net, fetchInbounds } = setup();
-    store.setState({ config: '{"old":true}' });
-    const pending = store.getState().updateConfig('{"new":true}');
-    net.calls[0].reject(new Error("invalid config")); await expect(pending).rejects.toThrow("invalid config");
-    expect(store.getState()).toMatchObject({ config: '{"old":true}', isPostLoading: false });
-    expect(fetchInbounds).not.toHaveBeenCalled();
-  });
-  test("successful save stays successful when inbound refresh fails", async () => {
-    const { store, net, fetchInbounds } = setup();
-    fetchInbounds.mockRejectedValueOnce(new Error("offline"));
-    const pending = store.getState().updateConfig('{"inbounds":[]}');
-    net.calls[0].resolve({}); await pending;
-    expect(store.getState().config).toBe(JSON.stringify({ inbounds: [] }, null, 2));
-    expect(store.getState().isPostLoading).toBe(false);
-  });
-  test("restart uses POST and exposes failures", async () => {
-    const { store, net } = setup();
-    const pending = store.getState().restartCore();
-    expect(net.calls[0]).toMatchObject({ url: "/core/restart", options: { method: "POST" } });
-    net.calls[0].reject(new Error("offline")); await expect(pending).rejects.toThrow("offline");
-  });
+test.each(["null", "[]", "1", '"text"'])("invalid core root %s never reaches the API", async (json) => {
+  const { net, core } = setup(); await expect(core.save(json)).rejects.toThrow("core.objectRequired"); expect(net.calls).toHaveLength(0);
 });

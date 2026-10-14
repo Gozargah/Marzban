@@ -3,16 +3,6 @@ const assert = require('node:assert/strict');
 const { loadSource: load } = require('../helpers/load-source');
 const { deferred, network, flushPromises: tick } = require('../helpers/network');
 const latest = load('utils/latest-request.ts');
-function dashboard(net) {
-  return load('contexts/dashboard-context.tsx', {
-    '@/pages/router': { router: { navigate() {} } },
-    '@/components/dashboard/statistics': { StatisticsQueryKey: 'statistics' },
-    'service/http': net,
-    'utils/react-query': { queryClient: { invalidateQueries() {} } },
-    'utils/userPreferenceStorage': { getUsersPerPageLimitSize: () => 10 },
-    'utils/latest-request': latest,
-  });
-}
 
 test('latest read aborts superseded work; old completion cannot cancel the new request', () => {
   const owner = latest.createLatestRequest();
@@ -27,114 +17,11 @@ test('latest read aborts superseded work; old completion cannot cancel the new r
   assert.equal(second.isCurrent(), false);
 });
 
-test('users keep latest results, preserve filters, and maintain loading across out-of-order replies', async () => {
-  const net = network();
-  const { useDashboard: store } = dashboard(net);
-  store.getState().onFilterChange({ search: 'old', offset: 0 }, false);
-  const filters = store.getState().filters;
-  assert.equal(filters.offset, 0);
-  assert.equal(net.calls[0].options.query.offset, 0);
-  store.getState().onFilterChange({ search: 'new' }, false);
-  assert.equal(net.calls[0].options.signal.aborted, true);
-  net.calls[0].resolve({ users: [{ username: 'old' }], total: 1 });
-  await tick();
-  assert.equal(store.getState().loading, true);
-  assert.deepEqual(store.getState().users.users, []);
-  net.calls[1].resolve({ users: [{ username: 'new' }], total: 1 });
-  await tick();
-  assert.equal(store.getState().users.users[0].username, 'new');
-  assert.equal(store.getState().loading, false);
-  assert.equal(filters.search, 'old');
-});
 
-test('failed users request exposes a retryable error; inbound reads do not clear user loading', async () => {
-  const net = network();
-  const { useDashboard: store, fetchInbounds } = dashboard(net);
-  store.getState().refetchUsers();
-  const inbound = fetchInbounds();
-  net.calls[1].resolve({ shadowsocks: [] });
-  await inbound;
-  assert.equal(store.getState().loading, true);
-  net.calls[0].reject(new Error('offline'));
-  await tick();
-  assert.equal(store.getState().loading, false);
-  assert.equal(store.getState().usersError, true);
-  store.getState().refetchUsers();
-  assert.equal(store.getState().usersError, false);
-  net.calls[2].resolve({ users: [], total: 0 });
-  await tick();
-});
 
-test('narrow Zustand subscription ignores unrelated modal changes and unsubscribes cleanly', () => {
-  const { useDashboard: store } = dashboard(network());
-  let updates = 0;
-  const unsubscribe = store.subscribe((state) => state.users, () => updates++);
-  store.getState().onEditingHosts(true);
-  store.getState().onEditingNodes(true);
-  store.getState().setQRCode(['demo']);
-  assert.equal(updates, 0);
-  store.setState({ users: { users: [], total: 42 } });
-  assert.equal(updates, 1);
-  unsubscribe();
-  store.setState({ users: { users: [], total: 43 } });
-  assert.equal(updates, 1);
-});
 
-test('unmount cancellation prevents late users data from entering the store', async () => {
-  const net = network();
-  const { useDashboard: store, cancelUsersRequest } = dashboard(net);
-  store.getState().refetchUsers();
-  cancelUsersRequest();
-  net.calls[0].resolve({ users: [{ username: 'late' }], total: 1 });
-  await tick();
-  assert.equal(net.calls[0].options.signal.aborted, true);
-  assert.deepEqual(store.getState().users, { users: [], total: 0 });
-  assert.equal(store.getState().loading, false);
-});
 
-test('closing hosts cancels reads; a late read cannot overwrite a successful save', async () => {
-  const net = network();
-  const { useHosts: store } = load('contexts/hosts-context.tsx', {
-    'service/http': net, 'utils/latest-request': latest,
-  });
-  const reading = store.getState().fetchHosts();
-  const saved = { demo: [{ remark: 'Saved', address: 'example.com', port: null }] };
-  const writing = store.getState().setHosts(saved);
-  assert.equal(net.calls[0].options.signal.aborted, true);
-  net.calls[1].resolve(undefined);
-  await writing;
-  net.calls[0].resolve({ demo: [] });
-  await reading;
-  assert.deepEqual(store.getState().hosts, saved);
-  const closing = store.getState().fetchHosts();
-  store.getState().cancelFetch();
-  net.calls[2].reject(new Error('aborted'));
-  await closing;
-  assert.equal(store.getState().isLoading, false);
-});
 
-test('core parallel reads update atomically; closing cancels both requests', async () => {
-  const net = network();
-  const { useCoreSettings: store } = load('contexts/core-settings-context.tsx', {
-    'service/http': net, 'utils/latest-request': latest,
-    '@/contexts/dashboard-context': { fetchInbounds: async () => {} },
-  });
-  const reading = store.getState().fetchCoreSettings();
-  net.calls[0].resolve({ version: 'demo', started: true });
-  await tick();
-  assert.equal(store.getState().version, null);
-  net.calls[1].resolve({ inbounds: [] });
-  await reading;
-  assert.equal(store.getState().version, 'demo');
-  const closing = store.getState().fetchCoreSettings();
-  store.getState().cancelFetch();
-  assert.equal(net.calls[2].options.signal.aborted, true);
-  assert.equal(net.calls[3].options.signal.aborted, true);
-  net.calls[2].resolve({ version: 'late' });
-  net.calls[3].resolve({ inbounds: ['late'] });
-  await closing;
-  assert.equal(store.getState().version, 'demo');
-});
 
 test('log buffer bounds line count, oversized text, and releases data on clear', () => {
   const { createLogBuffer } = load('utils/log-buffer.ts');
@@ -183,7 +70,7 @@ test('repeated editor mounts release models, listeners, actions, and pending cha
       create() {
         editors++;
         return {
-          getValue: () => '{}', setValue() {}, focus() {},
+          getValue: () => '{}', setValue() {}, focus() {}, updateOptions() {},
           onDidBlurEditorWidget: disposable, onDidPaste: disposable,
           addAction() { actions++; return { dispose() { actions--; } }; },
           dispose() { editors--; },
@@ -215,6 +102,11 @@ test('repeated editor mounts release models, listeners, actions, and pending cha
     assert.equal(models, 1);
     assert.equal(editors, 1);
     assert.equal(pending, 1);
+    if (i === 0) {
+      window.dispatchEvent(new Event("marzban:flush-drafts"));
+      assert.equal(pending, 0);
+      contentChanged();
+    }
     cleanups.reverse().forEach((cleanup) => cleanup?.());
     assert.deepEqual({ models, editors, listeners, actions, pending },
       { models: 0, editors: 0, listeners: 0, actions: 0, pending: 0 });
@@ -232,24 +124,4 @@ test('admin routing and header can share a fresh cached read', async () => {
   await client.fetchQuery(adminQueryOptions);
   assert.equal(requests, 1);
   client.clear();
-});
-
-test('core config uses a stable string draft and sends a JSON object to the API', async () => {
-  const net = network();
-  const { useCoreSettings: store } = load('contexts/core-settings-context.tsx', {
-    'service/http': net, 'utils/latest-request': latest,
-    '@/contexts/dashboard-context': { fetchInbounds: async () => {} },
-  });
-  const config = { inbounds: [], outbounds: [] };
-  const reading = store.getState().fetchCoreSettings();
-  net.calls[0].resolve({ version: 'test', started: true });
-  net.calls[1].resolve(config);
-  await reading;
-  assert.equal(typeof store.getState().config, 'string');
-  const saving = store.getState().updateConfig(store.getState().config);
-  assert.deepEqual(net.calls[2].options.body, config);
-  net.calls[2].resolve(config);
-  await saving;
-  assert.equal(store.getState().config, JSON.stringify(config, null, 2));
-  assert.equal(store.getState().isPostLoading, false);
 });

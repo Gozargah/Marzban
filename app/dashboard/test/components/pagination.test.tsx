@@ -1,3 +1,4 @@
+import { usersAdapter } from "../helpers/users-adapter";
 import { test, expect, mock } from "bun:test";
 import { create } from "zustand";
 import { screen, fireEvent, waitFor } from "@testing-library/react";
@@ -6,9 +7,9 @@ import { renderFrontend } from "../helpers/render";
 
 function setup(patch: Record<string, unknown> = {}) {
   const onFilterChange = mock((_filters: any) => {});
-  const store = create(() => ({ filters: { limit: 10, offset: 0 }, users: { total: 35 }, loading: false, usersError: false, onFilterChange, ...patch }));
+  const store = create(() => ({ filters: { limit: 10, offset: 0 }, users: { users: [], total: 35 }, loading: false, usersError: false, onFilterChange, ...patch }));
   const { Pagination } = loadSource<typeof import("../../src/components/dashboard/table/users-pagination")>("components/dashboard/table/users-pagination.tsx", {
-    "@/contexts/dashboard-context": { useDashboard: store },
+    ...usersAdapter(store), "@/contexts/dashboard-context": { useDashboard: store },
   });
   renderFrontend(<Pagination />);
   return { onFilterChange, store };
@@ -33,7 +34,7 @@ test("page size resets offset and persists preference", () => {
   expect(localStorage.getItem("marzban-num-users-per-page")).toBe("50");
 });
 test("empty results stay on page one with disabled navigation", () => {
-  setup({ users: { total: 0 } });
+  setup({ users: { users: [], total: 0 } });
   expect(screen.getByText("0–0 / 0")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: /next/i })).toBeDisabled();
 });
@@ -44,15 +45,15 @@ test("loading prevents navigation and changing size", () => {
   expect(onFilterChange).not.toHaveBeenCalled();
 });
 test("deleted last page moves to the last valid offset", async () => {
-  const { onFilterChange } = setup({ filters: { limit: 10, offset: 30 }, users: { total: 20 } });
+  const { onFilterChange } = setup({ filters: { limit: 10, offset: 30 }, users: { users: [], total: 20 } });
   await waitFor(() => expect(onFilterChange).toHaveBeenCalledWith({ offset: 10 }));
 });
 test("failed results do not silently change page", () => {
-  const { onFilterChange } = setup({ filters: { limit: 10, offset: 30 }, users: { total: 0 }, usersError: true });
+  const { onFilterChange } = setup({ filters: { limit: 10, offset: 30 }, users: { users: [], total: 0 }, usersError: true });
   expect(onFilterChange).not.toHaveBeenCalled();
 });
 test("large result sets bound the number of page buttons", () => {
-  setup({ users: { total: 10000 }, filters: { limit: 10, offset: 5000 } });
+  setup({ users: { users: [], total: 10000 }, filters: { limit: 10, offset: 5000 } });
   expect(screen.getAllByRole("button").length).toBeLessThanOrEqual(9);
   expect(screen.getByRole("button", { current: "page" })).toHaveTextContent("501");
 });

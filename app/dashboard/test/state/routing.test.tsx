@@ -2,6 +2,7 @@ import { test, expect } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
 import { loadSource } from "../helpers/load-source";
 import { network } from "../helpers/network";
+import { localeAdapter } from "../helpers/render";
 
 function setup() {
   const net = network();
@@ -9,6 +10,7 @@ function setup() {
   const { adminQueryOptions } = loadSource<typeof import("../../src/utils/admin-query")>("utils/admin-query.ts", { "service/http": net });
   let routes: any[] = [];
   loadSource("pages/router.tsx", {
+    ...localeAdapter,
     "react-router": { createBrowserRouter: (configured: any[]) => { routes = configured; return {}; } },
     "utils/admin-query": { adminQueryOptions }, "utils/react-query": { queryClient: client },
     "./dashboard": { Dashboard: () => null }, "./login": { Login: () => null },
@@ -31,14 +33,14 @@ test("dashboard navigation validates access and shares fresh admin with the head
     net.calls[1].resolve(admin); await secondNavigation;
   } finally { client.clear(); }
 });
-test("access failure reaches login error boundary without retries", async () => {
+test("access failure reaches the route error boundary without retries", async () => {
   const { net, routes, client } = setup();
   try {
     const pending = routes[0].loader();
     net.calls[0].reject(new Error("unauthorized"));
     await expect(pending).rejects.toThrow("unauthorized");
     expect(net.calls).toHaveLength(1);
-    expect(routes[0].errorElement.type).toBe(routes[1].element.type);
+    expect(routes[0].errorElement.type.name).toBe("AccessError");
     expect(routes[1].path).toBe("/login/");
   } finally { client.clear(); }
 });

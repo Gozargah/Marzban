@@ -1,3 +1,4 @@
+import { usersAdapter } from "../helpers/users-adapter";
 import { test, expect, mock } from "bun:test";
 import { create } from "zustand";
 import { screen, fireEvent } from "@testing-library/react";
@@ -12,7 +13,7 @@ function setup(patch: Record<string, unknown> = {}) {
   const store = create(() => ({ filters: { sort: "-created_at", limit: 10 }, users: { users: [], total: 0 }, loading: false, usersError: false,
     onFilterChange, onCreateUser, onEditingUser, setQRCode: mock(() => {}), setSubLink: mock(() => {}), ...patch }));
   const { UsersTable } = loadSource<typeof import("../../src/components/dashboard/table/users-table")>("components/dashboard/table/users-table.tsx", {
-    ...localeAdapter, "@/contexts/dashboard-context": { useDashboard: store },
+    ...localeAdapter, ...usersAdapter(store), "@/contexts/dashboard-context": { useDashboard: store },
     "assets/add_file.svg?react": () => <svg aria-hidden="true" />,
   });
   return { ...renderFrontend(<UsersTable />), onFilterChange, onCreateUser, onEditingUser };
@@ -39,4 +40,11 @@ test("users render identity and sorting resets pagination", () => {
   expect(screen.getAllByText("alice").length).toBeGreaterThan(0);
   fireEvent.click(screen.getAllByRole("button", { name: "Users" })[0]);
   expect(onFilterChange).toHaveBeenCalledWith({ sort: "username", offset: 0 });
+});
+
+test("desktop row can open the user editor with the keyboard", () => {
+  const user = makeUser(); const { onEditingUser } = setup({ users: { users: [user], total: 1 } });
+  const row = screen.getByRole("row", { name: "Edit alice" });
+  expect(row).toHaveAttribute("tabindex", "0"); fireEvent.keyDown(row, { key: "Enter" });
+  expect(onEditingUser).toHaveBeenCalledWith(user);
 });

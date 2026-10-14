@@ -1,6 +1,6 @@
-import { test, expect, spyOn } from "bun:test";
-import { screen, fireEvent } from "@testing-library/react";
-import { ThemeProvider, useTheme } from "../../src/components/theme-provider";
+import { fireEvent,screen } from "@testing-library/react";
+import { expect,test } from "bun:test";
+import { ThemeProvider,useTheme } from "../../src/components/theme-provider";
 import { renderFrontend } from "../helpers/render";
 
 function Consumer() {
@@ -28,9 +28,13 @@ test("invalid stored theme uses default", () => {
   expect(screen.getByText("dark:dark")).toBeInTheDocument();
 });
 test("theme remains usable when storage is blocked", () => {
-  spyOn(localStorage, "getItem").mockImplementation(() => { throw new Error("blocked"); });
-  spyOn(localStorage, "setItem").mockImplementation(() => { throw new Error("blocked"); });
-  renderFrontend(<ThemeProvider defaultTheme="dark"><Consumer /></ThemeProvider>);
-  fireEvent.click(screen.getByRole("button", { name: "Light" }));
-  expect(screen.getByText("light:light")).toBeInTheDocument();
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, "localStorage")!;
+  Object.defineProperty(globalThis, "localStorage", { configurable: true, value: {
+    getItem() { throw new Error("blocked"); }, setItem() { throw new Error("blocked"); }, clear() {},
+  } });
+  try {
+    renderFrontend(<ThemeProvider defaultTheme="dark"><Consumer /></ThemeProvider>);
+    fireEvent.click(screen.getByRole("button", { name: "Light" }));
+    expect(screen.getByText("light:light")).toBeInTheDocument();
+  } finally { Object.defineProperty(globalThis, "localStorage", descriptor); }
 });
