@@ -1,23 +1,23 @@
-import { useLocale } from "@/hooks/use-locale";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createLatestRequest } from "utils/latest-request";
-import dayjs from "dayjs";
-import ReactApexChart from "react-apexcharts";
-import { useTranslation } from "react-i18next";
-import { ChartPie } from "lucide-react";
-import { FilterUsageType, useDashboard } from "@/contexts/dashboard-context";
-import { useNodes } from "@/contexts/nodes-context";
-import { useTheme } from "@/components/theme-provider";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { UsageFilter, createUsageConfig } from "./usage-filter";
+import { FilterUsageType, useDashboard } from "@/contexts/dashboard-context";
+import { useNodes } from "@/contexts/nodes-context";
+import { createUsageData } from "@/features/shared/traffic";
+import { useLocale } from "@/hooks/use-locale";
+import dayjs from "dayjs";
+import { ChartPie } from "lucide-react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { createLatestRequest } from "utils/latest-request";
+import { UsageFilter } from "./usage-filter";
+
+const TrafficChart = lazy(() => import("@/features/shared/traffic-chart").then((module) => ({ default: module.TrafficChart })));
 
 export function NodesUsage() {
   const isShowingNodesUsage = useDashboard((state) => state.isShowingNodesUsage);
   const onShowingNodesUsage = useDashboard((state) => state.onShowingNodesUsage);
   const fetchNodesUsage = useNodes((state) => state.fetchNodesUsage);
-  const { resolvedTheme } = useTheme();
   const { t } = useTranslation();
   const { direction } = useLocale();
   const [data, setData] = useState<{ series: number[]; labels: string[] }>({ series: [], labels: [] });
@@ -58,10 +58,9 @@ export function NodesUsage() {
       request.current.cancel();
     };
   }, [isShowingNodesUsage, fetchUsage]);
-  const title = t("userDialog.total");
   const usage = useMemo(
-    () => createUsageConfig(resolvedTheme, title, data.series, data.labels),
-    [resolvedTheme, title, data],
+    () => createUsageData(data.series, data.labels),
+    [data],
   );
   return (
     <Dialog open={isShowingNodesUsage} onOpenChange={onShowingNodesUsage}>
@@ -94,7 +93,7 @@ export function NodesUsage() {
           </Alert>
         ) : (
           <div className="mx-auto w-full max-w-md">
-            <ReactApexChart options={usage.options} series={usage.series} type="donut" height={360} />
+            <Suspense fallback={<Spinner aria-label={t("loading")} />}><TrafficChart usage={usage} height={360} /></Suspense>
           </div>
         )}
       </DialogContent>

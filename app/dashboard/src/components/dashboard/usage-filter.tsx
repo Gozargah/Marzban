@@ -1,15 +1,12 @@
-import { useLocale } from "@/hooks/use-locale";
-import { useState } from "react";
-import dayjs, { ManipulateType } from "dayjs";
-import { ApexOptions } from "apexcharts";
-import ReactDatePicker from "react-datepicker";
-import { useTranslation } from "react-i18next";
-import { Calendar } from "lucide-react";
-import { FilterUsageType } from "@/contexts/dashboard-context";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { generateDistinctColors } from "utils/color";
-import { formatBytes } from "utils/formatByte";
+import { FilterUsageType } from "@/contexts/dashboard-context";
+import { useLocale } from "@/hooks/use-locale";
+import dayjs, { ManipulateType } from "dayjs";
+import { Calendar } from "lucide-react";
+import { useState } from "react";
+import ReactDatePicker from "react-datepicker";
+import { useTranslation } from "react-i18next";
 
 export type UsageFilterProps = { onChange: (filter: string, query: FilterUsageType) => void; defaultValue: string };
 const units: Record<string, ManipulateType> = { h: "hour", d: "day", w: "week", m: "month" };
@@ -134,28 +131,4 @@ export function UsageFilter({ defaultValue, onChange }: UsageFilterProps) {
       </Popover>
     </div>
   );
-}
-
-export function createUsageConfig(
-  colorMode: "light" | "dark",
-  title: string,
-  series: number[] = [],
-  labels: string[] = [],
-) {
-  const total = formatBytes(series.reduce((sum, value) => sum + value, 0));
-  const options: ApexOptions = {
-    labels,
-    chart: { type: "donut", animations: { enabled: false } },
-    title: {
-      text: `${title}${total}`,
-      align: "center",
-      style: { fontWeight: 500, color: colorMode === "dark" ? "#fafafa" : "#171717" },
-    },
-    legend: { position: "bottom", labels: { colors: colorMode === "dark" ? "#fafafa" : "#171717" } },
-    stroke: { width: 1 },
-    dataLabels: { formatter: (_value, { seriesIndex, w }) => String(formatBytes(w.config.series[seriesIndex], 1)) },
-    tooltip: { theme: colorMode, y: { formatter: (value) => String(formatBytes(value, 1)) } },
-    colors: generateDistinctColors(series.length),
-  };
-  return { series, options };
 }

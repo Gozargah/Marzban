@@ -1,11 +1,11 @@
+import { queryKeys } from "@/features/shared/query-keys";
 import { useLocale } from "@/hooks/use-locale";
 import { useQuery } from "@tanstack/react-query";
 import { ChartColumn, MemoryStick, Users, type LucideIcon } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { QueryFeedback } from "./query-feedback";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { fetch } from "service/http";
@@ -44,13 +44,13 @@ function StatisticCard({ title, content, icon: Icon }: StatisticCardProps) {
   );
 }
 
-export const StatisticsQueryKey = "statistics-query-key";
+export const StatisticsQueryKey = queryKeys.statistics[0];
 
 export function Statistics({ className, ...props }: ComponentProps<"section">) {
   const { t } = useTranslation();
   const { direction } = useLocale();
-  const { data, isPending, isError, isFetching, refetch } = useQuery({
-    queryKey: [StatisticsQueryKey],
+  const { data, isPending, isError, isFetching, refetch, dataUpdatedAt, isPaused } = useQuery({
+    queryKey: queryKeys.statistics,
     queryFn: ({ signal }) => fetch<SystemStatistics>("/system", { signal, retry: 0 }),
     staleTime: 5000,
     refetchInterval: 5000,
@@ -67,17 +67,8 @@ export function Statistics({ className, ...props }: ComponentProps<"section">) {
       className={cn("mt-4 space-y-4", className)}
       {...props}
     >
-      {isPending && <p role="status" className="sr-only">{t("statistics.loading", { defaultValue: "Loading statistics" })}</p>}
-      {isError && (
-        <Alert variant="destructive">
-          <AlertDescription className="flex flex-wrap items-center justify-between gap-2">
-            <span>{t("statistics.loadError", { defaultValue: "Unable to refresh statistics. Please try again." })}</span>
-            <Button type="button" variant="outline" size="sm" disabled={isFetching} onClick={() => void refetch()}>
-              {t("statistics.retry", { defaultValue: "Retry" })}
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
+      <QueryFeedback loading={isPending} refreshing={isFetching && !isPending} failed={isError} updatedAt={dataUpdatedAt} offline={isPaused}
+        retry={() => void refetch()} message={t("statistics.loadError", { defaultValue: "Unable to refresh statistics. Please try again." })} />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <StatisticCard
           title={t("activeUsers")}

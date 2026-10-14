@@ -1,23 +1,3 @@
-import { useLocale } from "@/hooks/use-locale";
-import { useEffect, useId, useRef, useState } from "react";
-import { useIsMutating, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, Resolver, useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
-import { ArrowLeft, Download, Eye, EyeOff, Network, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-import { z } from "zod";
-import { DirectionProvider } from "@base-ui/react/direction-provider";
-import {
-  FetchNodesQueryKey,
-  getNodeDefaultValues,
-  NodeSchema,
-  NodeType,
-  useNodes,
-  useNodesQuery,
-} from "@/contexts/nodes-context";
-import { useDashboard } from "@/contexts/dashboard-context";
-import { fetch } from "service/http";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -27,10 +7,32 @@ import { FieldDescription, FieldLabel, FieldLegend, FieldSet } from "@/component
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
-import { FormInput } from "./form-input";
-import { DeleteNodeModal } from "./delete-node-modal";
-import { NodeModalStatusBadge } from "./node-modal-status-badge";
+import { useDashboard } from "@/contexts/dashboard-context";
+import {
+FetchNodesQueryKey,
+getNodeDefaultValues,
+NodeSchema,
+NodeType,
+useNodes,
+useNodesQuery,
+} from "@/contexts/nodes-context";
+import { clearDraft } from "@/features/shared/drafts";
+import { useRecoverableDraft } from "@/features/shared/use-recoverable-draft";
+import { useLocale } from "@/hooks/use-locale";
 import { cn } from "@/lib/utils";
+import { DirectionProvider } from "@base-ui/react/direction-provider";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useIsMutating, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Download, Eye, EyeOff, Network, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
+import { Controller, Resolver, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { fetch } from "service/http";
+import { toast } from "sonner";
+import { z } from "zod";
+import { DeleteNodeModal } from "./delete-node-modal";
+import { FormInput } from "./form-input";
+import { NodeModalStatusBadge } from "./node-modal-status-badge";
 
 const nodeWriteKey = ["dashboard-node-write"];
 const nodeFormSchema = NodeSchema.extend({
@@ -58,6 +60,7 @@ function NodeForm({ node, onSaved, onCancel, onDelete, onDirtyChange }: {
     defaultValues: node ?? { ...getNodeDefaultValues(), add_as_new_host: false },
     resolver: zodResolver(nodeFormSchema) as Resolver<NodeType>,
   });
+  useRecoverableDraft(node ? `node:${node.id}` : "node:new", form, true);
   const { isDirty } = form.formState;
   useEffect(() => onDirtyChange(isDirty), [isDirty, onDirtyChange]);
   const [error, setError] = useState<string | null>(null);
@@ -84,6 +87,7 @@ function NodeForm({ node, onSaved, onCancel, onDelete, onDirtyChange }: {
         : t("nodes.addNodeSuccess", { name: form.getValues("name") }));
       queryClient.invalidateQueries({ queryKey: [FetchNodesQueryKey] });
       form.reset(form.getValues());
+      clearDraft(node ? `node:${node.id}` : "node:new");
       onDirtyChange(false);
       onSaved();
     },
@@ -252,7 +256,10 @@ export function NodesDialog() {
       setDiscardOpen(true);
     } else action();
   };
-  const showOverview = () => { setDirty(false); setSelected(null); };
+  const showOverview = () => {
+    if (selected) clearDraft(selected === "new" ? "node:new" : `node:${selected.id}`);
+    setDirty(false); setSelected(null);
+  };
   const close = () => requestLeave(() => onEditingNodes(false));
   const editingNode = selected && selected !== "new" ? selected : undefined;
 

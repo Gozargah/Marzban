@@ -1,3 +1,10 @@
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import GitHubButton from "react-github-btn";
+import { createHostsResource } from "@/features/hosts/resource";
+import { createCoreResource } from "@/features/core/resource";
+import { queryKeys } from "@/features/shared/query-keys";
+import { preloadEditor, preloadTrafficChart } from "@/features/shared/dialog-preload";
+import { fetch } from "service/http";
 import { useLocale } from "@/hooks/use-locale";
 import { DirectionProvider } from "@base-ui/react/direction-provider";
 import { useQueryClient } from "@tanstack/react-query";
@@ -42,26 +49,29 @@ export function Header({ actions }: HeaderProps) {
   const { t } = useTranslation();
   const { resolvedTheme: colorMode, setTheme } = useTheme();
   const queryClient = useQueryClient();
+  const [desktop, setDesktop] = useState(() => window.matchMedia("(min-width: 768px)").matches);
   const [menuOpen, setMenuOpen] = useState(false);
   const nextAction = useRef<(() => void) | null>(null);
   const [showDonationNotif, setShowDonationNotif] = useState(shouldShowDonation);
   const { direction } = useLocale();
+  const githubTheme = colorMode === "dark" ? "dark_dimmed" : "light";
   const menuLabel = t("header.menu", { defaultValue: "Dashboard menu" });
   const themeLabel = colorMode === "dark"
     ? t("header.lightMode", { defaultValue: "Switch to light mode" })
     : t("header.darkMode", { defaultValue: "Switch to dark mode" });
   const destinations = [
-    { label: t("header.hostSettings"), icon: Link2, description: t("header.hostsHint", { defaultValue: "Manage connection addresses for each inbound." }), action: () => onEditingHosts(true) },
-    { label: t("header.nodeSettings"), icon: Network, description: t("header.nodesHint", { defaultValue: "Add servers and manage their connection settings." }), action: () => onEditingNodes(true) },
-    { label: t("header.coreSettings", { defaultValue: "Core settings" }), icon: Settings, description: t("header.coreHint", { defaultValue: "Configure inbounds, routing, and the Xray core." }), action: () => useDashboard.setState({ isEditingCore: true }) },
-    { label: t("header.nodesUsage"), icon: PieChart, description: t("header.usageHint", { defaultValue: "Review traffic across your servers." }), action: () => onShowingNodesUsage(true) },
+    { label: t("header.hostSettings"), icon: Link2, description: t("header.hostsHint", { defaultValue: "Manage connection addresses for each inbound." }), preload: () => { void queryClient.prefetchQuery(createHostsResource(queryClient, fetch).options()); }, action: () => onEditingHosts(true) },
+    { label: t("header.nodeSettings"), icon: Network, description: t("header.nodesHint", { defaultValue: "Add servers and manage their connection settings." }), preload: () => {}, action: () => onEditingNodes(true) },
+    { label: t("header.coreSettings", { defaultValue: "Core settings" }), icon: Settings, description: t("header.coreHint", { defaultValue: "Configure inbounds, routing, and the Xray core." }), preload: () => { void preloadEditor(); void queryClient.prefetchQuery(createCoreResource(queryClient, fetch, () => queryClient.invalidateQueries({ queryKey: queryKeys.inbounds })).options()); }, action: () => useDashboard.setState({ isEditingCore: true }) },
+    { label: t("header.nodesUsage"), icon: PieChart, description: t("header.usageHint", { defaultValue: "Review traffic across your servers." }), preload: () => { void preloadTrafficChart(); }, action: () => onShowingNodesUsage(true) },
   ];
 
+
   useEffect(() => {
-    const desktop = window.matchMedia("(min-width: 768px)");
-    const closeMobileMenu = () => { if (desktop.matches) setMenuOpen(false); };
-    desktop.addEventListener("change", closeMobileMenu);
-    return () => desktop.removeEventListener("change", closeMobileMenu);
+    const media = window.matchMedia("(min-width: 768px)");
+    const change = () => { setDesktop(media.matches); setMenuOpen(false); nextAction.current = null; };
+    media.addEventListener("change", change);
+    return () => media.removeEventListener("change", change);
   }, []);
 
   function openDestination(action: () => void) {
@@ -89,24 +99,38 @@ export function Header({ actions }: HeaderProps) {
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             {actions}
             <Language showLabel />
+            <div dir="ltr" className="flex items-center [&_span]:inline-flex">
+              <GitHubButton href={REPO_URL}
+                data-color-scheme={`no-preference: ${githubTheme}; light: ${githubTheme}; dark: ${githubTheme};`}
+                data-size="large" data-show-count="true" aria-label="Star Marzban on GitHub">Star</GitHubButton>
+            </div>
             <Button type="button" variant="outline" size="icon-sm" aria-label={themeLabel} title={themeLabel}
               onClick={() => setTheme(colorMode === "dark" ? "light" : "dark")}>
               {colorMode === "light" ? <Moon aria-hidden="true" /> : <Sun aria-hidden="true" />}
             </Button>
-            <div className="hidden min-w-0 items-center gap-3 border-s border-border ps-3 md:flex">
-              <span className="max-w-32 truncate text-xs text-muted-foreground" title={userData.username}>{userData.username}</span>
-              <Link to="/login" className={cn(buttonVariants({ variant: "outline", size: "sm" }))} onClick={logout}><LogOut aria-hidden="true" />{t("header.logout")}</Link>
-            </div>
-            <Sheet open={menuOpen} onOpenChange={(open) => { if (open) nextAction.current = null; setMenuOpen(open); }} onOpenChangeComplete={(open) => {
+            {desktop ? <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen} onOpenChangeComplete={(open) => {
+              if (!open) { const action = nextAction.current; nextAction.current = null; action?.(); }
+            }}>
+              <DropdownMenuTrigger render={<Button type="button" variant="outline" size="icon-sm" />} aria-label={menuLabel}>
+                <Menu aria-hidden="true" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {isSudo && <DropdownMenuItem variant="destructive" onClick={() => openDestination(() => onResetAllUsage(true))}>
+                  <RotateCcw aria-hidden="true" />{t("resetAllUsage")}
+                </DropdownMenuItem>}
+                <DropdownMenuItem render={<Link to="/login" />} onClick={logout}>
+                  <LogOut aria-hidden="true" />{t("header.logout")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu> : <Sheet open={menuOpen} onOpenChange={(open) => { if (open) nextAction.current = null; setMenuOpen(open); }} onOpenChangeComplete={(open) => {
               if (!open) {
                 const action = nextAction.current;
                 nextAction.current = null;
                 action?.();
               }
             }}>
-              <SheetTrigger className="md:hidden" render={<Button type="button" variant="outline" size="sm" />} aria-label={menuLabel}>
+              <SheetTrigger render={<Button type="button" variant="outline" size="icon-sm" />} aria-label={menuLabel}>
                 <Menu aria-hidden="true" />
-                <span>{t("header.navigation", { defaultValue: "Menu" })}</span>
               </SheetTrigger>
               <SheetContent dir={direction} side={direction === "rtl" ? "left" : "right"} className="w-full! sm:max-w-sm! gap-0 overflow-hidden">
                 <SheetHeader className="shrink-0 border-b px-5 py-5 pe-14">
@@ -117,8 +141,8 @@ export function Header({ actions }: HeaderProps) {
                   {isSudo && <section className="space-y-2" aria-labelledby="header-manage-title">
                     <h2 id="header-manage-title" className="text-xs font-medium text-muted-foreground">{t("header.manage", { defaultValue: "Manage" })}</h2>
                     <nav aria-label={t("header.manage", { defaultValue: "Manage" })} className="divide-y border border-border">
-                      {destinations.map(({ label, icon: Icon, description, action }) => (
-                        <Button key={label} type="button" variant="ghost" className="h-auto w-full justify-start gap-3 whitespace-normal px-3 py-3 text-start" onClick={() => openDestination(action)}>
+                      {destinations.map(({ label, icon: Icon, description, action, preload }) => (
+                        <Button key={label} type="button" variant="ghost" className="h-auto w-full justify-start gap-3 whitespace-normal px-3 py-3 text-start" onPointerEnter={preload} onFocus={preload} onTouchStart={preload} onClick={() => { preload(); openDestination(action); }}>
                           <Icon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
                           <span className="min-w-0 flex-1"><span className="block font-medium">{label}</span><span className="mt-1 block text-xs font-normal text-muted-foreground">{description}</span></span>
                           <ChevronRight aria-hidden="true" className="size-4 text-muted-foreground rtl:rotate-180" />
@@ -170,26 +194,19 @@ export function Header({ actions }: HeaderProps) {
                   </div>
                 </SheetFooter>
               </SheetContent>
-            </Sheet>
+            </Sheet>}
           </div>
         </div>
-        <div className={`hidden gap-x-6 gap-y-4 md:grid md:grid-cols-2 ${isSudo ? "xl:grid-cols-[minmax(0,1fr)_auto_auto]" : "md:grid-cols-1"}`}>
+        <div className={`hidden gap-x-6 gap-y-4 md:grid md:grid-cols-2 ${isSudo ? "xl:grid-cols-[minmax(0,1fr)_auto]" : "md:grid-cols-1"}`}>
           {isSudo && <nav aria-label={t("header.manage", { defaultValue: "Manage" })} className="space-y-2 md:col-span-2 xl:col-span-1">
             <p className="text-xs font-medium text-muted-foreground">{t("header.manage", { defaultValue: "Manage" })}</p>
             <div className="flex flex-wrap gap-2">
-              {destinations.map(({ label, icon: Icon, action }) => <Button key={label} type="button" variant="outline" size="sm" onClick={action}><Icon aria-hidden="true" />{label}</Button>)}
+              {destinations.map(({ label, icon: Icon, action, preload }) => <Button key={label} type="button" variant="outline" size="sm" onPointerEnter={preload} onFocus={preload} onTouchStart={preload} onClick={() => { preload(); action(); }}><Icon aria-hidden="true" />{label}</Button>)}
             </div>
           </nav>}
-          {isSudo && <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground">{t("header.maintenance", { defaultValue: "Maintenance" })}</p>
-            <Button type="button" variant="outline" size="sm" className="border-destructive/20 text-destructive hover:bg-destructive/5 hover:text-destructive" title={t("header.resetHint")} onClick={() => onResetAllUsage(true)}>
-              <RotateCcw aria-hidden="true" />{t("resetAllUsage")}
-            </Button>
-          </div>}
           <nav aria-label={t("header.project", { defaultValue: "Project & support" })} className="space-y-2">
             <p className="text-xs font-medium text-muted-foreground">{t("header.project", { defaultValue: "Project & support" })}</p>
             <div className="flex flex-wrap gap-2">
-              <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}><Code aria-hidden="true" />{t("header.github", { defaultValue: "View on GitHub" })}<ArrowUpRight aria-hidden="true" /></a>
               <a href={DONATION_URL} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline", size: "sm" }))} onClick={acknowledgeDonation}><CircleDollarSign aria-hidden="true" />{t("header.donation")}<ArrowUpRight aria-hidden="true" /></a>
             </div>
           </nav>
