@@ -1,9 +1,7 @@
 import { router } from "@/pages/router";
-import { StatisticsQueryKey } from "@/components/dashboard/statistics";
-import { createLatestRequest } from "utils/latest-request";
 import { fetch } from "service/http";
 import { User, UserCreate } from "types/User";
-import { queryClient } from "utils/react-query";
+import { usersResource } from "@/features/users/api";
 import { getUsersPerPageLimitSize } from "utils/userPreferenceStorage";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
@@ -35,14 +33,6 @@ type DashboardStateType = {
   isCreatingNewUser: boolean;
   editingUser: User | null | undefined;
   deletingUser: User | null;
-  version: string | null;
-  users: {
-    users: User[];
-    total: number;
-  };
-  inbounds: Inbounds;
-  loading: boolean;
-  usersError: boolean;
   filters: FilterType;
   subscribeUrl: string | null;
   QRcodeLinks: string[] | null;
@@ -73,33 +63,7 @@ type DashboardStateType = {
   revokeSubscription: (user: User) => Promise<void>;
 };
 
-const usersRequest = createLatestRequest();
-export const cancelUsersRequest = () => {
-  usersRequest.cancel();
-  useDashboard.setState({ loading: false });
-};
-
-const fetchUsers = async (filters: FilterType): Promise<void> => {
-  const request = usersRequest.start();
-  // Never mutate the store's filters while normalizing HTTP query parameters.
-  const query = Object.fromEntries(Object.entries(filters).filter(([, value]) =>
-    value !== undefined && value !== null && value !== ""));
-  useDashboard.setState({ loading: true, usersError: false });
-  try {
-    const users = await fetch<DashboardStateType["users"]>("/users", { query, signal: request.signal, retry: 0 });
-    if (request.isCurrent()) useDashboard.setState({ users });
-  } catch {
-    if (request.isCurrent()) useDashboard.setState({ usersError: true });
-  } finally {
-    if (request.isCurrent()) useDashboard.setState({ loading: false });
-    request.finish();
-  }
-};
-
-export const fetchInbounds = async (signal?: AbortSignal) => {
-  const inbounds = await fetch<Record<ProtocolType, InboundType[]>>("/inbounds", { signal, retry: 0 });
-  if (!signal?.aborted) useDashboard.setState({ inbounds: new Map(Object.entries(inbounds)) as Inbounds });
-};
+export const cancelUsersRequest = () => { void usersResource.cancel(); };
 
 const serializeFilters = (f: Partial<FilterType>) => {
   const filters = { ...f };
@@ -122,18 +86,11 @@ const serializeFilters = (f: Partial<FilterType>) => {
 
 export const useDashboard = create(
   subscribeWithSelector<DashboardStateType>((set, get) => ({
-    version: null,
     editingUser: null,
     deletingUser: null,
     isCreatingNewUser: false,
     QRcodeLinks: null,
     subscribeUrl: null,
-    users: {
-      users: [],
-      total: 0,
-    },
-    loading: true,
-    usersError: false,
     isResetingAllUsage: false,
     isEditingHosts: false,
     isEditingNodes: false,
@@ -141,20 +98,14 @@ export const useDashboard = create(
     resetUsageUser: null,
     revokeSubscriptionUser: null,
     filters: {
-      username: "",
       limit: getUsersPerPageLimitSize(),
       sort: "-created_at",
     },
-    inbounds: new Map(),
     isEditingCore: false,
-    refetchUsers: () => {
-      void fetchUsers(get().filters);
-    },
-    resetAllUsage: () => {
-      return fetch(`/users/reset`, { method: "POST" }).then(() => {
-        get().onResetAllUsage(false);
-        get().refetchUsers();
-      });
+    refetchUsers: () => { void usersResource.refresh(); },
+    resetAllUsage: async () => {
+      await usersResource.resetAll();
+      get().onResetAllUsage(false);
     },
     onResetAllUsage: (isResetingAllUsage) => set({ isResetingAllUsage }),
     onCreateUser: (isCreatingNewUser) => set({ isCreatingNewUser }),
@@ -173,31 +124,22 @@ export const useDashboard = create(
         allFilters[key as keyof FilterType] !== get().filters[key as keyof FilterType]);
       if (changed) set({ filters: allFilters });
       if (pushState && changed) serializeFilters(allFilters);
-      get().refetchUsers();
+      if (!changed) get().refetchUsers();
     },
     setQRCode: (QRcodeLinks) => {
       set({ QRcodeLinks });
     },
-    deleteUser: (user: User) => {
+    deleteUser: async (user) => {
+      await usersResource.delete(user);
+      set({ editingUser: null, deletingUser: null });
+    },
+    createUser: async (body) => {
+      await usersResource.create(body);
       set({ editingUser: null });
-      return fetch(`/user/${user.username}`, { method: "DELETE" }).then(() => {
-        set({ deletingUser: null });
-        get().refetchUsers();
-        queryClient.invalidateQueries({ queryKey: [StatisticsQueryKey] });
-      });
     },
-    createUser: (body: UserCreate) => {
-      return fetch(`/user`, { method: "POST", body }).then(() => {
-        set({ editingUser: null });
-        get().refetchUsers();
-        queryClient.invalidateQueries({ queryKey: [StatisticsQueryKey] });
-      });
-    },
-    editUser: (body: UserCreate) => {
-      return fetch(`/user/${body.username}`, { method: "PUT", body }).then(() => {
-        get().onEditingUser(null);
-        get().refetchUsers();
-      });
+    editUser: async (body) => {
+      await usersResource.edit(body);
+      set({ editingUser: null });
     },
     fetchUserUsage: (body: User, query: FilterUsageType, signal?: AbortSignal) => {
       return fetch(`/user/${body.username}/usage`, { method: "GET", query, signal });
@@ -214,19 +156,13 @@ export const useDashboard = create(
     setSubLink: (subscribeUrl) => {
       set({ subscribeUrl });
     },
-    resetDataUsage: (user) => {
-      return fetch(`/user/${user.username}/reset`, { method: "POST" }).then(() => {
-        set({ resetUsageUser: null });
-        get().refetchUsers();
-      });
+    resetDataUsage: async (user) => {
+      await usersResource.reset(user);
+      set({ resetUsageUser: null });
     },
-    revokeSubscription: (user) => {
-      return fetch(`/user/${user.username}/revoke_sub`, {
-        method: "POST",
-      }).then((user) => {
-        set({ revokeSubscriptionUser: null, editingUser: user });
-        get().refetchUsers();
-      });
+    revokeSubscription: async (user) => {
+      const updated = await usersResource.revoke(user);
+      set({ revokeSubscriptionUser: null, editingUser: updated });
     },
   })),
 );

@@ -52,8 +52,10 @@ export type NodeStore = {
 
 export const useNodesQuery = () => {
   const isEditingNodes = useDashboard((state) => state.isEditingNodes);
+  const isEditingCore = useDashboard((state) => state.isEditingCore);
   return useQuery({
     queryKey: [FetchNodesQueryKey],
+    enabled: isEditingNodes || isEditingCore,
     queryFn: ({ signal }) => useNodes.getState().fetchNodes(signal),
     staleTime: 3000,
     retry: 1,

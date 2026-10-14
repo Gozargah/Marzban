@@ -1,57 +1,17 @@
+import { queryKeys } from "@/features/shared/query-keys";
+import { useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetch } from "service/http";
-import { create } from "zustand";
-import { createLatestRequest } from "utils/latest-request";
-
-type HostsSchema = Record<
-  string,
-  {
-    remark: string;
-    address: string;
-    port: number | null;
-    path: string | null;
-    sni: string | null;
-    host: string | null;
-  }[]
->;
-
-type HostsStore = {
-  isLoading: boolean;
-  isPostLoading: boolean;
-  hosts: HostsSchema;
-  fetchHosts: () => Promise<void>;
-  cancelFetch: () => void;
-  setHosts: (hosts: HostsSchema) => Promise<void>;
-};
-const requestOwner = createLatestRequest();
-
-export const useHosts = create<HostsStore>((set) => ({
-  isLoading: false,
-  isPostLoading: false,
-  hosts: {},
-  cancelFetch: () => {
-    requestOwner.cancel();
-    set({ isLoading: false });
-  },
-  fetchHosts: async () => {
-    const request = requestOwner.start();
-    set({ isLoading: true });
-    try {
-      const hosts = await fetch<HostsSchema>("/hosts", { signal: request.signal, retry: 0 });
-      if (request.isCurrent()) set({ hosts });
-    } catch (error) {
-      if (request.isCurrent()) throw error;
-    } finally {
-      if (request.isCurrent()) set({ isLoading: false });
-      request.finish();
-    }
-  },
-  setHosts: (body) => {
-    requestOwner.cancel();
-    set({ isPostLoading: true, isLoading: false });
-    return fetch("/hosts", { method: "PUT", body }).then(() => {
-      set({ hosts: body });
-    }).finally(() => {
-      set({ isPostLoading: false });
-    });
-  },
-}));
+import { createHostsResource } from "@/features/hosts/resource";
+const emptyHosts = {};
+export function useHostsSettings(open: boolean) {
+  const client = useQueryClient();
+  const resource = createHostsResource(client, fetch);
+  const query = useQuery({ ...resource.options(), enabled: open });
+  const mutation = useMutation({ mutationFn: resource.save, retry: false });
+  useEffect(() => { if (!open) void client.cancelQueries({ queryKey: queryKeys.hosts }); }, [open, client]);
+  return { hosts: query.data ?? emptyHosts, isLoading: query.isPending, isRefreshing: query.isFetching, isError: query.isError,
+    updatedAt: query.dataUpdatedAt, offline: query.isPaused, isPostLoading: mutation.isPending, setHosts: mutation.mutateAsync,
+    fetchHosts: async () => { const result = await query.refetch(); if (result.error) throw result.error; },
+  };
+}
