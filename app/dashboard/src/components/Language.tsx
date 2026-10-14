@@ -24,9 +24,9 @@ export function Language({ showLabel = false }: { showLabel?: boolean }) {
   const [hasError, setHasError] = useState(false);
   const { direction, language } = useLocale();
   const languageCode = language.toLowerCase();
-  const selectedLanguage = languages.find(({ value }) =>
-    value.split("-")[0] === languageCode.split("-")[0],
-  ) || languages[0];
+  const selectedLanguage =
+    languages.find(({ value }) => value.split("-")[0] === languageCode.split("-")[0]) ||
+    languages[0];
 
   async function changeLanguage(value: string) {
     if (!languages.some((language) => language.value === value)) return;
@@ -47,7 +47,7 @@ export function Language({ showLabel = false }: { showLabel?: boolean }) {
             type="button"
             aria-label={selectedLanguage.triggerLabel}
             title={selectedLanguage.triggerLabel}
-            className={'border!'}
+            className={"border!"}
           >
             <Languages aria-hidden="true" />
             {showLabel && <span>{selectedLanguage.label}</span>}
@@ -70,7 +70,9 @@ export function Language({ showLabel = false }: { showLabel?: boolean }) {
         </DropdownMenu>
         {hasError && (
           <p role="alert" className="max-w-48 text-sm text-destructive">
-            {t("language.changeError", { defaultValue: "Unable to change language. Please try again." })}
+            {t("language.changeError", {
+              defaultValue: "Unable to change language. Please try again.",
+            })}
           </p>
         )}
       </div>
