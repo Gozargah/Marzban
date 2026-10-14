@@ -1,46 +1,39 @@
-import { lazy, Suspense, useEffect } from "react";
-import { Spinner } from "@/components/ui/spinner";
+import { preloadTrafficChart } from "@/features/shared/dialog-preload";
+import { UserDialog as UserDialogContent } from "@/components/dashboard/user-dialog";
+import { DeleteUserModal as DeleteUserModalContent } from "@/components/dashboard/delete-user-modal";
+import { QRCodeDialog as QRCodeDialogContent } from "@/components/dashboard/qr-code-dialog";
+import { HostsDialog as HostsDialogContent } from "@/components/dashboard/hosts-dialog";
+import { NodesDialog as NodesDialogContent } from "@/components/dashboard/nodes-modal";
+import { NodesUsage as NodesUsageContent } from "@/components/dashboard/nodes-usage";
+import { ResetUserUsageModal as ResetUserUsageModalContent } from "@/components/dashboard/reset-user-usage-modal";
+import { RevokeSubscriptionModal as RevokeSubscriptionModalContent } from "@/components/dashboard/revoke-subscription-modal";
+import { ResetAllUsageModal as ResetAllUsageModalContent } from "@/components/dashboard/reset-all-usage-modal";
+import { CoreSettingsModal as CoreSettingsModalContent } from "@/components/dashboard/core-settings-modal";
+import { QueryFeedback } from "@/components/dashboard/query-feedback";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { useInbounds } from "@/features/users/use-inbounds";
+import { createImmediateDialog } from "@/components/dashboard/deferred-dialog";
 import { router } from "@/pages/router";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/dashboard/header";
 import { Statistics } from "@/components/dashboard/statistics";
 import { Filters } from "@/components/dashboard/filters";
 import { UsersTable } from "@/components/dashboard/table/users-table";
-import { cancelUsersRequest, fetchInbounds, FilterType, useDashboard } from "@/contexts/dashboard-context";
+import { cancelUsersRequest, FilterType, useDashboard } from "@/contexts/dashboard-context";
 
-const UserDialog = lazy(() =>
-  import("@/components/dashboard/user-dialog").then((module) => ({ default: module.UserDialog })),
-);
-const DeleteUserModal = lazy(() =>
-  import("@/components/dashboard/delete-user-modal").then((module) => ({ default: module.DeleteUserModal })),
-);
-const QRCodeDialog = lazy(() =>
-  import("@/components/dashboard/qr-code-dialog").then((module) => ({ default: module.QRCodeDialog })),
-);
-const HostsDialog = lazy(() =>
-  import("@/components/dashboard/hosts-dialog").then((module) => ({ default: module.HostsDialog })),
-);
-const NodesDialog = lazy(() =>
-  import("@/components/dashboard/nodes-modal").then((module) => ({ default: module.NodesDialog })),
-);
-const NodesUsage = lazy(() =>
-  import("@/components/dashboard/nodes-usage").then((module) => ({ default: module.NodesUsage })),
-);
-const ResetUserUsageModal = lazy(() =>
-  import("@/components/dashboard/reset-user-usage-modal").then((module) => ({ default: module.ResetUserUsageModal })),
-);
-const RevokeSubscriptionModal = lazy(() =>
-  import("@/components/dashboard/revoke-subscription-modal").then((module) => ({
-    default: module.RevokeSubscriptionModal,
-  })),
-);
-const ResetAllUsageModal = lazy(() =>
-  import("@/components/dashboard/reset-all-usage-modal").then((module) => ({ default: module.ResetAllUsageModal })),
-);
-const CoreSettingsModal = lazy(() =>
-  import("@/components/dashboard/core-settings-modal").then((module) => ({ default: module.CoreSettingsModal })),
-);
+const UserDialog = createImmediateDialog(UserDialogContent);
+const DeleteUserModal = createImmediateDialog(DeleteUserModalContent);
+const QRCodeDialog = createImmediateDialog(QRCodeDialogContent);
+const HostsDialog = createImmediateDialog(HostsDialogContent);
+const NodesDialog = createImmediateDialog(NodesDialogContent);
+const NodesUsage = createImmediateDialog(NodesUsageContent);
+const ResetUserUsageModal = createImmediateDialog(ResetUserUsageModalContent);
+const RevokeSubscriptionModal = createImmediateDialog(RevokeSubscriptionModalContent);
+const ResetAllUsageModal = createImmediateDialog(ResetAllUsageModalContent);
+const CoreSettingsModal = createImmediateDialog(CoreSettingsModalContent);
 
 function restoreFilters(search: string) {
   const params = new URLSearchParams(search);
@@ -55,7 +48,13 @@ function restoreFilters(search: string) {
 }
 
 export function Dashboard() {
+  const [filtersReady, setFiltersReady] = useState(false);
   const { t } = useTranslation();
+  const inbounds = useInbounds();
+  const showUser = useDashboard((state) => state.isCreatingNewUser || !!state.editingUser);
+  const showCore = useDashboard((state) => state.isEditingCore);
+  const showNodes = useDashboard((state) => state.isEditingNodes);
+  const showHosts = useDashboard((state) => state.isEditingHosts);
   const showDeleteUser = useDashboard((state) => !!state.deletingUser);
   const isShowingNodesUsage = useDashboard((state) => state.isShowingNodesUsage);
   const showQRCode = useDashboard((state) => state.QRcodeLinks !== null);
@@ -64,11 +63,14 @@ export function Dashboard() {
   const isResetingAllUsage = useDashboard((state) => state.isResetingAllUsage);
 
   useEffect(() => {
+    // Warm the shared chart after initial dashboard work; cancel if navigation occurs first.
+    const warmup = window.setTimeout(() => { void preloadTrafficChart(); }, 2000);
+    return () => window.clearTimeout(warmup);
+  }, []);
+
+  useEffect(() => {
     restoreFilters(router.state.location.search);
-    const controller = new AbortController();
-    fetchInbounds(controller.signal).catch(() => {
-      // Inbound settings can be retried by opening/saving the core configuration.
-    });
+    setFiltersReady(true);
     // One subscription per mount, with no delayed callbacks left after unmount.
     let previousSearch = router.state.location.search;
     const unsubscribe = router.subscribe((state) => {
@@ -78,7 +80,6 @@ export function Dashboard() {
     });
     return () => {
       unsubscribe();
-      controller.abort();
       cancelUsersRequest();
     };
   }, []);
@@ -88,25 +89,24 @@ export function Dashboard() {
       <main className="w-full">
         <Header />
         <Statistics />
-        <Filters />
-        <UsersTable />
+        {inbounds.failed && <Alert variant="destructive">
+          <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
+            <span>{t("inboundsLoadError", { defaultValue: "Could not load connection protocols. Retry before creating a user." })}</span>
+            <Button variant="outline" disabled={inbounds.loading} onClick={() => void inbounds.retry()}>{t("retry", { defaultValue: "Retry" })}</Button>
+          </AlertDescription>
+        </Alert>}
+        {filtersReady ? <><Filters /><UsersTable /></> : <QueryFeedback loading refreshing={false} failed={false} />}
       </main>
-      <Suspense fallback={<div role="status" aria-label={t("loading", { defaultValue: "Loading…" })}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 backdrop-blur-xs"><Spinner className="size-6" /></div>}>
-        {showDeleteUser && <DeleteUserModal />}
-        {showQRCode && <QRCodeDialog />}
-        {showResetUsage && <ResetUserUsageModal />}
-        {showRevokeSubscription && <RevokeSubscriptionModal />}
-        {isShowingNodesUsage && <NodesUsage />}
-        {isResetingAllUsage && <ResetAllUsageModal />}
-      </Suspense>
-      {/* Keep the sheet mounted so Base UI can animate its open and closed states. */}
-      <Suspense fallback={null}>
-        <CoreSettingsModal />
-        <UserDialog />
-        <NodesDialog />
-        <HostsDialog />
-      </Suspense>
+      <DeleteUserModal open={showDeleteUser} onClose={() => useDashboard.setState({ deletingUser: null })} />
+      <QRCodeDialog open={showQRCode} onClose={() => useDashboard.setState({ QRcodeLinks: null, subscribeUrl: null })} />
+      <ResetUserUsageModal open={showResetUsage} onClose={() => useDashboard.setState({ resetUsageUser: null })} />
+      <RevokeSubscriptionModal open={showRevokeSubscription} onClose={() => useDashboard.setState({ revokeSubscriptionUser: null })} />
+      <NodesUsage open={isShowingNodesUsage} onClose={() => useDashboard.setState({ isShowingNodesUsage: false })} />
+      <ResetAllUsageModal open={isResetingAllUsage} onClose={() => useDashboard.setState({ isResetingAllUsage: false })} />
+      <CoreSettingsModal open={showCore} onClose={() => useDashboard.setState({ isEditingCore: false })} />
+      <UserDialog open={showUser} onClose={() => useDashboard.setState({ isCreatingNewUser: false, editingUser: null })} />
+      <NodesDialog open={showNodes} onClose={() => useDashboard.setState({ isEditingNodes: false })} />
+      <HostsDialog open={showHosts} onClose={() => useDashboard.setState({ isEditingHosts: false })} />
       <Footer />
     </div>
   );

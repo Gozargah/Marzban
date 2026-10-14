@@ -116,6 +116,7 @@ export function Login() {
           >
             <FieldGroup>
               <Field data-invalid={!!errors.username}>
+                <FieldLabel htmlFor="login-username">{t("username")}</FieldLabel>
                 <Input
                   {...register("username")}
                   id="login-username"
@@ -135,6 +136,7 @@ export function Login() {
               </Field>
 
               <Field data-invalid={!!errors.password}>
+                <FieldLabel htmlFor="login-password">{t("password")}</FieldLabel>
                 <Input
                   {...register("password")}
                   id="login-password"

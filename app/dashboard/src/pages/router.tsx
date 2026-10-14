@@ -1,3 +1,4 @@
+import { AccessError } from "./access-error";
 import { createBrowserRouter } from "react-router";
 import { adminQueryOptions } from "utils/admin-query";
 import { queryClient } from "utils/react-query";
@@ -13,7 +14,7 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: <Dashboard />,
-    errorElement: <Login />,
+    errorElement: <AccessError />,
     loader: fetchAdminLoader,
   },
   {
