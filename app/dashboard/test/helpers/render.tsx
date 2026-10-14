@@ -18,7 +18,7 @@ export function renderFrontend(ui: ReactNode, language = "en") {
     resources: { en: { translation: en }, fa: { translation: fa } },
     interpolation: { escapeValue: false }, react: { useSuspense: false } });
   const client = new QueryClient({ defaultOptions: {
-    queries: { retry: false, gcTime: Infinity }, mutations: { retry: false },
+    queries: { retry: false, gcTime: Infinity }, mutations: { retry: false, networkMode: "always" },
   }});
   clients.add(client);
   return { ...render(<I18nextProvider i18n={i18n}><QueryClientProvider client={client}>{ui}</QueryClientProvider></I18nextProvider>), client, i18n };

@@ -1,3 +1,4 @@
+import { clearAllDrafts } from "../src/features/shared/drafts";
 import { afterEach, expect, mock, setSystemTime } from "bun:test";
 import * as matchers from "@testing-library/jest-dom/matchers";
 import { cleanupQueryClients } from "./helpers/render";
@@ -15,6 +16,7 @@ Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 afterEach(() => {
   cleanup();
   cleanupQueryClients();
+  clearAllDrafts();
   document.documentElement.className = "";
   document.documentElement.removeAttribute("style");
   document.documentElement.lang = "";
