@@ -1,3 +1,4 @@
+import { useUsersQuery } from "@/features/users/queries";
 import { ChangeEvent, FC, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -22,11 +23,9 @@ function generatePageItems(total: number, current: number) {
 }
 
 export const Pagination: FC<{ className?: string }> = ({ className }) => {
+  const { users: { total }, loading, usersError, isPlaceholderData } = useUsersQuery();
   const filters = useDashboard((state) => state.filters);
   const onFilterChange = useDashboard((state) => state.onFilterChange);
-  const total = useDashboard((state) => state.users.total);
-  const loading = useDashboard((state) => state.loading);
-  const usersError = useDashboard((state) => state.usersError);
   const { t } = useTranslation();
   const perPage = filters.limit || 10;
   const offset = filters.offset || 0;
@@ -35,10 +34,10 @@ export const Pagination: FC<{ className?: string }> = ({ className }) => {
 
   // Keep the last page usable when deleting its final user or reducing results.
   useEffect(() => {
-    if (!loading && !usersError && offset > 0 && offset >= total) {
+    if (!loading && !usersError && !isPlaceholderData && offset > 0 && offset >= total) {
       onFilterChange({ offset: Math.max(0, Math.ceil(total / perPage) - 1) * perPage });
     }
-  }, [loading, usersError, offset, total, perPage, onFilterChange]);
+  }, [loading, usersError, isPlaceholderData, offset, total, perPage, onFilterChange]);
 
   const changePage = (page: number) => {
     if (loading || page < 0 || page >= noPages || page === currentPage) return;

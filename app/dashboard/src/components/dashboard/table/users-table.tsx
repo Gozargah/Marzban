@@ -1,3 +1,4 @@
+import { useUsersQuery } from "@/features/users/queries";
 import { useTable } from "@tanstack/react-table";
 import { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -90,10 +91,8 @@ function EmptySection({
 }
 
 export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
+  const { users: { users }, loading, usersError } = useUsersQuery();
   const filters = useDashboard((state) => state.filters);
-  const users = useDashboard((state) => state.users.users);
-  const loading = useDashboard((state) => state.loading);
-  const usersError = useDashboard((state) => state.usersError);
   const onEditingUser = useDashboard((state) => state.onEditingUser);
   const onFilterChange = useDashboard((state) => state.onFilterChange);
 
@@ -373,7 +372,14 @@ export const UsersTable: FC<UsersTableProps> = ({ className, ...props }) => {
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  className="cursor-pointer hover:bg-muted/30 transition-colors group"
+                  className="cursor-pointer hover:bg-muted/30 transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  tabIndex={0}
+                  aria-label={t("usersTable.editUser", { defaultValue: "Edit {{username}}", username: row.original.username })}
+                  onKeyDown={(event) => {
+                    if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) {
+                      event.preventDefault(); onEditingUser(row.original);
+                    }
+                  }}
                   onClick={() => onEditingUser(row.original)}
                 >
                   {row.getAllCells().map((cell) => {
