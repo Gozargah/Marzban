@@ -1211,7 +1211,13 @@ def revoke_user_sub(db: Session, dbuser: User) -> User:
     for proxy_type, settings in user.proxies.copy().items():
         settings.revoke()
         user.proxies[proxy_type] = settings
-    dbuser = update_user(db, dbuser, user)
+    # В update_user нужен UserModify: у UserResponse нет bs_limit_total, и сброс
+    # ссылки падает с AttributeError, если bs_extra пустой. Меняются только ключи.
+    # model_validate, а не конструктор: mypy не видит default у Field(None, nullable=True).
+    modify = UserModify.model_validate(
+        {"proxies": {proxy_type: settings.dict(no_obj=True) for proxy_type, settings in user.proxies.items()}}
+    )
+    dbuser = update_user(db, dbuser, modify)
 
     db.commit()
     db.refresh(dbuser)

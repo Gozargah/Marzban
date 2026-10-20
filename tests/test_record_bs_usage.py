@@ -36,7 +36,7 @@ _share_stub.generate_v2ray_links = lambda *args, **kwargs: []
 sys.modules.setdefault("app.subscription.share", _share_stub)
 
 from app.db.base import Base  # noqa: E402
-from app.db.models import Bot, BotSettings, GlobalSetting, Node, NodeUserBsUsage, User  # noqa: E402
+from app.db.models import Bot, BotSettings, GlobalSetting, Node, NodeUserBsUsage, Proxy, User, UserDevice  # noqa: E402
 from app.jobs import record_usages  # noqa: E402
 from app.jobs.record_usages import record_bs_user_stats  # noqa: E402
 from app.xray.bs_limit import period_keys  # noqa: E402
@@ -757,3 +757,41 @@ def test_bs_pool_state_cache_misses_after_month_change(db, monkeypatch):
 
     monkeypatch.setattr(bs_limit, "period_keys", lambda now: "2099-01")
     assert dbuser.bs_extra_effective == 10 * GB
+
+
+def test_revoke_user_sub_rotates_keys_without_bs_limit_total(db, monkeypatch):
+    """Сброс ссылки передаёт в update_user только ключи, не UserResponse.
+
+    UserResponse наследует bs_extra, но не bs_limit_total. При пустом bs_extra
+    update_user доходил до modify.bs_limit_total и отвечал 500.
+    """
+    from app.db import crud
+    from app.db import models as db_models
+    from app.models.proxy import ProxyTypes
+
+    class _FakeXrayConfig:
+        inbounds_by_protocol: dict = {}
+
+    monkeypatch.setattr(db_models.xray, "config", _FakeXrayConfig(), raising=False)
+
+    old_id = "35e4e39c-7d5c-4f4b-8b71-558e4f37ff53"
+    user = db.query(User).filter(User.id == USER_ID).one()
+    user.subscription_token = "sub-token"
+    user.bs_extra = None
+    user.note = "keep-me"
+    db.add(Proxy(user_id=USER_ID, type=ProxyTypes.VLESS, settings={"id": old_id, "flow": ""}))
+    db.add(UserDevice(user_id=USER_ID, hwid="hw-1", status="active"))
+    db.commit()
+
+    crud.revoke_user_sub(db, db.query(User).filter(User.id == USER_ID).one())
+    db.expire_all()
+
+    user = db.query(User).filter(User.id == USER_ID).one()
+    proxy = db.query(Proxy).filter(Proxy.user_id == USER_ID).one()
+    device = db.query(UserDevice).filter(UserDevice.user_id == USER_ID).one()
+    assert user.subscription_token is None
+    assert user.sub_revoked_at is not None
+    assert user.bs_extra is None
+    assert user.note == "keep-me"
+    assert proxy.settings["id"] != old_id
+    assert device.status == "revoked"
