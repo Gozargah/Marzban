@@ -51,19 +51,25 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column(
-        "nodes",
-        sa.Column("owner_bot_id", sa.Integer(), nullable=True),
-    )
-    op.create_index(op.f("ix_nodes_owner_bot_id"), "nodes", ["owner_bot_id"], unique=False)
-    op.create_foreign_key(
-        "fk_nodes_owner_bot_id_bots",
-        "nodes",
-        "bots",
-        ["owner_bot_id"],
-        ["id"],
-        ondelete="SET NULL",
-    )
+    # SQLite не умеет ALTER для ограничений, поэтому nodes правим в batch-режиме (на MySQL
+    # это обычные ALTER). DDL в SQLite не транзакционный: первая версия миграции падала
+    # на внешнем ключе, оставив колонку и индекс без сдвига ревизии, поэтому уже созданное пропускаем.
+    inspector = sa.inspect(op.get_bind())
+    has_column = any(c["name"] == "owner_bot_id" for c in inspector.get_columns("nodes"))
+    has_index = any(i["name"] == "ix_nodes_owner_bot_id" for i in inspector.get_indexes("nodes"))
+
+    with op.batch_alter_table("nodes") as batch_op:
+        if not has_column:
+            batch_op.add_column(sa.Column("owner_bot_id", sa.Integer(), nullable=True))
+        if not has_index:
+            batch_op.create_index(op.f("ix_nodes_owner_bot_id"), ["owner_bot_id"], unique=False)
+        batch_op.create_foreign_key(
+            "fk_nodes_owner_bot_id_bots",
+            "bots",
+            ["owner_bot_id"],
+            ["id"],
+            ondelete="SET NULL",
+        )
 
     op.add_column(
         "bot_bs_daily",
@@ -85,6 +91,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_column("bot_bs_daily", "billable")
 
-    op.drop_constraint("fk_nodes_owner_bot_id_bots", "nodes", type_="foreignkey")
-    op.drop_index(op.f("ix_nodes_owner_bot_id"), table_name="nodes")
-    op.drop_column("nodes", "owner_bot_id")
+    with op.batch_alter_table("nodes") as batch_op:
+        batch_op.drop_constraint("fk_nodes_owner_bot_id_bots", type_="foreignkey")
+        batch_op.drop_index(op.f("ix_nodes_owner_bot_id"))
+        batch_op.drop_column("owner_bot_id")
