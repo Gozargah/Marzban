@@ -1,6 +1,6 @@
 services:
   marzban:
-    image: npvpn/panel:v1.0.2
+    image: npvpn/panel:latest
     restart: always
     env_file: .env
     network_mode: host

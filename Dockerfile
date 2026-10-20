@@ -22,7 +22,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        build-essential gcc python3-dev libpq-dev curl unzip ca-certificates \
     && update-ca-certificates \
-    && curl -fsSL https://github.com/Gozargah/Marzban-scripts/raw/master/install_latest_xray.sh | bash -s -- "$XRAY_VERSION" \
+    && curl -fsSL https://github.com/npvpn/Marzban-scripts/raw/master/install_latest_xray.sh | bash -s -- "$XRAY_VERSION" \
     && rm -rf /var/lib/apt/lists/*
 
 ENV UV_PROJECT_ENVIRONMENT=/code/.venv

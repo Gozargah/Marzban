@@ -1,8 +1,10 @@
 # npvpn panel
 
+[English](README-en.md) · [Релизы](https://github.com/npvpn/vpn-panel/releases) · [Docker Hub](https://hub.docker.com/r/npvpn/panel) · [Лицензия](LICENSE)
+
 **npvpn panel** — форк Marzban, разработанный для реальных коммерческих VPN-проектов.  
 Панель оптимизирована под масштабируемые конфигурации, высокую производительность и удобное управление распределённой инфраструктурой.  
-Проект развивается как основа для запуска VPN-сервисов и автоматизированных Telegram-ботов и VPN-сервисов.
+Проект развивается как основа для запуска VPN-сервисов и автоматизированных Telegram-ботов.
 
 ---
 
@@ -17,57 +19,17 @@
 
 ---
 
+## Чем отличается от Marzban
 
-
-## Установка
-
-
-
-### Обновление с оригинальной панели
-
-Если панель была установлена из оригинального репозитория Marzban, вы можете переключить ее на `npvpn panel` без переустановки:
-
-1. Подключитесь к серверу, где установлена панель.
-2. Откройте `docker-compose`:
-
-```bash
-marzban edit
-```
-
-1. В сервисе `marzban` укажите образ `npvpn/panel:latest` и проверьте блок `volumes`:
-
-```
-services:
-marzban:
-    image: npvpn/panel:latest
-    restart: always
-    env_file: .env
-    network_mode: host
-    volumes:
-    - /var/lib/marzban:/var/lib/marzban
-    - /var/lib/marzban/logs:/var/lib/marzban-node
-    - <путь к сертифиату на сервере>:<путь к сертификату внутри контейнера>
-    - <путь к ключу на сервере>:<путь к ключу внутри контейнера>
-    depends_on:
-    mysql:
-        condition: service_healthy
-```
-
-1. Загрузите новый образ:
-
-```bash
-docker pull npvpn/panel:latest
-```
-
-1. Перезапустите панель:
-
-```bash
-marzban restart
-```
+- **Роли нод и каскад.** Нода может быть входной (entry), выходной (exit) или обычной (direct); каскадные части конфига xray панель добавляет сама. Подробнее: [docs/cascade-node-roles.md](docs/cascade-node-roles.md).
+- **Месячный лимит трафика для отдельных нод (БС-нод).** Счётчик ведётся по месяцам и сбрасывается при смене месяца; при превышении лимита клиенты блокируются на ноде.
+- **Хосты с несколькими адресами и балансировка.** Хост, связанный с несколькими нодами, отдаётся в подписке v2ray-json одним конфигом с балансировщиком xray.
+- **Редактор шаблонов xray.** Шаблоны конфигурации хранятся в панели с версиями и редактируются через API и дашборд.
+- **Кэш конфигов нод.** Готовая JSON-строка конфига каждой ноды кэшируется на время одной волны переподключения, что снижает нагрузку при массовом переподключении нод.
 
 ---
 
-
+## Установка
 
 ### Обычная установка
 
@@ -77,11 +39,17 @@ marzban restart
 sudo bash -c "$(curl -sL https://github.com/npvpn/Marzban-scripts/raw/master/marzban.sh)" @ install
 ```
 
-Задайте аккаунт поддержки, название подписки и аккаунт бота (или оставьте пустыми). После установки:
+Скрипт задаст два вопроса: название подписки в клиенте и username Telegram-бота (можно оставить оба пустыми — Enter). Ссылку на поддержку скрипт не спрашивает: пока она не задана, ссылка поддержки в подписке указывает на `https://t.me/` (пустая ссылка). Задайте её позже в `/opt/marzban/.env` (`SUB_SUPPORT_URL`) и выполните `marzban restart`.
+
+Установка всегда заканчивается показом логов панели, если не указан `--no-logs`. Нажмите Ctrl+C — это не останавливает панель.
+
+После установки создайте администратора:
 
 ```bash
 marzban cli admin create
 ```
+
+Команда спросит логин, «Is sudo [y/N]» (для главного администратора ответьте `y`), пароль с подтверждением, а также необязательные Telegram ID и Discord webhook.
 
 Войдите по адресу `http://<IP или домен>:8000/dashboard/#/login`.
 
@@ -110,58 +78,70 @@ sudo bash -c "$(curl -sL https://github.com/npvpn/Marzban-scripts/raw/master/mar
 
 Опционально: `--uvicorn-port 8001`, `--skip-dns-check`, `--skip-cert` (сертификаты уже лежат в `/etc/letsencrypt/live/<домен>/`), `--no-logs`.
 
+Установка всегда заканчивается показом логов панели, если не указан `--no-logs`; Ctrl+C возвращает управление и не останавливает панель. С `--non-interactive` название подписки, ссылка бота и ссылка поддержки остаются значениями по умолчанию; их можно поменять позже в `/opt/marzban/.env` (`SUB_PROFILE_TITLE`, `BOT_URL`, `SUB_SUPPORT_URL`) и применить командой `marzban restart`.
+
 После установки создайте администратора:
 
 ```bash
 marzban cli admin create
 ```
 
+Команда спросит логин, «Is sudo [y/N]» (для главного администратора ответьте `y`), пароль с подтверждением, а также необязательные Telegram ID и Discord webhook.
+
 Войдите по адресу `https://<домен>:8001/dashboard/`.
 
 ---
 
+### Обновление с оригинальной панели
 
+Если панель была установлена из оригинального репозитория Marzban, вы можете переключить её на `npvpn panel` без переустановки:
 
-### Партнёрский сервер (рекомендуется)
-
-Полная автоматическая установка: UFW, certbot, MySQL, SSL, порт 8001, админ панели.
-
-**Перед запуском:** создайте администратора в админке бота и скопируйте логин, MySQL-пароль и хэш пароля.  
-Подробнее: [Установка панели для партнера.md](https://github.com/npvpn/Marzban-scripts/blob/master/Установка%20панели%20для%20партнера.md)
+1. Подключитесь к серверу, где установлена панель.
+2. Откройте `docker-compose`:
 
 ```bash
-sudo bash -c "$(curl -sL https://github.com/npvpn/Marzban-scripts/raw/master/marzban.sh)" @ install-partner
+marzban edit
 ```
 
-С параметрами (без интерактивных вопросов):
+3. В сервисе `marzban` укажите образ `npvpn/panel:latest` и проверьте блок `volumes`:
+
+```yaml
+services:
+  marzban:
+    image: npvpn/panel:latest
+    restart: always
+    env_file: .env
+    network_mode: host
+    volumes:
+      - /var/lib/marzban:/var/lib/marzban
+      - /var/lib/marzban/logs:/var/lib/marzban-node
+      # если панель отдаёт HTTPS — каталог с сертификатами:
+      # - /etc/letsencrypt:/etc/letsencrypt:ro
+```
+
+Блок `depends_on` на сервис `mysql` оставляйте, только если в вашем текущем файле уже есть сервис `mysql` (MySQL/MariaDB-установка); для SQLite его добавлять не нужно. Если сертификаты лежат не в `/etc/letsencrypt`, смонтируйте свои пути — пути внутри контейнера должны совпадать с `UVICORN_SSL_CERTFILE` и `UVICORN_SSL_KEYFILE` в `.env`.
+
+4. Загрузите новый образ:
 
 ```bash
-sudo bash -c "$(curl -sL https://github.com/npvpn/Marzban-scripts/raw/master/marzban.sh)" @ install-partner \
-  --domain your-domain.tld \
-  --cert-email admin@example.com \
-  --mysql-password 'YOUR_MYSQL_PASSWORD' \
-  --admin-username partner_admin \
-  --admin-password-hash '$argon2id$...' \
-  --subscription-title 'My VPN' \
-  --support-telegram support_bot \
-  --bot-telegram my_vpn_bot \
-  --token 'GITHUB_RUNNER_REGISTRATION_TOKEN' \
-  --non-interactive
+docker pull npvpn/panel:latest
 ```
 
-`--token` — registration token runner’а в репе `npvpn/telegram_bot` (метка будет `partner-<bot-telegram>`). Опционально: `--project-dir /opt/marzban`, `--skip-runner`.
+5. Перезапустите панель:
 
-Панель будет доступна по адресу: `https://<домен>:8001/dashboard/`
-
-**Обновление панели на партнёрах:** образ собирается в этом репозитории (`build.yml` → Docker Hub). Выкат — Actions приватного `[npvpn/telegram_bot](https://github.com/npvpn/telegram_bot)` (workflow **Deploy partner panels**). Инструкция: [docs/deploy.md](https://github.com/npvpn/telegram_bot/blob/master/docs/deploy.md#partner-panels).
+```bash
+marzban restart
+```
 
 ---
 
+### Партнёрская установка
 
+Для партнёров npvpn есть автоматическая установка с выпуском сертификата и настройкой сервера: [docs/partner-install.md](docs/partner-install.md).
+
+---
 
 ## Установка ноды
-
-
 
 ### Обновление оригинальной ноды
 
@@ -181,8 +161,6 @@ sudo bash -c "$(curl -sL https://github.com/npvpn/Marzban-scripts/raw/master/mar
 
 ---
 
-
-
 ### Новая установка
 
 На отдельном сервере:
@@ -190,6 +168,14 @@ sudo bash -c "$(curl -sL https://github.com/npvpn/Marzban-scripts/raw/master/mar
 ```bash
 sudo bash -c "$(curl -sL https://github.com/npvpn/Marzban-scripts/raw/master/marzban-node.sh)" @ install
 ```
+
+Скрипт интерактивно спросит:
+
+1. **Client Certificate** панели — вставьте PEM целиком (от `-----BEGIN CERTIFICATE-----` до `-----END CERTIFICATE-----`) и нажмите Enter на пустой строке. Сертификат можно взять в дашборде панели: «Настройки узлов» → «Добавить новый узел Marzban» → «Показать сертификат» (или «Скачать сертификат»). Либо через API: `GET /api/node/settings` (поле `certificate`). Скрипт не проверяет сертификат: если вставить его обрезанным, нода будет бесконечно перезапускаться.
+2. Использовать ли REST-протокол (по умолчанию да), `SERVICE_PORT` (по умолчанию 62050) и `XRAY_API_PORT` (по умолчанию 62051).
+3. IPv4 бота для ограничения `:9100` (см. ниже; пустой ввод — порт останется публичным).
+
+Нода должна быть доступна с панели на `SERVICE_PORT`. После установки добавьте ноду в панели: «Настройки узлов» → «Добавить новый узел Marzban» (адрес сервера, порты 62050 и 62051); статус должен стать `connected`. До добавления ноды в панель на свежей ноде слушает только `SERVICE_PORT` (62050); порт `XRAY_API_PORT` (62051) появляется после запуска ядра xray.
 
 С кастомным именем:
 
@@ -221,7 +207,17 @@ sudo marzban-node core-update
 
 ---
 
+## Версии и образы
 
+Версии — по дате релиза: `vГГГГ.ММ.ДД`, хотфикс в тот же день — `vГГГГ.ММ.ДД.N`. Образ для версии — `npvpn/panel:ГГГГ.ММ.ДД` (Docker Hub) и `ghcr.io/npvpn/panel:ГГГГ.ММ.ДД`; `latest` указывает на последний релиз. Список изменений — в [релизах](https://github.com/npvpn/vpn-panel/releases).
+
+---
+
+## Разработка
+
+Как собрать проект локально, запустить проверки и прислать изменение — в [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
 
 ## Лицензия
 
@@ -230,10 +226,10 @@ sudo marzban-node core-update
 
 Отдельные интеграции (боты, биллинг, API-шлюзы), не включающие код панели, могут использовать другие лицензии.
 
+npvpn panel основан на [Marzban](https://github.com/Gozargah/Marzban) (Gozargah).
+
 ---
-
-
 
 ## Контакты
 
-Telegram: [https://t.me/npvpn](https://t.me/npvpn)  
+Баги и предложения — [GitHub Issues](https://github.com/npvpn/vpn-panel/issues). Вопросы — [t.me/npvpn](https://t.me/npvpn).

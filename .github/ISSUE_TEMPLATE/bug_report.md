@@ -1,33 +1,36 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Сообщить об ошибке
 title: Bug title
 labels: bug
 assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**Версия образа (Image version)**
+Вывод `docker inspect --format '{{.Config.Image}}' <контейнер>`, например `npvpn/panel:2026.10.13`.
+Также ID образа: `docker inspect --format '{{.Image}}' <контейнер>` — тег `latest` не говорит, какая это сборка, а ID указывает на точную.
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+**Шаги воспроизведения (To reproduce)**
+1. Перейти в '...'
+2. Нажать на '...'
+3. Выполнить '...'
+4. Увидеть ошибку
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+**Ожидаемое поведение (Expected behavior)**
+Что должно было произойти.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Фактическое поведение (Actual behavior)**
+Что произошло на самом деле. Если уместно, приложите скриншоты.
 
-**Machine details (please complete the following information):**
- - OS: [e.g. ubuntu 20]
-- Python version: [e.g 3.8]
-- Nodejs version: [e.g 16.17]
-- Browser [e.g. chrome, safari]
+**Логи (Logs)**
+Логи панели (`marzban logs`) вокруг момента ошибки. Уберите секреты: пароли, токены, ключи.
 
-**Additional context**
-Add any other context about the problem here.
+**Окружение (Environment)**
+- ОС: [например, Ubuntu 22.04]
+- Docker: [например, 29.0]
+- Версия xray: [например, 26.3.27]
+- Браузер, если ошибка в дашборде: [например, Chrome 130]
+
+**Дополнительно (Additional context)**
+Конфиг xray и значимые переменные `.env` без секретов, другие детали.

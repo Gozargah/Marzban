@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Вопросы по установке и настройке
+    url: https://t.me/npvpn
+    about: Вопросы задаём в Telegram, в Issues — только баги и предложения.

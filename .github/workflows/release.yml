@@ -1,0 +1,42 @@
+name: Release
+
+# GitHub Release на каждый релизный тег. Ручной запуск — чтобы выпустить релиз
+# для уже существующего тега без повторного тегирования.
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Существующий тег, например v2026.10.14"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  github-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # actions/checkout на теге подменяет аннотированный тег облегчённым —
+      # без принудительного fetch тело тега теряется.
+      - name: Fetch tags
+        run: git fetch --tags --force
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          bash scripts/release_notes.sh "$TAG" > notes.md
+          newest="$(git tag -l 'v*' --sort=-v:refname | head -n 1)"
+          if [ "$TAG" = "$newest" ]; then latest=true; else latest=false; fi
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "${TAG#v}" --notes-file notes.md --latest="$latest"
+          else
+            gh release create "$TAG" --verify-tag --title "${TAG#v}" --notes-file notes.md --latest="$latest"
+          fi
