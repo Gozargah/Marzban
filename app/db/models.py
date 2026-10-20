@@ -391,6 +391,8 @@ class UserDevice(Base):
     ver_os = Column(String(64), nullable=True)
     device_model = Column(String(128), nullable=True)
     user_agent = Column(String(512), nullable=True)
+    # Последний IP, с которого устройство запрашивало /sub (NPVPN-2148); IP наших нод не пишется.
+    last_ip = Column(String(45), nullable=True)
     status = Column(String(16), nullable=False, default="active", server_default="active")
     first_seen = Column(DateTime, nullable=False, default=datetime.utcnow)
     last_seen = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)

@@ -211,6 +211,7 @@
   "userDialog.deviceVerOs": "نسخه سیستم‌عامل",
   "userDialog.deviceModel": "مدل دستگاه",
   "userDialog.deviceFirstSeen": "اولین ورود",
+  "userDialog.deviceIp": "IP",
   "userDialog.deviceLastSeen": "آخرین ورود",
   "userDialog.devicesUnit": "دستگاه",
   "userDialog.days": "روزها",

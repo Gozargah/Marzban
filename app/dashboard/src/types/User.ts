@@ -101,6 +101,7 @@ export type UserDevice = {
   status: string;
   first_seen: string;
   last_seen: string;
+  last_ip: string | null;
 };
 
 export type UserDevicesResponse = {

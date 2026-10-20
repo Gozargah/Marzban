@@ -206,6 +206,7 @@
   "userDialog.deviceVerOs": "系统版本",
   "userDialog.deviceModel": "设备型号",
   "userDialog.deviceFirstSeen": "首次出现",
+  "userDialog.deviceIp": "IP",
   "userDialog.deviceLastSeen": "最后出现",
   "userDialog.devicesUnit": "设备",
   "userDialog.days": "天",

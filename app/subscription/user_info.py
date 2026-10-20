@@ -64,6 +64,7 @@ def resolve_device_limit_subscription_state(
     x_device_os: str | None,
     x_ver_os: str | None,
     x_device_model: str | None,
+    client_ip: str | None = None,
 ) -> tuple[UserResponse, bool, bool, bool]:
     """Returns user, device_limited, device_limited_hard_for_gen, unsupported_blocks."""
     device_limited = False
@@ -80,6 +81,7 @@ def resolve_device_limit_subscription_state(
             x_device_model,
             user_agent,
             hard_mode=hard_mode,
+            client_ip=client_ip,
         )
         dbdevice = None
         if registered:

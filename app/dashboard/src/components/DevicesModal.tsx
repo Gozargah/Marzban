@@ -16,6 +16,7 @@ import {
   AccordionPanel,
   AccordionIcon,
   Divider,
+  Link,
 } from "@chakra-ui/react";
 
 import { TrashIcon } from "@heroicons/react/24/outline";
@@ -23,6 +24,10 @@ import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 import { User, UserDevice } from "types/User";
 import { fetch } from "service/http";
+
+// NPVPN-2148: несколько гео-баз и провайдер на одной странице — по РФ базы часто расходятся.
+const checkIpUrl = (ip: string) =>
+  `https://check-host.net/ip-info?host=${encodeURIComponent(ip)}`;
 
 const DeleteDeviceIcon = chakra(TrashIcon, {
   baseStyle: {
@@ -163,6 +168,19 @@ export const DevicesModal = ({
                     display={{ base: "none", xl: "block" }}
                   >
                     {device.ver_os || "-"}
+                  </Text>
+
+                  {/* IP — текстом: ссылка внутри AccordionButton раскрывала бы аккордеон */}
+                  <Text
+                    flex={1.2}
+                    fontSize="sm"
+                    fontFamily="mono"
+                    color="gray.600"
+                    _dark={{ color: "gray.300" }}
+                    noOfLines={1}
+                    display={{ base: "none", lg: "block" }}
+                  >
+                    {device.last_ip || "-"}
                   </Text>
 
                   {/* Last Seen */}
@@ -340,6 +358,43 @@ export const DevicesModal = ({
                         ? dayjs(device.first_seen).format("YYYY-MM-DD HH:mm")
                         : "-"}
                     </Text>
+                  </Flex>
+
+                  {/* IP */}
+                  <Flex w="full" justify="space-between" align="center">
+                    <Text
+                      fontSize="sm"
+                      color="gray.500"
+                      fontWeight="medium"
+                      flexShrink={0}
+                    >
+                      {t("userDialog.deviceIp")}:
+                    </Text>
+                    {device.last_ip ? (
+                      <Link
+                        href={checkIpUrl(device.last_ip)}
+                        isExternal
+                        rel="noopener noreferrer"
+                        fontSize="sm"
+                        fontFamily="mono"
+                        color="blue.500"
+                        textDecoration="underline"
+                        _hover={{ color: "blue.600" }}
+                        ml={4}
+                      >
+                        {device.last_ip}
+                      </Link>
+                    ) : (
+                      <Text
+                        fontSize="sm"
+                        color="gray.800"
+                        _dark={{ color: "white" }}
+                        textAlign="right"
+                        ml={4}
+                      >
+                        -
+                      </Text>
+                    )}
                   </Flex>
 
                   {/* Last Seen */}

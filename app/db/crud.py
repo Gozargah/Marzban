@@ -1021,17 +1021,19 @@ def revoke_user_device(db: Session, dbdevice: UserDevice) -> UserDevice:
     return dbdevice
 
 
-def _update_unknown_device_metadata(
+def _update_device_metadata(
     dbdevice: UserDevice,
     device_os: str | None,
     ver_os: str | None,
     device_model: str | None,
     user_agent: str | None,
+    client_ip: str | None,
 ) -> None:
     dbdevice.device_os = device_os or dbdevice.device_os
     dbdevice.ver_os = ver_os or dbdevice.ver_os
     dbdevice.device_model = device_model or dbdevice.device_model
     dbdevice.user_agent = user_agent or dbdevice.user_agent
+    dbdevice.last_ip = client_ip or dbdevice.last_ip
     if dbdevice.status == "revoked":
         dbdevice.status = "active"
     dbdevice.last_seen = datetime.utcnow()
@@ -1047,12 +1049,13 @@ def register_user_device(
     user_agent: str | None,
     *,
     hard_mode: bool = False,
+    client_ip: str | None = None,
 ) -> tuple[bool, bool]:
     if not hwid:
         dbdevice = get_user_device_by_hwid(db, dbuser, UNKNOWN_DEVICE_HWID)
         if dbdevice:
             if _unknown_user_agents_match(cast(str | None, dbdevice.user_agent), user_agent):
-                _update_unknown_device_metadata(dbdevice, device_os, ver_os, device_model, user_agent)
+                _update_device_metadata(dbdevice, device_os, ver_os, device_model, user_agent, client_ip)
                 db.commit()
                 return True, False
             return False, True
@@ -1065,6 +1068,7 @@ def register_user_device(
             ver_os=ver_os,
             device_model=device_model,
             user_agent=user_agent,
+            last_ip=client_ip,
             status="active",
         )
         db.add(dbdevice)
@@ -1077,13 +1081,7 @@ def register_user_device(
 
     dbdevice = get_user_device_by_hwid(db, dbuser, hwid)
     if dbdevice:
-        dbdevice.device_os = device_os or dbdevice.device_os
-        dbdevice.ver_os = ver_os or dbdevice.ver_os
-        dbdevice.device_model = device_model or dbdevice.device_model
-        dbdevice.user_agent = user_agent or dbdevice.user_agent
-        if dbdevice.status == "revoked":
-            dbdevice.status = "active"
-        dbdevice.last_seen = datetime.utcnow()
+        _update_device_metadata(dbdevice, device_os, ver_os, device_model, user_agent, client_ip)
         db.commit()
         return True, False
 
@@ -1097,6 +1095,7 @@ def register_user_device(
         ver_os=ver_os,
         device_model=device_model,
         user_agent=user_agent,
+        last_ip=client_ip,
         status="active",
     )
     db.add(dbdevice)

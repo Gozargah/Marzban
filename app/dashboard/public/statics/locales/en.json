@@ -248,6 +248,7 @@
   "userDialog.deviceVerOs": "OS version",
   "userDialog.deviceModel": "Device model",
   "userDialog.deviceFirstSeen": "First seen",
+  "userDialog.deviceIp": "IP",
   "userDialog.deviceLastSeen": "Last seen",
   "userDialog.devicesUnit": "devices",
   "userDialog.days": "Days",

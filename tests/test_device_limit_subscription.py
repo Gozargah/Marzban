@@ -1,4 +1,4 @@
-"""Лимит устройств в /sub: ранжирование по first_seen и soft/hard заглушки."""
+"""Регистрация устройств в /sub: лимит, ранжирование по first_seen, заглушки и last_ip."""
 
 from __future__ import annotations
 
@@ -28,10 +28,12 @@ from app.db.crud import (  # noqa: E402
     register_user_device,
 )
 from app.db.models import User, UserDevice  # noqa: E402
+from app.models.user import UserDeviceResponse  # noqa: E402
 from app.subscription.user_info import (  # noqa: E402
     get_subscription_user_info,
     resolve_device_limit_subscription_state,
 )
+from app.utils.client_ip import device_ip, get_client_ip  # noqa: E402
 
 if sys.modules.get("app.subscription.share") is _share_stub:
     del sys.modules["app.subscription.share"]
@@ -211,3 +213,107 @@ def test_subscription_user_info_total_is_zero_without_data_limit():
 
     assert info["download"] == 50
     assert info["total"] == 0
+
+
+# --- NPVPN-2148: last_ip устройства ---
+
+NODE_ADDRESSES = {"191.10.23.12"}
+
+
+def _register(
+    db: Session, hwid: str | None, client_ip: str | None, *, user_agent: str = "Happ/1.0", hard_mode: bool = False
+):
+    return register_user_device(
+        db, _user(db), hwid, None, None, None, user_agent, hard_mode=hard_mode, client_ip=client_ip
+    )
+
+
+def test_new_device_stores_client_ip(db):
+    _register(db, "hwid-ip", "8.8.8.8")
+    assert get_user_device_by_hwid(db, _user(db), "hwid-ip").last_ip == "8.8.8.8"
+
+
+def test_known_device_updates_client_ip(db):
+    _register(db, "hwid-ip", "8.8.8.8")
+    _register(db, "hwid-ip", "1.1.1.1")
+    assert get_user_device_by_hwid(db, _user(db), "hwid-ip").last_ip == "1.1.1.1"
+
+
+def test_none_client_ip_keeps_previous(db):
+    _register(db, "hwid-ip", "8.8.8.8")
+    _register(db, "hwid-ip", None)
+    assert get_user_device_by_hwid(db, _user(db), "hwid-ip").last_ip == "8.8.8.8"
+
+
+def test_unknown_device_stores_and_updates_client_ip(db):
+    _register(db, None, "8.8.8.8")
+    _register(db, None, "1.1.1.1")
+    assert get_user_device_by_hwid(db, _user(db), UNKNOWN_DEVICE_HWID).last_ip == "1.1.1.1"
+
+
+def test_rejected_unknown_device_keeps_ip(db):
+    # unknown-устройство с другим user-agent отклоняется — IP не трогаем.
+    _register(db, None, "8.8.8.8", user_agent="Happ/1.0")
+    registered, unsupported = _register(db, None, "1.1.1.1", user_agent="v2rayNG/1.8")
+    assert (registered, unsupported) == (False, True)
+    assert get_user_device_by_hwid(db, _user(db), UNKNOWN_DEVICE_HWID).last_ip == "8.8.8.8"
+
+
+def test_hard_mode_blocked_device_is_not_created(db):
+    # hard-mode отклонил новое устройство — строки с IP нет.
+    for i in range(4):
+        _add_device(db, f"hwid-{i}", minutes=i)
+    registered, _ = _register(db, "hwid-blocked", "8.8.8.8", hard_mode=True)
+    assert registered is False
+    assert get_user_device_by_hwid(db, _user(db), "hwid-blocked") is None
+
+
+def _resolve_with_ip(db: Session, hwid: str, client_ip: str | None, *, is_expired: bool = False):
+    return resolve_device_limit_subscription_state(
+        FakeSubUser(),
+        db,
+        _user(db),
+        False,
+        is_expired,
+        {},
+        user_agent="Happ/1.0/Android",
+        x_hwid=hwid,
+        x_device_os="Android",
+        x_ver_os="14",
+        x_device_model="Pixel",
+        client_ip=client_ip,
+    )
+
+
+def _sub_request_ip(forwarded_for: str) -> str | None:
+    """Та же композиция, что в build_render_context, без поднятия роутера."""
+    request = types.SimpleNamespace(
+        headers={"X-Forwarded-For": forwarded_for}, client=types.SimpleNamespace(host="172.18.0.5")
+    )
+    return device_ip(get_client_ip(request), NODE_ADDRESSES)
+
+
+def test_sub_request_ip_reaches_device(db):
+    _resolve_with_ip(db, "hwid-sub", _sub_request_ip("8.8.8.8"))
+    assert get_user_device_by_hwid(db, _user(db), "hwid-sub").last_ip == "8.8.8.8"
+
+
+def test_sub_request_through_node_keeps_previous_ip(db):
+    _resolve_with_ip(db, "hwid-sub", _sub_request_ip("8.8.8.8"))
+    _resolve_with_ip(db, "hwid-sub", _sub_request_ip("191.10.23.12"))
+    assert get_user_device_by_hwid(db, _user(db), "hwid-sub").last_ip == "8.8.8.8"
+
+
+def test_expired_subscription_does_not_register_ip(db):
+    # у истёкшей подписки регистрации нет — и IP не пишется.
+    _resolve_with_ip(db, "hwid-expired", "8.8.8.8", is_expired=True)
+    assert get_user_device_by_hwid(db, _user(db), "hwid-expired") is None
+
+
+def test_device_response_exposes_last_ip(db):
+    # старое устройство без IP отдаётся с last_ip=None.
+    old = _add_device(db, "hwid-old", minutes=0)
+    _register(db, "hwid-new", "8.8.8.8")
+    assert UserDeviceResponse.model_validate(old).last_ip is None
+    new = get_user_device_by_hwid(db, _user(db), "hwid-new")
+    assert UserDeviceResponse.model_validate(new).last_ip == "8.8.8.8"

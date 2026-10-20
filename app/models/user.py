@@ -413,6 +413,7 @@ class UserDeviceResponse(UserDeviceBase):
     id: int
     first_seen: datetime
     last_seen: datetime
+    last_ip: str | None = None
     model_config = ConfigDict(from_attributes=True)
 
 

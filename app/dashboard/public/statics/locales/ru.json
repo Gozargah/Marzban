@@ -248,6 +248,7 @@
   "userDialog.deviceVerOs": "Версия ОС",
   "userDialog.deviceModel": "Модель",
   "userDialog.deviceFirstSeen": "Первый вход",
+  "userDialog.deviceIp": "IP",
   "userDialog.deviceLastSeen": "Последний вход",
   "userDialog.devicesUnit": "устр.",
   "userDialog.days": "Дни",

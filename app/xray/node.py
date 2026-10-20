@@ -772,6 +772,7 @@ class XRayNode:
     # __new__ возвращает ReSTXRayNode/RPyCXRayNode, но для mypy это остаётся типом
     # XRayNode — атрибут/методы нужно продублировать здесь (см. те же в реализациях).
     inbound_tags: set[str] | None = None
+    address: str
 
     # Тела не вызываются: __new__ всегда возвращает ReST/RPyC-реализацию.
     @property
