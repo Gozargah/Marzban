@@ -37,7 +37,14 @@ try {
   const executable = resolve(temporary, "actionlint");
   chmodSync(executable, 0o755);
   const result = Bun.spawnSync(
-    [executable, "-shellcheck=", "-pyflakes=", ".github/workflows/frontend.yml", ".github/workflows/build.yml"],
+    [
+      executable,
+      "-shellcheck=",
+      "-pyflakes=",
+      ".github/workflows/frontend.yml",
+      ".github/workflows/build.yml",
+      ".github/workflows/build-dev.yml",
+    ],
     {
       cwd: resolve(import.meta.dir, "../../.."),
       stdout: "inherit",
@@ -45,7 +52,7 @@ try {
     },
   );
   if (result.exitCode !== 0) throw new Error("GitHub Actions workflow validation failed");
-  console.log(`actionlint ${version}: frontend and release workflows passed`);
+  console.log(`actionlint ${version}: frontend, dev, and release workflows passed`);
 } finally {
   rmSync(temporary, { recursive: true, force: true });
 }

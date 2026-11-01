@@ -27,7 +27,7 @@ test("guard rejects absent, competing, and stale lockfiles", () => {
     rmSync(dir, { recursive: true, force: true });
   }
 });
-for (const name of ["frontend.yml", "build.yml"])
+for (const name of ["frontend.yml", "build.yml", "build-dev.yml"])
   test(`${name}: install and validation gate the release build`, () => {
     const config: any = Bun.YAML.parse(readFileSync(resolve(root, "../../.github/workflows", name), "utf8"));
     const job = Object.values(config.jobs).find((job: any) =>
@@ -55,13 +55,23 @@ for (const name of ["frontend.yml", "build.yml"])
       );
       expect(step.run).not.toMatch(/\b(pnpm|yarn|npm)\s+(install|ci|run|build)\b/);
     }
-    if (name === "build.yml") {
+    if (name !== "frontend.yml") {
       expect(steps.findIndex((step) => step.uses?.startsWith("docker/build-push-action@"))).toBeGreaterThan(build);
       expect(index("cp ./build/index.html ./build/404.html")).toBeGreaterThan(build);
       expect(job.permissions).toEqual({ contents: "read", packages: "write" });
+      expect(steps.some((step) => step.uses === "docker/setup-qemu-action@v4")).toBe(true);
+      expect(steps.some((step) => step.uses === "docker/setup-buildx-action@v4")).toBe(true);
+      expect(steps.some((step) => step.uses === "docker/login-action@v4")).toBe(true);
+      expect(steps.some((step) => step.uses === "docker/build-push-action@v7")).toBe(true);
     } else {
       expect(config.on.pull_request).toBeDefined();
       expect("workflow_dispatch" in config.on).toBe(true);
       expect(config.permissions).toEqual({ contents: "read" });
     }
   });
+
+test("Docker image build does not install shell completion into the build user's home", () => {
+  const dockerfile = readFileSync(resolve(root, "../../Dockerfile"), "utf8");
+  expect(dockerfile).toContain("/usr/bin/marzban-cli");
+  expect(dockerfile).not.toMatch(/marzban-cli completion install/);
+});
