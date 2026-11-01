@@ -18,11 +18,11 @@
 /test-results/
 /stats.html
 
-# Local environment files (keep shared examples)
-.env
-.env.*
-!.env.example
-!.env.*.example
+# Dashboard-local environment files and secrets. Keep example templates tracked.
+/.env
+/.env.*
+!/.env.example
+!/.env.*.example
 *.local
 
 # Logs
