@@ -173,24 +173,24 @@ bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release
 ```bash
 git clone https://github.com/Gozargah/Marzban.git
 cd Marzban
-wget -qO- https://bootstrap.pypa.io/get-pip.py | python3 -
-python3 -m pip install -r requirements.txt
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
+uv sync --locked --no-dev
 ```
 
-همچنین میتواند از , [Python Virtualenv](https://pypi.org/project/virtualenv/) هم استفاده کنید.
+دستور `uv sync` محیط ایزوله‌ی `.venv` را برای این مخزن ایجاد می‌کند.
 
 سپس کامند زیر را اجرا کنید تا دیتابیس تنظیم شود.
 
 ```bash
-alembic upgrade head
+uv run --locked alembic upgrade head
 ```
 
-اگر می خواهید از `marzban-cli` استفاده کنید، باید آن را به یک فایل در `$PATH` خود لینک و قابل اجرا (executable) کنید. سپس تکمیل خودکار (auto-completion) آن را نصب کنید:
+برای اجرای CLI از مخزن پروژه، از محیط uv استفاده کنید:
 
 ```bash
-sudo ln -s $(pwd)/marzban-cli.py /usr/bin/marzban-cli
-sudo chmod +x /usr/bin/marzban-cli
-marzban-cli completion install
+uv run --locked python marzban-cli.py --help
+uv run --locked python marzban-cli.py completion install
 ```
 
 حالا یک کپی از `.env.example` با نام `.env` بسازید و با یک ادیتور آن را باز کنید و تنظیمات دلخواه خود را انجام دهید. یه عنوان مثال نام کاربری و رمز عبور را می توانید در این فایل تغییر دهید.
@@ -205,7 +205,7 @@ nano .env
 در انتها, مرزبان را به کمک دستور زیر اجرا کنید.
 
 ```bash
-python3 main.py
+uv run --locked python main.py
 ```
 
 اجرا با استفاده از systemctl در لینوکس

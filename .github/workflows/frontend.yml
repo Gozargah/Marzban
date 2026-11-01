@@ -1,17 +1,24 @@
 name: Frontend checks
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - 'app/dashboard/**'
       - '.github/workflows/frontend.yml'
       - '.github/workflows/build.yml'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.python-version'
   push:
     branches: [master, main]
     paths:
       - 'app/dashboard/**'
       - '.github/workflows/frontend.yml'
       - '.github/workflows/build.yml'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.python-version'
 
 permissions:
   contents: read
@@ -23,7 +30,7 @@ concurrency:
 jobs:
   frontend:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     defaults:
       run:
         working-directory: app/dashboard
@@ -32,13 +39,32 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: '1.4.3'
+      - uses: astral-sh/setup-uv@v9.0.0
+        with:
+          version: '0.13.6'
+          python-version: '3.12.16'
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - name: Validate Python lockfile
+        run: uv lock --project ../.. --check
+      - name: Sync locked backend environment
+        run: uv sync --project ../.. --locked --no-dev
+      - name: Validate GitHub Actions workflows
+        run: bun run check:workflows
+
+      - name: Verify installation inputs
+        run: bun run check:install
       - name: Install locked dependencies
         run: bun install --frozen-lockfile
       - name: Check source and test types
-        run: bun run typecheck
+        run: bun --bun run typecheck
       - name: Run frontend tests
         run: bun run test
+      - name: Verify a fresh install and release artifacts
+        run: bun run test:installation
+        env:
+          INSTALL_COLD_CACHE: "1"
       - name: Build frontend
-        run: bun run build
+        run: bun --bun run build --outDir build --assetsDir statics
         env:
           VITE_BASE_API: /api/

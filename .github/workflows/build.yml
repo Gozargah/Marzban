@@ -8,48 +8,86 @@ on:
 jobs:
   build-docker-image:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.4.3"
 
+      - name: Set up uv and Python for backend security tests
+        uses: astral-sh/setup-uv@v9.0.0
+        with:
+          version: "0.13.6"
+          python-version: "3.12.16"
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Validate Python lockfile
+        working-directory: app/dashboard
+        run: uv lock --project ../.. --check
+      - name: Sync locked backend environment
+        working-directory: app/dashboard
+        run: uv sync --project ../.. --locked --no-dev
+
+      - name: Validate GitHub Actions workflows
+        working-directory: ./app/dashboard
+        run: bun run check:workflows
+
+      - name: Verify installation inputs
+        working-directory: ./app/dashboard
+        run: bun run check:install
+
       - name: Install dependencies
         working-directory: ./app/dashboard
         run: bun install --frozen-lockfile
 
+      - name: Check frontend before publishing
+        working-directory: ./app/dashboard
+        env:
+          INSTALL_COLD_CACHE: "1"
+        run: |
+          bun --bun run typecheck
+          bun run test
+          bun run test:installation
+
       - name: Build project
         working-directory: ./app/dashboard
-        run: VITE_BASE_API=/api/ bun run build --outDir build --assetsDir statics
+        run: bun --bun run build --outDir build --assetsDir statics
+        env:
+          VITE_BASE_API: /api/
 
       - name: Create 404.html
         working-directory: ./app/dashboard
         run: cp ./build/index.html ./build/404.html
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v4
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v7
         with:
           context: .
           platforms: linux/amd64,linux/arm64

@@ -177,24 +177,24 @@ bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release
 ```bash
 git clone https://github.com/Gozargah/Marzban.git
 cd Marzban
-wget -qO- https://bootstrap.pypa.io/get-pip.py | python3 -
-python3 -m pip install -r requirements.txt
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
+uv sync --locked --no-dev
 ```
 
-В качестве альтернативы для создания виртуальной среды можно использовать [Python Virtualenv](https://pypi.org/project/virtualenv/).
+`uv sync` создаёт изолированную среду `.venv` для этой копии проекта.
 
 Затем выполните следующую команду для запуска скрипта миграции базы данных:
 
 ```bash
-alembic upgrade head
+uv run --locked alembic upgrade head
 ```
 
-Если Вы хотите использовать `marzban-cli`, необходимо связать его с файлом в `$PATH`, сделать его исполняемым и установить:
+Для запуска CLI из клона проекта используйте окружение uv:
 
 ```bash
-sudo ln -s $(pwd)/marzban-cli.py /usr/bin/marzban-cli
-sudo chmod +x /usr/bin/marzban-cli
-marzban-cli completion install
+uv run --locked python marzban-cli.py --help
+uv run --locked python marzban-cli.py completion install
 ```
 
 Теперь настало время настройки.
@@ -213,7 +213,7 @@ nano .env
 В завершение запустите приложение с помощью следующей команды:
 
 ```bash
-python3 main.py
+uv run --locked python main.py
 ```
 
 Для запуска с помощью linux systemctl (скопируйте файл marzban.service в `/var/lib/marzban/marzban.service`):

@@ -172,29 +172,29 @@ You can install it using [Xray-install](https://github.com/XTLS/Xray-install)
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
 ```
 
-Clone this project and install the dependencies (you need Python >= 3.12.7)
+Clone this project and install uv and the locked dependencies (you need Python >= 3.12.7)
 
 ```bash
 git clone https://github.com/Gozargah/Marzban.git
 cd Marzban
-wget -qO- https://bootstrap.pypa.io/get-pip.py | python3 -
-python3 -m pip install -r requirements.txt
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
+uv sync --locked --no-dev
 ```
 
-Alternatively, to have an isolated environment you can use [Python Virtualenv](https://pypi.org/project/virtualenv/)
+`uv sync` creates the isolated `.venv` environment for this checkout.
 
 Then run the following command to run the database migration scripts
 
 ```bash
-alembic upgrade head
+uv run --locked alembic upgrade head
 ```
 
-If you want to use `marzban-cli`, you should link it to a file in your `$PATH`, make it executable, and install the auto-completion:
+To use the CLI from the source checkout, run it through the project environment:
 
 ```bash
-sudo ln -s $(pwd)/marzban-cli.py /usr/bin/marzban-cli
-sudo chmod +x /usr/bin/marzban-cli
-marzban-cli completion install
+uv run --locked python marzban-cli.py --help
+uv run --locked python marzban-cli.py completion install --shell bash
 ```
 
 Now it's time to configuration
@@ -213,8 +213,10 @@ nano .env
 Eventually, launch the application using command below
 
 ```bash
-python3 main.py
+uv run --locked python main.py
 ```
+
+Use `uv add <package>` to add a runtime dependency and `uv remove <package>` to remove one. Commit both `pyproject.toml` and `uv.lock`; CI and production builds enforce that the lockfile is current with `uv sync --locked`.
 
 To launch with linux systemctl (copy marzban.service file to `/var/lib/marzban/marzban.service`)
 
