@@ -45,7 +45,7 @@ autopep8 <file> --max-line-length 120
 ```
 
 ## Frontend
-Frontend is pre-built and served by FastAPI from the `app/dashboard/build` directory. To rebuild the frontend, first make sure you have the necessary dependencies installed by running `bun run check:install` followed by `bun install --frozen-lockfile` in the `app/dashboard` directory. Build explicitly with `VITE_BASE_API=/api/ bun --bun run build --outDir build --assetsDir statics`. See the dashboard README for migration verification.
+Frontend is pre-built and served by FastAPI from the `app/dashboard/build` directory. To rebuild the frontend, first make sure you have the necessary dependencies installed by running `bun run check:install` followed by `bun install --frozen-lockfile` in the `app/dashboard` directory. Run `bun run lint` and `bun run format:check` before submitting changes; use `bun run lint:fix` and `bun run format` to apply lint fixes and formatting. Build explicitly with `VITE_BASE_API=/api/ bun --bun run build --outDir build --assetsDir statics`. See the dashboard README for migration verification.
 
 ### Components Library
 Frontend uses shared shadcn/Base UI components and Tailwind CSS; reuse the existing accessible primitives when contributing. Strive to create components that are cohesive and serve a single purpose. Keep in mind that readability and maintainability are more important than brevity, so prioritize those factors when writing your code.

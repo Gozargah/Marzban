@@ -5,10 +5,14 @@ Use **Bun 1.4.3**, pinned by `packageManager` and both workflows. Run these comm
 ```sh
 bun run check:install
 bun install --frozen-lockfile
+bun run lint
+bun run format:check
 bun run test
 bun --bun run typecheck
 VITE_BASE_API=/api/ bun --bun run build --outDir build --assetsDir statics
 ```
+
+Use `bun run lint:fix` for Oxlint's safe fixes and `bun run format` to format files with Oxfmt. Formatting keeps the existing 120 character line width.
 
 Use `bun run dev` for development. Set `VITE_BASE_API` in a local `.env` when using a separate backend. The release workflow uses `/api/`.
 

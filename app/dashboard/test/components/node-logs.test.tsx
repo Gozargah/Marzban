@@ -1,22 +1,40 @@
 import { test, expect, mock } from "bun:test";
-import { screen, fireEvent, waitFor, act } from "@testing-library/react";
+import { screen, fireEvent, act } from "@testing-library/react";
 import { loadSource } from "../helpers/load-source";
 import { renderFrontend } from "../helpers/render";
 
 function setup() {
   let options: any;
-  const socket = mock((_url: string, next: any) => { options = next; return { readyState: 1 }; });
-  const scrollToIndex = mock(() => {});
-  const { NodeLogs } = loadSource<typeof import("../../src/components/dashboard/node-logs")>("components/dashboard/node-logs.tsx", {
-    "react-use-websocket": { __esModule: true, default: socket, ReadyState: { CONNECTING: 0, OPEN: 1, CLOSING: 2, CLOSED: 3, UNINSTANTIATED: -1 } },
-    "@/contexts/nodes-context": { useNodesQuery: () => ({ data: [{ id: 7, name: "Edge" }] }) },
-    "@tanstack/react-virtual": { useVirtualizer: ({ count }: { count: number }) => ({
-      getTotalSize: () => count * 20,
-      getVirtualItems: () => Array.from({ length: count }, (_, index) => ({ index, key: index, start: index * 20 })),
-      scrollToIndex,
-    }) },
+  const socket = mock((_url: string, next: any) => {
+    options = next;
+    return { readyState: 1 };
   });
-  return { ...renderFrontend(<NodeLogs />), socket, message: (data: unknown) => options.onMessage({ data }), scrollToIndex };
+  const scrollToIndex = mock(() => {});
+  const { NodeLogs } = loadSource<typeof import("../../src/components/dashboard/node-logs")>(
+    "components/dashboard/node-logs.tsx",
+    {
+      "react-use-websocket": {
+        __esModule: true,
+        default: socket,
+        ReadyState: { CONNECTING: 0, OPEN: 1, CLOSING: 2, CLOSED: 3, UNINSTANTIATED: -1 },
+      },
+      "@/contexts/nodes-context": { useNodesQuery: () => ({ data: [{ id: 7, name: "Edge" }] }) },
+      "@tanstack/react-virtual": {
+        useVirtualizer: ({ count }: { count: number }) => ({
+          getTotalSize: () => count * 20,
+          getVirtualItems: () =>
+            Array.from({ length: count }, (_, index) => ({ index, key: index, start: index * 20 })),
+          scrollToIndex,
+        }),
+      },
+    },
+  );
+  return {
+    ...renderFrontend(<NodeLogs />),
+    socket,
+    message: (data: unknown) => options.onMessage({ data }),
+    scrollToIndex,
+  };
 }
 
 test("logs use cookie-authenticated socket endpoints and display messages", async () => {

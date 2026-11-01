@@ -1,6 +1,6 @@
 import { FileMinus } from "lucide-react";
 import { useDashboard } from "@/contexts/dashboard-context";
-import { Trans, useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { ConfirmationDialog } from "./confirmation-dialog";
 export const ResetIcon = FileMinus;
 export function ResetAllUsageModal() {

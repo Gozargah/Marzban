@@ -15,7 +15,11 @@
     "test:typecheck": "tsc --noEmit",
     "check:install": "bun ./scripts/check-install.ts",
     "test:installation": "RUN_INSTALL_TESTS=1 bun test ./test/installation",
-    "check:workflows": "bun ./scripts/check-workflows.ts"
+    "check:workflows": "bun ./scripts/check-workflows.ts",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
@@ -78,6 +82,8 @@
     "@vitejs/plugin-react": "^6.0.2",
     "babel-plugin-react-compiler": "^1.0.0",
     "esbuild": "^0.28.2",
+    "oxfmt": "0.75.0",
+    "oxlint": "1.90.0",
     "shadcn": "^4.21.4",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3",

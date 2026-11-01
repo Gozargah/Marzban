@@ -1,10 +1,10 @@
-const { test } = require('bun:test');
-const assert = require('node:assert/strict');
-const { loadSource: load } = require('../helpers/load-source');
-const { deferred, network, flushPromises: tick } = require('../helpers/network');
-const latest = load('utils/latest-request.ts');
+const { test } = require("bun:test");
+const assert = require("node:assert/strict");
+const { loadSource: load } = require("../helpers/load-source");
+const { flushPromises: tick } = require("../helpers/network");
+const latest = load("utils/latest-request.ts");
 
-test('latest read aborts superseded work; old completion cannot cancel the new request', () => {
+test("latest read aborts superseded work; old completion cannot cancel the new request", () => {
   const owner = latest.createLatestRequest();
   const first = owner.start();
   const second = owner.start();
@@ -17,33 +17,31 @@ test('latest read aborts superseded work; old completion cannot cancel the new r
   assert.equal(second.isCurrent(), false);
 });
 
-
-
-
-
-
-
-test('log buffer bounds line count, oversized text, and releases data on clear', () => {
-  const { createLogBuffer } = load('utils/log-buffer.ts');
+test("log buffer bounds line count, oversized text, and releases data on clear", () => {
+  const { createLogBuffer } = load("utils/log-buffer.ts");
   const buffer = createLogBuffer(3, 12);
-  buffer.append('aaa\nbbb\nccc\nddd');
-  assert.deepEqual(buffer.snapshot(), ['bbb', 'ccc', 'ddd']);
-  buffer.append('x'.repeat(100_000));
+  buffer.append("aaa\nbbb\nccc\nddd");
+  assert.deepEqual(buffer.snapshot(), ["bbb", "ccc", "ddd"]);
+  buffer.append("x".repeat(100_000));
   assert.ok(buffer.snapshot().length <= 3);
-  assert.ok(buffer.snapshot().join('').length <= 12);
+  assert.ok(buffer.snapshot().join("").length <= 12);
   const snapshot = buffer.snapshot();
-  snapshot.push('external change');
+  snapshot.push("external change");
   assert.ok(buffer.snapshot().length <= 3);
   buffer.clear();
   assert.deepEqual(buffer.snapshot(), []);
   const many = createLogBuffer();
-  many.append('x\n'.repeat(1_000_000));
+  many.append("x\n".repeat(1_000_000));
   assert.equal(many.snapshot().length, 10_000);
 });
 
-test('repeated editor mounts release models, listeners, actions, and pending changes', async () => {
+test("repeated editor mounts release models, listeners, actions, and pending changes", async () => {
   let effects = [];
-  let models = 0, editors = 0, listeners = 0, actions = 0, pending = 0;
+  let models = 0,
+    editors = 0,
+    listeners = 0,
+    actions = 0,
+    pending = 0;
   let contentChanged;
   const react = {
     forwardRef: (render) => render,
@@ -54,42 +52,78 @@ test('repeated editor mounts release models, listeners, actions, and pending cha
   };
   const disposable = () => {
     listeners++;
-    return { dispose() { listeners--; } };
+    return {
+      dispose() {
+        listeners--;
+      },
+    };
   };
   const monaco = {
-    KeyMod: { CtrlCmd: 1 }, KeyCode: { KeyS: 1 },
+    KeyMod: { CtrlCmd: 1 },
+    KeyCode: { KeyS: 1 },
     editor: {
       setTheme() {},
-      createModel(value) {
+      createModel(_value) {
         models++;
         return {
-          onDidChangeContent(fn) { contentChanged = fn; return disposable(); },
-          dispose() { models--; },
+          onDidChangeContent(fn) {
+            contentChanged = fn;
+            return disposable();
+          },
+          dispose() {
+            models--;
+          },
         };
       },
       create() {
         editors++;
         return {
-          getValue: () => '{}', setValue() {}, focus() {}, updateOptions() {},
-          onDidBlurEditorWidget: disposable, onDidPaste: disposable,
-          addAction() { actions++; return { dispose() { actions--; } }; },
-          dispose() { editors--; },
+          getValue: () => "{}",
+          setValue() {},
+          focus() {},
+          updateOptions() {},
+          onDidBlurEditorWidget: disposable,
+          onDidPaste: disposable,
+          addAction() {
+            actions++;
+            return {
+              dispose() {
+                actions--;
+              },
+            };
+          },
+          dispose() {
+            editors--;
+          },
         };
       },
     },
   };
-  const { JsonEditor } = load('components/JsonEditor/index.tsx', {
+  const { JsonEditor } = load("components/JsonEditor/index.tsx", {
     react,
-    './monaco': { monaco, jsonDefaults: { setDiagnosticsOptions() {} } },
-    './shiki': { highlighter: Promise.resolve({}) },
-    '@shikijs/monaco': { shikiToMonaco() {} },
-    '@gozargah/xray-schema/full/schema.json': {},
-    '@/components/theme-provider': { useTheme: () => ({ resolvedTheme: 'dark' }) },
-    'lodash.debounce': (fn) => {
+    "./monaco": { monaco, jsonDefaults: { setDiagnosticsOptions() {} } },
+    "./shiki": { highlighter: Promise.resolve({}) },
+    "@shikijs/monaco": { shikiToMonaco() {} },
+    "@gozargah/xray-schema/full/schema.json": {},
+    "@/components/theme-provider": { useTheme: () => ({ resolvedTheme: "dark" }) },
+    "lodash.debounce": (fn) => {
       let queued = false;
-      const run = () => { if (!queued) { pending++; queued = true; } };
-      run.cancel = () => { if (queued) pending--; queued = false; };
-      run.flush = () => { if (queued) { run.cancel(); fn(); } };
+      const run = () => {
+        if (!queued) {
+          pending++;
+          queued = true;
+        }
+      };
+      run.cancel = () => {
+        if (queued) pending--;
+        queued = false;
+      };
+      run.flush = () => {
+        if (queued) {
+          run.cancel();
+          fn();
+        }
+      };
       return run;
     },
   });
@@ -108,16 +142,23 @@ test('repeated editor mounts release models, listeners, actions, and pending cha
       contentChanged();
     }
     cleanups.reverse().forEach((cleanup) => cleanup?.());
-    assert.deepEqual({ models, editors, listeners, actions, pending },
-      { models: 0, editors: 0, listeners: 0, actions: 0, pending: 0 });
+    assert.deepEqual(
+      { models, editors, listeners, actions, pending },
+      { models: 0, editors: 0, listeners: 0, actions: 0, pending: 0 },
+    );
   }
 });
 
-test('admin routing and header can share a fresh cached read', async () => {
-  const { QueryClient } = require('@tanstack/react-query');
+test("admin routing and header can share a fresh cached read", async () => {
+  const { QueryClient } = require("@tanstack/react-query");
   let requests = 0;
-  const { adminQueryOptions } = load('utils/admin-query.ts', {
-    'service/http': { fetch: async () => { requests++; return { username: 'demo', is_sudo: true }; } },
+  const { adminQueryOptions } = load("utils/admin-query.ts", {
+    "service/http": {
+      fetch: async () => {
+        requests++;
+        return { username: "demo", is_sudo: true };
+      },
+    },
   });
   const client = new QueryClient();
   await client.fetchQuery({ ...adminQueryOptions, staleTime: 0 });

@@ -56,6 +56,10 @@ jobs:
         run: bun run check:install
       - name: Install locked dependencies
         run: bun install --frozen-lockfile
+      - name: Lint frontend
+        run: bun run lint
+      - name: Check frontend formatting
+        run: bun run format:check
       - name: Check source and test types
         run: bun --bun run typecheck
       - name: Run frontend tests

@@ -48,6 +48,12 @@ jobs:
         working-directory: ./app/dashboard
         run: bun install --frozen-lockfile
 
+      - name: Lint and check frontend formatting
+        working-directory: ./app/dashboard
+        run: |
+          bun run lint
+          bun run format:check
+
       - name: Check frontend before publishing
         working-directory: ./app/dashboard
         env:
