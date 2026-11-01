@@ -32,7 +32,6 @@ COPY . /code
 ENV PATH="/code/.venv/bin:$PATH"
 
 RUN printf '#!/bin/sh\nexec /code/.venv/bin/python /code/marzban-cli.py "$@"\n' > /usr/bin/marzban-cli \
-    && chmod +x /usr/bin/marzban-cli \
-    && /usr/bin/marzban-cli completion install --shell bash
+    && chmod +x /usr/bin/marzban-cli
 
 CMD ["bash", "-c", "alembic upgrade head && python main.py"]
