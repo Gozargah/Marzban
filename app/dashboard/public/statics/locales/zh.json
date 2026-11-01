@@ -18,7 +18,7 @@
   "createNewUser": "创建新用户",
   "createUser": "创建用户",
   "dataUsage": "总流量",
-  "dateFormat": "MM/dd/yyyy",
+  "dateFormat": "MM/DD/YYYY",
   "delete": "删除",
   "deleteNode.deleteSuccess": "节点 {{name}} 删除成功",
   "deleteNode.prompt": "您确实要删除 <b>{{name}}</b> 节点吗？",

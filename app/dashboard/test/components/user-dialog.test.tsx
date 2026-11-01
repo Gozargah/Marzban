@@ -1,4 +1,4 @@
-import { test, expect, mock } from "bun:test";
+import { test, expect, mock, setSystemTime } from "bun:test";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { screen, fireEvent, waitFor, act } from "@testing-library/react";
@@ -6,14 +6,15 @@ import userEvent from "@testing-library/user-event";
 import { loadSource } from "../helpers/load-source";
 import { deferred } from "../helpers/network";
 import { renderFrontend, localeAdapter } from "../helpers/render";
+import { makeUser } from "../helpers/fixtures";
 
-function setup(inbounds = new Map([ ["vless", [{ tag: "vless-tcp", protocol: "vless", network: "tcp", tls: "none" }]] ])) {
+function setup(inbounds = new Map([ ["vless", [{ tag: "vless-tcp", protocol: "vless", network: "tcp", tls: "none" }]] ]), editingUser: ReturnType<typeof makeUser> | null = null) {
   const request = deferred();
   const createUser = mock((_body: any) => request.promise);
   const store = create(subscribeWithSelector(() => ({
-    editingUser: null, isCreatingNewUser: true, inbounds,
+    editingUser, isCreatingNewUser: !editingUser, inbounds,
     onCreateUser: mock((_open: boolean) => {}), onEditingUser: mock((_user: unknown) => {}),
-    onDeletingUser: mock(() => {}), createUser, editUser: mock(() => request.promise),
+    onDeletingUser: mock(() => {}), createUser, editUser: mock((_body: any) => request.promise),
     fetchUserUsage: mock(async () => ({ usages: [] })),
   })));
   const { UserDialog } = loadSource<typeof import("../../src/components/dashboard/user-dialog")>("components/dashboard/user-dialog.tsx", {
@@ -23,8 +24,8 @@ function setup(inbounds = new Map([ ["vless", [{ tag: "vless-tcp", protocol: "vl
     sonner: { toast: { success: mock(() => {}) } },
   });
   const view = renderFrontend(<UserDialog />);
-  const submit = () => fireEvent.submit(screen.getByRole("dialog").querySelector("form")!);
-  return { ...view, store, createUser, request, submit };
+  const submit = () => fireEvent.submit(document.querySelector('[data-slot="sheet-content"] form')!);
+  return { ...view, store, createUser, editUser: store.getState().editUser, request, submit };
 }
 
 test("create form submits selected protocols and converts GiB to bytes", async () => {
@@ -40,6 +41,28 @@ test("create form submits selected protocols and converts GiB to bytes", async (
   submit(); expect(createUser).toHaveBeenCalledTimes(1);
   await act(async () => { request.resolve(undefined); });
   await waitFor(() => expect(store.getState().onCreateUser).toHaveBeenCalledWith(false));
+});
+test("create form selects an expiration from the shared calendar and submits end of day", async () => {
+  const { createUser, request, submit } = setup();
+  setSystemTime(new Date("2026-01-15T12:34:00Z"));
+  await userEvent.setup().type(await screen.findByRole("textbox", { name: "Username" }), "alice");
+  fireEvent.click(screen.getByRole("button", { name: /expiry date/i }));
+  fireEvent.click(screen.getByRole("button", { name: /January 20th, 2026/ }));
+  submit();
+  await waitFor(() => expect(createUser).toHaveBeenCalledTimes(1));
+  expect(createUser.mock.calls[0][0].expire).toBe(Math.floor(new Date(2026, 0, 20, 23, 59, 59).getTime() / 1000));
+  await act(async () => { request.resolve(undefined); });
+});
+test("edit form changes expiration with the shared calendar", async () => {
+  const { editUser, request, submit } = setup(undefined, makeUser({ expire: Math.floor(new Date(2026, 0, 10, 23, 59, 59).getTime() / 1000) }));
+  setSystemTime(new Date("2026-01-15T12:34:00Z"));
+  expect(document.querySelector('button[id$="-expire"]')).toHaveTextContent("January 10, 2026");
+  fireEvent.click(document.querySelector('button[id$="-expire"]')!);
+  fireEvent.click(screen.getByRole("button", { name: /January 20th, 2026/ }));
+  submit();
+  await waitFor(() => expect(editUser).toHaveBeenCalledTimes(1));
+  expect(editUser.mock.calls[0][0]).toMatchObject({ username: "alice", expire: Math.floor(new Date(2026, 0, 20, 23, 59, 59).getTime() / 1000) });
+  await act(async () => { request.resolve(undefined); });
 });
 test("no available protocols blocks creation with validation feedback", async () => {
   const { submit, createUser } = setup(new Map());

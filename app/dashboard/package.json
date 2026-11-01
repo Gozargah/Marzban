@@ -12,7 +12,10 @@
     "test": "bun test ./test",
     "test:watch": "bun test --watch ./test",
     "test:coverage": "bun test --coverage ./test",
-    "test:typecheck": "tsc --noEmit"
+    "test:typecheck": "tsc --noEmit",
+    "check:install": "bun ./scripts/check-install.ts",
+    "test:installation": "RUN_INSTALL_TESTS=1 bun test ./test/installation",
+    "check:workflows": "bun ./scripts/check-workflows.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
@@ -43,6 +46,7 @@
     "react": "^19.2.7",
     "react-copy-to-clipboard": "^5.1.0",
     "react-datepicker": "^4.8.0",
+    "react-day-picker": "^10.0.2",
     "react-dom": "^19.2.7",
     "react-github-btn": "^1.4.0",
     "react-hook-form": "^7.77.0",
@@ -79,5 +83,6 @@
     "typescript": "^6.0.3",
     "vite": "^8.0.16",
     "vite-plugin-svgr": "^5.2.0"
-  }
+  },
+  "packageManager": "bun@1.4.3"
 }

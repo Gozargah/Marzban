@@ -1,12 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { FilterUsageType } from "@/contexts/dashboard-context";
+import { Calendar as DateCalendar } from "@/components/ui/calendar";
 import { useLocale } from "@/hooks/use-locale";
 import dayjs, { ManipulateType } from "dayjs";
+import enUS from "date-fns/locale/en-US";
+import faIR from "date-fns/locale/fa-IR";
+import ru from "date-fns/locale/ru";
+import zhCN from "date-fns/locale/zh-CN";
 import { Calendar } from "lucide-react";
 import { useState } from "react";
-import ReactDatePicker from "react-datepicker";
 import { useTranslation } from "react-i18next";
+
+const calendarLocales: Record<string, typeof enUS> = { en: enUS, fa: faIR, ru, zh: zhCN };
 
 export type UsageFilterProps = { onChange: (filter: string, query: FilterUsageType) => void; defaultValue: string };
 const units: Record<string, ManipulateType> = { h: "hour", d: "day", w: "week", m: "month" };
@@ -82,28 +88,25 @@ export function UsageFilter({ defaultValue, onChange }: UsageFilterProps) {
             </Button>
           </div>
           {absolute ? (
-            <div className="overflow-x-auto">
-              <ReactDatePicker
-                locale={(language.startsWith("zh") ? "zh-cn" : language.split("-")[0])}
-                selected={dates[0]}
-                startDate={dates[0]}
-                endDate={dates[1]}
-                selectsRange
-                maxDate={new Date()}
-                inline
-                onChange={(next: [Date | null, Date | null]) => {
-                  setDates(next);
-                  if (next[0] && next[1]) {
-                    setValue("custom");
-                    setOpen(false);
-                    onChange("custom", {
-                      start: dayjs(next[0]).format("YYYY-MM-DDT00:00:00"),
-                      end: dayjs(next[1]).format("YYYY-MM-DDT23:59:59"),
-                    });
-                  }
-                }}
-              />
-            </div>
+            <DateCalendar
+              mode="range"
+              selected={{ from: dates[0] ?? undefined, to: dates[1] ?? undefined }}
+              onSelect={(range) => {
+                const next: [Date | null, Date | null] = [range?.from ?? null, range?.to ?? null];
+                setDates(next);
+                if (next[0] && next[1]) {
+                  setValue("custom");
+                  setOpen(false);
+                  onChange("custom", {
+                    start: dayjs(next[0]).format("YYYY-MM-DDT00:00:00"),
+                    end: dayjs(next[1]).format("YYYY-MM-DDT23:59:59"),
+                  });
+                }
+              }}
+              disabled={{ after: new Date() }}
+              locale={(calendarLocales[language.split("-")[0]] ?? enUS) as never}
+              dir={direction}
+            />
           ) : (
             <div className="space-y-3">
               {customRanges.map((row) => (

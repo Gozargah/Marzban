@@ -14,3 +14,17 @@ test.each([["7h", "2026-01-15T05:00:00"], ["1d", "2026-01-14T12:00:00"], ["1w", 
   expect(screen.getByRole("button", { name: range })).toHaveAttribute("aria-pressed", "true");
   expect(screen.getByRole("button", { name: "3m" })).toHaveAttribute("aria-pressed", "false");
 });
+
+test("absolute usage range uses the shared calendar and submits inclusive dates", () => {
+  setSystemTime(new Date("2026-01-15T12:34:00Z"));
+  const onChange = mock(() => {});
+  renderFrontend(<UsageFilter defaultValue="1d" onChange={onChange} />);
+  fireEvent.click(screen.getByRole("button", { name: /custom/i }));
+  fireEvent.click(screen.getByRole("button", { name: "Absolute" }));
+  fireEvent.click(screen.getByRole("button", { name: /January 10th, 2026/ }));
+  fireEvent.click(screen.getByRole("button", { name: /January 12th, 2026/ }));
+  expect(onChange).toHaveBeenCalledWith("custom", {
+    start: "2026-01-10T00:00:00",
+    end: "2026-01-12T23:59:59",
+  });
+});

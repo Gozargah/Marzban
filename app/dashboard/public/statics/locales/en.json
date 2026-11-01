@@ -18,7 +18,7 @@
   "createNewUser": "Create new user",
   "createUser": "Create User",
   "dataUsage": "data usage",
-  "dateFormat": "MMMM d, yyy",
+  "dateFormat": "MMMM D, YYYY",
   "delete": "Delete",
   "deleteNode.deleteSuccess": "Node {{name}} removed successfully",
   "deleteNode.prompt": "Are you sure you want to delete the <b>{{name}}</b> node?",

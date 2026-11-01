@@ -1,22 +1,31 @@
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Field, FieldDescription, FieldError, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { resetStrategy } from "constants/UserSettings";
 import dayjs from "dayjs";
-import { RefreshCw } from "lucide-react";
-import ReactDatePicker from "react-datepicker";
+import enUS from "date-fns/locale/en-US";
+import faIR from "date-fns/locale/fa-IR";
+import ru from "date-fns/locale/ru";
+import zhCN from "date-fns/locale/zh-CN";
+import { CalendarDays, RefreshCw, X } from "lucide-react";
+import { useState } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { relativeExpiryDate } from "utils/dateFormatter";
 import type { FormType } from "./form";
 
+const calendarLocales: Record<string, typeof enUS> = { en: enUS, fa: faIR, ru, zh: zhCN };
+
 export function UserAccountFields({ fieldId, disabled, isEditing, language }: { fieldId: (name: string) => string; disabled: boolean; isEditing: boolean; language: string }) {
   const form = useFormContext<FormType>();
   const { t } = useTranslation();
   const [dataLimit, userStatus] = useWatch({ control: form.control, name: ["data_limit", "status"] });
+  const [expiryCalendarOpen, setExpiryCalendarOpen] = useState(false);
   const isOnHold = userStatus === "on_hold";
   const createRandomUsername = () => {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -191,37 +200,64 @@ export function UserAccountFields({ fieldId, disabled, isEditing, language }: { 
               const { status, time } = relativeExpiryDate(field.value);
               return (
                 <>
-                  <div className="[&_.react-datepicker-wrapper]:w-full">
-                    <ReactDatePicker
-                      id={fieldId(field.name)}
-                      name={field.name}
-                      onBlur={field.onBlur}
-                      locale={(language.startsWith("zh") ? "zh-cn" : language.split("-")[0])}
-                      dateFormat={t("dateFormat")}
-                      placeholderText={t("neverExpires", { defaultValue: "Never expires" })}
-                      minDate={new Date()}
-                      disabled={disabled}
-                      isClearable={!disabled}
-                      selected={field.value ? dayjs(field.value * 1000).toDate() : null}
-                      onChange={(date: Date | null) => {
-                        form.setValue("on_hold_expire_duration", null);
-                        field.onChange(date ? dayjs(date).endOf("day").unix() : null);
-                      }}
-                      customInput={
-                        <Input
-                          ref={field.ref}
-                          aria-invalid={fieldState.invalid}
-                          aria-describedby={
-                            fieldState.invalid
-                              ? fieldId("expire-error")
-                              : field.value
-                                ? fieldId("expiry-description")
-                                : undefined
-                          }
-                        />
-                      }
-                    />
-                  </div>
+                  <Popover open={expiryCalendarOpen} onOpenChange={setExpiryCalendarOpen}>
+                    <div className="flex gap-2">
+                      <PopoverTrigger
+                        render={
+                          <Button
+                            id={fieldId(field.name)}
+                            ref={field.ref}
+                            type="button"
+                            variant="outline"
+                            disabled={disabled}
+                            aria-invalid={fieldState.invalid}
+                            aria-describedby={
+                              fieldState.invalid
+                                ? fieldId("expire-error")
+                                : field.value
+                                  ? fieldId("expiry-description")
+                                  : undefined
+                            }
+                            className="min-w-0 flex-1 justify-start text-start font-normal"
+                            onBlur={field.onBlur}
+                          >
+                            <CalendarDays aria-hidden="true" />
+                            {field.value
+                              ? dayjs(field.value * 1000).format(t("dateFormat"))
+                              : t("neverExpires", { defaultValue: "Never expires" })}
+                          </Button>
+                        }
+                      />
+                      {!!field.value && !disabled && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          aria-label={t("userDialog.clearExpiry", { defaultValue: "Clear expiration date" })}
+                          onClick={() => {
+                            form.setValue("on_hold_expire_duration", null);
+                            field.onChange(null);
+                          }}
+                        >
+                          <X aria-hidden="true" />
+                        </Button>
+                      )}
+                    </div>
+                    <PopoverContent align="start" className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={field.value ? dayjs(field.value * 1000).toDate() : undefined}
+                        onSelect={(date) => {
+                          form.setValue("on_hold_expire_duration", null);
+                          field.onChange(date ? dayjs(date).endOf("day").unix() : null);
+                          if (date) setExpiryCalendarOpen(false);
+                        }}
+                        disabled={{ before: dayjs().startOf("day").toDate() }}
+                        locale={(calendarLocales[language.split("-")[0]] ?? enUS) as never}
+                        dir={language.startsWith("fa") ? "rtl" : "ltr"}
+                      />
+                    </PopoverContent>
+                  </Popover>
                   {!!field.value && (
                     <FieldDescription id={fieldId("expiry-description")}>
                       {t(status, { time })}

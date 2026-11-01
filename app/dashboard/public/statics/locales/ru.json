@@ -18,7 +18,7 @@
   "createNewUser": "Создать нового пользователя",
   "createUser": "Создать",
   "dataUsage": "Трафик",
-  "dateFormat": "MMMM d, yyy",
+  "dateFormat": "MMMM D, YYYY",
   "delete": "Удалить",
   "deleteNode.deleteSuccess": "Узел {{name}} успешно удалён",
   "deleteNode.prompt": "Вы уверены, что хотите удалить узел <b>{{name}}</b>?",
