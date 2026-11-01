@@ -17,7 +17,8 @@ function setup(sudo = true, desktop = false) {
     dispatchEvent: () => false,
   }));
   const reset = mock(() => {}),
-    logout = mock(() => {});
+    logout = mock(() => {}),
+    apiFetch = mock(async () => ({}));
   const store = create(() => ({
     onEditingHosts: mock(() => {}),
     onEditingNodes: mock(() => {}),
@@ -39,17 +40,17 @@ function setup(sudo = true, desktop = false) {
       },
       "@/components/theme-provider": { useTheme: () => ({ resolvedTheme: "dark", setTheme: mock(() => {}) }) },
       "@/components/language": { Language: () => <button>Language</button> },
-      "service/http": { fetch: mock(async () => ({})) },
+      "service/http": { fetch: apiFetch },
       "react-router": { Link: ({ to, ...props }: any) => <a href={to} {...props} /> },
       "utils/authStorage": { clearAuthState: logout },
     },
   );
   const view = renderFrontend(<Header />);
-  return { ...view, reset, logout };
+  return { ...view, reset, logout, apiFetch };
 }
 
 test("hamburger contains logout and reset while the GitHub link sits beside language", async () => {
-  const { reset, logout, client } = setup();
+  const { reset, logout, apiFetch, client } = setup();
   client.setQueryData(["private"], { username: "alice" });
   const star = screen.getByRole("link", { name: "Open Marzban on GitHub" });
   expect(star).toHaveAttribute("rel", "noopener noreferrer");
@@ -61,6 +62,7 @@ test("hamburger contains logout and reset while the GitHub link sits beside lang
   expect(reset).not.toHaveBeenCalled();
   await userEvent.setup().click(screen.getByRole("link", { name: /log\s*out/i }));
   expect(logout).toHaveBeenCalledTimes(1);
+  expect(apiFetch).toHaveBeenCalledWith("/admin/session", { method: "DELETE" });
   expect(client.getQueryData(["private"])).toBeUndefined();
 });
 

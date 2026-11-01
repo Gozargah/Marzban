@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createInstance } from "i18next";
-import { I18nextProvider } from "react-i18next";
+import { I18nextProvider, initReactI18next } from "react-i18next";
 import { render } from "@testing-library/react";
 import type { ReactNode } from "react";
 import en from "../../public/statics/locales/en.json";
@@ -14,6 +14,7 @@ export function cleanupQueryClients() {
 
 export function renderFrontend(ui: ReactNode, language = "en") {
   const i18n = createInstance();
+  i18n.use(initReactI18next);
   void i18n.init({
     lng: language,
     fallbackLng: "en",

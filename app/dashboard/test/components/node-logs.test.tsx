@@ -40,11 +40,14 @@ function setup() {
 test("logs use cookie-authenticated socket endpoints and display messages", async () => {
   const { socket, message } = setup();
   expect(socket.mock.calls[0][0]).toBe("ws://localhost/api/core/logs?interval=1");
+  expect(socket.mock.calls[0][1]).toMatchObject({ reconnectAttempts: 10, reconnectInterval: 1000 });
+  expect(socket.mock.calls[0][1].shouldReconnect()).toBe(true);
   act(() => message("2026/01/15 12:00:00 [Info] Ready\nplain line"));
   expect(await screen.findByText("Ready")).toBeInTheDocument();
   expect(screen.getByText("plain line")).toBeInTheDocument();
   fireEvent.change(screen.getByRole("combobox"), { target: { value: "7" } });
   expect(socket.mock.lastCall?.[0]).toBe("ws://localhost/api/node/7/logs?interval=1");
+  expect(socket.mock.lastCall?.[0]).not.toContain("token=");
   expect(screen.queryByText("plain line")).not.toBeInTheDocument();
 });
 test("ignores non-text frames and unmount cancels buffered flush", async () => {

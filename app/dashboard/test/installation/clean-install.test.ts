@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { resolve, basename } from "node:path";
+import { resolve, basename, delimiter, dirname } from "node:path";
 const source = resolve(import.meta.dir, "../..");
 // Opt in explicitly: normal tests never install dependencies or contact the registry.
 (process.env.RUN_INSTALL_TESTS === "1" ? test : test.skip)(
@@ -22,7 +22,11 @@ const source = resolve(import.meta.dir, "../..");
       const run = (args: string[], success = true) => {
         const result = Bun.spawnSync([process.execPath, ...args], {
           cwd: root,
-          env: { ...process.env, VITE_BASE_API: "/api/" },
+          env: {
+            ...process.env,
+            PATH: [dirname(process.execPath), process.env.PATH].filter(Boolean).join(delimiter),
+            VITE_BASE_API: "/api/",
+          },
           stdout: "pipe",
           stderr: "pipe",
           timeout: 120_000,
