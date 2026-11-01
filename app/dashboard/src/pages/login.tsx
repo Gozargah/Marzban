@@ -17,9 +17,9 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { fetch } from "service/http";
+import { fetch, setCsrfToken } from "service/http";
 import { queryClient } from "utils/react-query";
-import { removeAuthToken, setAuthToken } from "utils/authStorage";
+import { clearAuthState } from "utils/authStorage";
 
 const loginSchema = z.object({
   username: z.string().min(1, "login.fieldRequired"),
@@ -27,19 +27,19 @@ const loginSchema = z.object({
 });
 
 type LoginValues = z.infer<typeof loginSchema>;
-type TokenResponse = { access_token: string; token_type: string };
-
-async function authenticate(values: LoginValues): Promise<TokenResponse> {
+async function authenticate(values: LoginValues): Promise<{ csrf_token: string }> {
   const body = new FormData();
   body.append("username", values.username);
   body.append("password", values.password);
   body.append("grant_type", "password");
 
-  return fetch<TokenResponse>("/admin/token", {
+  const session = await fetch<{ csrf_token: string }>("/admin/session", {
     method: "POST",
     body,
     retry: 0,
   });
+  setCsrfToken(session.csrf_token);
+  return session;
 }
 
 export function Login() {
@@ -61,7 +61,7 @@ export function Login() {
   const isPending = isSubmitting || loginMutation.isPending;
 
   useEffect(() => {
-    removeAuthToken();
+    clearAuthState();
   }, []);
 
   useEffect(() => {
@@ -74,9 +74,8 @@ export function Login() {
     clearErrors("root.server");
 
     try {
-      const { access_token } = await loginMutation.mutateAsync(values);
+      await loginMutation.mutateAsync(values);
       queryClient.clear();
-      setAuthToken(access_token);
       await navigate("/", { replace: true });
     } catch (error: unknown) {
       const detail: unknown = error instanceof FetchError ? error.data?.detail : undefined;

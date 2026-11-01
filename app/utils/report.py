@@ -202,12 +202,11 @@ def expire_days_reached(db: Session, days: int, user: UserResponse, user_id: int
             user_id=user_id, threshold=threshold)
 
 
-def login(username: str, password: str, client_ip: str, success: bool) -> None:
+def login(username: str, client_ip: str, success: bool) -> None:
     if NOTIFY_LOGIN:
         try:
             telegram.report_login(
                 username=username,
-                password=password,
                 client_ip=client_ip,
                 status="✅ Success" if success else "❌ Failed"
             )
@@ -216,7 +215,6 @@ def login(username: str, password: str, client_ip: str, success: bool) -> None:
         try:
             discord.report_login(
                 username=username,
-                password=password,
                 client_ip=client_ip,
                 status="✅ Success" if success else "❌ Failed"
             )

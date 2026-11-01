@@ -7,10 +7,11 @@ import { renderFrontend, localeAdapter } from "../helpers/render";
 
 function setup() {
   const net = network();
+  const setCsrfToken = mock(() => {});
   const navigate = mock(async () => {});
   const clear = mock(() => {});
   const { Login } = loadSource<typeof import("../../src/pages/login")>("pages/login.tsx", {
-    ...localeAdapter, "service/http": net,
+    ...localeAdapter, "service/http": { ...net, setCsrfToken },
     "react-router": { useNavigate: () => navigate, useLocation: () => ({ pathname: "/login" }) },
     "utils/react-query": { queryClient: { clear } },
     "assets/logo.svg?react": () => <svg aria-hidden="true" />,
@@ -19,7 +20,7 @@ function setup() {
   });
   const view = renderFrontend(<Login />);
   const submit = () => fireEvent.submit(view.container.querySelector("form")!);
-  return { net, navigate, clear, submit, ...view };
+  return { net, navigate, clear, setCsrfToken, submit, ...view };
 }
 async function credentials() {
   const user = userEvent.setup();
@@ -34,7 +35,7 @@ describe("login", () => {
     expect(screen.getByLabelText("Password")).toHaveAttribute("type", "password");
   });
   test("clears stale authentication when mounted", () => {
-    localStorage.setItem("token", "stale"); setup();
+    setup();
     expect(localStorage.getItem("token")).toBeNull();
   });
   test("empty fields prevent authentication and report errors", async () => {
@@ -43,19 +44,20 @@ describe("login", () => {
     expect(screen.getByPlaceholderText("Password")).toHaveAttribute("aria-invalid", "true");
     expect(net.calls).toHaveLength(0);
   });
-  test("submits credentials, locks while pending, stores token and navigates", async () => {
-    const { submit, net, navigate, clear } = setup();
+  test("submits credentials to the cookie session endpoint and navigates", async () => {
+    const { submit, net, navigate, clear, setCsrfToken } = setup();
     await credentials(); submit();
     await waitFor(() => expect(net.calls).toHaveLength(1));
     const request = net.calls[0];
-    expect(request.url).toBe("/admin/token");
+    expect(request.url).toBe("/admin/session");
     expect(request.options).toMatchObject({ method: "POST", retry: 0 });
     expect(Object.fromEntries(request.options.body)).toEqual({ username: "alice", password: "secret", grant_type: "password" });
     expect(screen.getByRole("button", { name: "Login" })).toBeDisabled();
     expect(screen.getByPlaceholderText("Password")).toHaveAttribute("readonly");
-    request.resolve({ access_token: "new-token", token_type: "bearer" });
+    request.resolve({ username: "alice", is_sudo: false, csrf_token: "csrf" });
     await waitFor(() => expect(navigate).toHaveBeenCalledWith("/", { replace: true }));
-    expect(localStorage.getItem("token")).toBe("new-token");
+    expect(setCsrfToken).toHaveBeenCalledWith("csrf");
+    expect(localStorage.getItem("token")).toBeNull();
     expect(clear).toHaveBeenCalledTimes(1);
   });
   test("network failure shows an error and permits retry", async () => {
@@ -67,7 +69,7 @@ describe("login", () => {
     expect(navigate).not.toHaveBeenCalled();
     expect(localStorage.getItem("token")).toBeNull();
     submit(); await waitFor(() => expect(net.calls).toHaveLength(2));
-    net.calls[1].resolve({ access_token: "retry-token" });
-    await waitFor(() => expect(localStorage.getItem("token")).toBe("retry-token"));
+    net.calls[1].resolve({ username: "alice", is_sudo: false, csrf_token: "csrf" });
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith("/", { replace: true }));
   });
 });

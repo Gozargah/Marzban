@@ -1,13 +1,9 @@
 import { clearAllDrafts } from "@/features/shared/drafts";
-export const getAuthToken = () => {
-  return localStorage.getItem("token");
+
+/** Remove bearer tokens left behind by older dashboard versions. */
+export const clearLegacyAuthToken = () => {
+  try { localStorage.removeItem("token"); } catch { /* Browser storage is optional. */ }
 };
 
-export const setAuthToken = (token: string) => {
-  localStorage.setItem("token", token);
-};
-
-export const removeAuthToken = () => {
-  localStorage.removeItem("token");
-  clearAllDrafts();
-};
+/** Clear page-local state; authentication is held in an HttpOnly server cookie. */
+export const clearAuthState = () => clearAllDrafts();

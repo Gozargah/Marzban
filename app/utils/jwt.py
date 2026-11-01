@@ -18,8 +18,10 @@ def get_secret_key():
         return get_jwt_secret_key(db)
 
 
-def create_admin_token(username: str, is_sudo=False) -> str:
+def create_admin_token(username: str, is_sudo=False, session_id: str | None = None) -> str:
     data = {"sub": username, "access": "sudo" if is_sudo else "admin", "iat": datetime.utcnow()}
+    if session_id:
+        data["sid"] = session_id
     if JWT_ACCESS_TOKEN_EXPIRE_MINUTES > 0:
         expire = datetime.utcnow() + timedelta(minutes=JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
         data["exp"] = expire
@@ -39,7 +41,7 @@ def get_admin_payload(token: str) -> Union[dict, None]:
         except KeyError:
             created_at = None
 
-        return {"username": username, "is_sudo": access == "sudo", "created_at": created_at}
+        return {"username": username, "is_sudo": access == "sudo", "created_at": created_at, "session_id": payload.get("sid")}
     except jwt.exceptions.PyJWTError:
         return
 

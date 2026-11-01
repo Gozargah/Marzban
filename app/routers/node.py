@@ -18,6 +18,8 @@ from app.models.node import (
     NodeStatus,
     NodesUsageResponse,
 )
+from app.utils.admin_session import SESSION_COOKIE, is_admin_session_active, is_trusted_origin
+from app.utils.jwt import get_admin_payload
 from app.models.proxy import ProxyHost
 from app.utils import responses
 
@@ -81,9 +83,12 @@ def get_node(
 
 @router.websocket("/node/{node_id}/logs")
 async def node_logs(node_id: int, websocket: WebSocket, db: Session = Depends(get_db)):
-    token = websocket.query_params.get("token") or websocket.headers.get(
-        "Authorization", ""
-    ).removeprefix("Bearer ")
+    cookie_token = websocket.cookies.get(SESSION_COOKIE)
+    if cookie_token and not is_trusted_origin(websocket.headers.get("origin"), websocket):
+        return await websocket.close(reason="Untrusted origin", code=4403)
+    token = cookie_token or websocket.headers.get("Authorization", "").removeprefix("Bearer ")
+    payload = get_admin_payload(token)
+    session_id = payload.get("session_id") if payload else None
     admin = Admin.get_admin(token, db)
     if not admin:
         return await websocket.close(reason="Unauthorized", code=4401)
@@ -112,9 +117,14 @@ async def node_logs(node_id: int, websocket: WebSocket, db: Session = Depends(ge
 
     cache = ""
     last_sent_ts = 0
+    next_session_check = time.monotonic() + 5
     node = xray.nodes[node_id]
     with node.get_logs() as logs:
         while True:
+            if session_id and time.monotonic() >= next_session_check:
+                if not is_admin_session_active(session_id):
+                    return await websocket.close(reason="Session ended", code=4401)
+                next_session_check = time.monotonic() + 5
             if not node == xray.nodes[node_id]:
                 break
 

@@ -1,5 +1,4 @@
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import GitHubButton from "react-github-btn";
 import { createHostsResource } from "@/features/hosts/resource";
 import { createCoreResource } from "@/features/core/resource";
 import { queryKeys } from "@/features/shared/query-keys";
@@ -21,7 +20,7 @@ import { Switch } from "@/components/ui/switch";
 import { DONATION_URL, REPO_URL } from "constants/Project";
 import { useDashboard } from "@/contexts/dashboard-context";
 import useGetUser from "hooks/useGetUser";
-import { removeAuthToken } from "utils/authStorage";
+import { clearAuthState } from "utils/authStorage";
 
 type HeaderProps = { actions?: ReactNode };
 const NOTIFICATION_KEY = "marzban-menu-notification";
@@ -54,7 +53,6 @@ export function Header({ actions }: HeaderProps) {
   const nextAction = useRef<(() => void) | null>(null);
   const [showDonationNotif, setShowDonationNotif] = useState(shouldShowDonation);
   const { direction } = useLocale();
-  const githubTheme = colorMode === "dark" ? "dark_dimmed" : "light";
   const menuLabel = t("header.menu", { defaultValue: "Dashboard menu" });
   const themeLabel = colorMode === "dark"
     ? t("header.lightMode", { defaultValue: "Switch to light mode" })
@@ -84,7 +82,8 @@ export function Header({ actions }: HeaderProps) {
     try { localStorage.setItem(NOTIFICATION_KEY, String(Date.now())); } catch { /* Storage is optional. */ }
   }
   function logout() {
-    removeAuthToken();
+    void fetch("/admin/session", { method: "DELETE" }).catch(() => undefined);
+    clearAuthState();
     queryClient.clear();
   }
 
@@ -99,11 +98,11 @@ export function Header({ actions }: HeaderProps) {
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             {actions}
             <Language showLabel />
-            <div dir="ltr" className="flex items-center [&_span]:inline-flex">
-              <GitHubButton href={REPO_URL}
-                data-color-scheme={`no-preference: ${githubTheme}; light: ${githubTheme}; dark: ${githubTheme};`}
-                data-size="large" data-show-count="true" aria-label="Star Marzban on GitHub">Star</GitHubButton>
-            </div>
+            <a href={REPO_URL} target="_blank" rel="noopener noreferrer"
+              className="inline-flex h-9 items-center rounded-md border px-3 text-sm font-medium hover:bg-accent"
+              aria-label="Open Marzban on GitHub">
+              <Code aria-hidden="true" className="me-2 size-4" />GitHub
+            </a>
             <Button type="button" variant="outline" size="icon-sm" aria-label={themeLabel} title={themeLabel}
               onClick={() => setTheme(colorMode === "dark" ? "light" : "dark")}>
               {colorMode === "light" ? <Moon aria-hidden="true" /> : <Sun aria-hidden="true" />}

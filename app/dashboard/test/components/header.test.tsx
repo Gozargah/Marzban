@@ -15,20 +15,19 @@ function setup(sudo = true, desktop = false) {
     "hooks/useGetUser": { __esModule: true, default: () => ({ userData: { username: "alice", is_sudo: sudo }, getUserIsSuccess: true, getUserIsPending: false }) },
     "@/components/theme-provider": { useTheme: () => ({ resolvedTheme: "dark", setTheme: mock(() => {}) }) },
     "@/components/language": { Language: () => <button>Language</button> },
-    "react-github-btn": { __esModule: true, default: (props: any) => <a {...props}>Star</a> },
+    "service/http": { fetch: mock(async () => ({})) },
     "react-router": { Link: ({ to, ...props }: any) => <a href={to} {...props} /> },
-    "utils/authStorage": { removeAuthToken: logout },
+    "utils/authStorage": { clearAuthState: logout },
   });
   const view = renderFrontend(<Header />);
   return { ...view, reset, logout };
 }
 
-test("hamburger contains logout and reset while the original stars sit beside language", async () => {
+test("hamburger contains logout and reset while the GitHub link sits beside language", async () => {
   const { reset, logout, client } = setup();
   client.setQueryData(["private"], { username: "alice" });
-  const star = screen.getByRole("link", { name: "Star Marzban on GitHub" });
-  expect(star).toHaveAttribute("data-show-count", "true");
-  expect(star).toHaveAttribute("data-size", "large");
+  const star = screen.getByRole("link", { name: "Open Marzban on GitHub" });
+  expect(star).toHaveAttribute("rel", "noopener noreferrer");
   expect(screen.getByRole("button", { name: "Language" }).nextElementSibling).toContainElement(star);
   expect(screen.queryByRole("link", { name: /log\s*out/i })).toBeNull();
   expect(screen.queryByRole("button", { name: /reset all usage/i })).toBeNull();

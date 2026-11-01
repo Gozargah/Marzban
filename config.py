@@ -17,6 +17,12 @@ UVICORN_SSL_CA_TYPE = config("UVICORN_SSL_CA_TYPE", default="public").lower()
 DASHBOARD_PATH = config("DASHBOARD_PATH", default="/dashboard/")
 
 DEBUG = config("DEBUG", default=False, cast=bool)
+AUTH_COOKIE_SECURE = config("AUTH_COOKIE_SECURE", default=not DEBUG, cast=bool)
+AUTH_COOKIE_SAMESITE = config("AUTH_COOKIE_SAMESITE", default="strict").lower()
+if AUTH_COOKIE_SAMESITE not in {"strict", "lax", "none"}:
+    raise ValueError("AUTH_COOKIE_SAMESITE must be strict, lax, or none")
+if AUTH_COOKIE_SAMESITE == "none" and not AUTH_COOKIE_SECURE:
+    raise ValueError("AUTH_COOKIE_SECURE must be true when AUTH_COOKIE_SAMESITE=none")
 DOCS = config("DOCS", default=False, cast=bool)
 
 ALLOWED_ORIGINS = config("ALLOWED_ORIGINS", default="*").split(",")

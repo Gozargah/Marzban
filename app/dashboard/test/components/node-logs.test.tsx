@@ -19,15 +19,14 @@ function setup() {
   return { ...renderFrontend(<NodeLogs />), socket, message: (data: unknown) => options.onMessage({ data }), scrollToIndex };
 }
 
-test("logs encode token, select correct socket endpoint and display messages", async () => {
-  localStorage.setItem("token", "a&b=token");
+test("logs use cookie-authenticated socket endpoints and display messages", async () => {
   const { socket, message } = setup();
-  expect(socket.mock.calls[0][0]).toBe("ws://localhost/api/core/logs?interval=1&token=a%26b%3Dtoken");
+  expect(socket.mock.calls[0][0]).toBe("ws://localhost/api/core/logs?interval=1");
   act(() => message("2026/01/15 12:00:00 [Info] Ready\nplain line"));
   expect(await screen.findByText("Ready")).toBeInTheDocument();
   expect(screen.getByText("plain line")).toBeInTheDocument();
   fireEvent.change(screen.getByRole("combobox"), { target: { value: "7" } });
-  expect(socket.mock.lastCall?.[0]).toBe("ws://localhost/api/node/7/logs?interval=1&token=a%26b%3Dtoken");
+  expect(socket.mock.lastCall?.[0]).toBe("ws://localhost/api/node/7/logs?interval=1");
   expect(screen.queryByText("plain line")).not.toBeInTheDocument();
 });
 test("ignores non-text frames and unmount cancels buffered flush", async () => {

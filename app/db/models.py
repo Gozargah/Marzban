@@ -48,6 +48,16 @@ class Admin(Base):
     usage_logs = relationship("AdminUsageLogs", back_populates="admin")
 
 
+class AdminSession(Base):
+    __tablename__ = "admin_sessions"
+
+    id = Column(Integer, primary_key=True)
+    session_hash = Column(String(64), nullable=False, unique=True, index=True)
+    username = Column(String(34), nullable=False, index=True)
+    expires_at = Column(DateTime, nullable=True, index=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
 class AdminUsageLogs(Base):
     __tablename__ = "admin_usage_logs"
 

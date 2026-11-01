@@ -1,21 +1,29 @@
 from typing import Optional
+from hashlib import sha256
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from app.db import Session, crud, get_db
 from app.utils.jwt import get_admin_payload
+from app.utils.admin_session import SESSION_COOKIE, require_csrf
 from config import SUDOERS
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/admin/token")  # Admin view url
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/admin/token", auto_error=False)
 
 
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class AdminSessionResponse(BaseModel):
+    username: str
+    is_sudo: bool
+    csrf_token: str
 
 
 class Admin(BaseModel):
@@ -38,9 +46,18 @@ class Admin(BaseModel):
 
     @classmethod
     def get_admin(cls, token: str, db: Session):
+        if not token:
+            return
         payload = get_admin_payload(token)
         if not payload:
             return
+
+        if payload.get("session_id"):
+            from app.db.models import AdminSession
+
+            session_hash = sha256(payload["session_id"].encode()).hexdigest()
+            if not db.query(AdminSession).filter(AdminSession.session_hash == session_hash).first():
+                return
 
         if payload['username'] in SUDOERS and payload['is_sudo'] is True:
             return cls(username=payload['username'], is_sudo=True)
@@ -59,8 +76,13 @@ class Admin(BaseModel):
 
     @classmethod
     def get_current(cls,
+                    request: Request,
                     db: Session = Depends(get_db),
-                    token: str = Depends(oauth2_scheme)):
+                    bearer_token: Optional[str] = Depends(oauth2_scheme)):
+        cookie_token = request.cookies.get(SESSION_COOKIE)
+        token = bearer_token or cookie_token
+        if cookie_token and not bearer_token and request.method not in ("GET", "HEAD", "OPTIONS"):
+            require_csrf(request)
         admin = cls.get_admin(token, db)
         if not admin:
             raise HTTPException(
@@ -72,9 +94,11 @@ class Admin(BaseModel):
 
     @classmethod
     def check_sudo_admin(cls,
+                         request: Request,
                          db: Session = Depends(get_db),
-                         token: str = Depends(oauth2_scheme)):
-        admin = cls.get_admin(token, db)
+                         bearer_token: Optional[str] = Depends(oauth2_scheme)):
+        # Reuse the same cookie CSRF checks as all other authenticated routes.
+        admin = cls.get_current(request, db, bearer_token)
         if not admin:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

@@ -1,19 +1,17 @@
 import { describe, test, expect } from "bun:test";
-import { getAuthToken, setAuthToken, removeAuthToken } from "../../src/utils/authStorage";
+import { clearAuthState, clearLegacyAuthToken } from "../../src/utils/authStorage";
 import { getUsersPerPageLimitSize, setUsersPerPageLimitSize } from "../../src/utils/userPreferenceStorage";
 
-describe("authentication storage", () => {
-  test("absent, persisted, replaced and removed token", () => {
-    expect(getAuthToken()).toBeNull();
-    setAuthToken("first");
-    expect(getAuthToken()).toBe("first");
-    setAuthToken("second");
-    expect(getAuthToken()).toBe("second");
-    removeAuthToken(); removeAuthToken();
-    expect(getAuthToken()).toBeNull();
+describe("authentication state", () => {
+  test("upgrade cleanup removes only the old browser token", () => {
+    localStorage.setItem("token", "old-bearer-token");
+    localStorage.setItem("marzban-num-users-per-page", "50");
+    clearLegacyAuthToken();
+    expect(localStorage.getItem("token")).toBeNull();
+    expect(localStorage.getItem("marzban-num-users-per-page")).toBe("50");
   });
   test("logout preserves unrelated preferences", () => {
-    setUsersPerPageLimitSize("50"); setAuthToken("token"); removeAuthToken();
+    setUsersPerPageLimitSize("50"); clearAuthState();
     expect(getUsersPerPageLimitSize()).toBe(50);
   });
 });
