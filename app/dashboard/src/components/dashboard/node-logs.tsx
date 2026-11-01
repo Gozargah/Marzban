@@ -1,6 +1,6 @@
 import { createLogBuffer } from "utils/log-buffer";
 import { NativeSelect } from "@/components/ui/native-select";
-import { joinPaths } from "@remix-run/router";
+import { createWebSocketUrl } from "@/features/shared/websocket-url";
 import { FC, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useWebSocket, { ReadyState } from "react-use-websocket";
@@ -21,13 +21,8 @@ const getStatus = (status: string) => {
 
 const getWebsocketUrl = (nodeID: string) => {
   try {
-    const baseURL = new URL(import.meta.env.VITE_BASE_API || "/", window.location.origin);
-
-    return (
-      (baseURL.protocol === "https:" ? "wss://" : "ws://") +
-      joinPaths([baseURL.host + baseURL.pathname, !nodeID ? "/core/logs" : `/node/${nodeID}/logs`]) +
-      "?interval=1"
-    );
+    const endpoint = !nodeID ? "/core/logs" : `/node/${nodeID}/logs`;
+    return `${createWebSocketUrl(endpoint, import.meta.env.VITE_BASE_API, window.location.origin)}?interval=1`;
   } catch (e) {
     console.error("Unable to generate websocket url");
     console.error(e);
