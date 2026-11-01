@@ -30,14 +30,15 @@ async function getCsrfToken(): Promise<string | undefined> {
 export const fetcher = async <T = any>(url: string, ops: FetchOptions<"json"> = {}) => {
   const headers = new Headers(ops.headers);
   const method = (ops.method ?? "GET").toUpperCase();
-  if (!["GET", "HEAD", "OPTIONS"].includes(method) && !url.endsWith("/admin/session")) {
+  const isSafeMethod = ["GET", "HEAD", "OPTIONS"].includes(method);
+  if (!isSafeMethod && !url.endsWith("/admin/session")) {
     const csrf = await getCsrfToken();
     if (csrf) headers.set("X-CSRF-Token", csrf);
   }
   return $fetch<T>(url, {
     ...ops,
     credentials: "include",
-    timeout: ops.timeout ?? (method !== "GET" ? 60_000 : 15_000),
+    timeout: ops.timeout ?? (isSafeMethod ? 15_000 : 60_000),
     headers: Object.fromEntries(headers.entries()),
   });
 };
