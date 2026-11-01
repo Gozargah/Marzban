@@ -33,7 +33,8 @@
   },
   "include": [
     "src",
-    "test"
+    "test",
+    "scripts"
   ],
   "references": [
     {

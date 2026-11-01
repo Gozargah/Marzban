@@ -1,4 +1,4 @@
-# Frontend tests
+# Dashboard and backend security tests
 
 Run from `app/dashboard` with Bun 1.4.3 or later:
 
@@ -18,6 +18,14 @@ bun test ./test/components/login.test.tsx
 bun test ./test/state
 bun test --test-name-pattern 'cancellation'
 ```
+
+The default Bun suite also runs `test/backend/security-integration.test.ts`. It needs
+the project's Python dependencies and Alembic migrations. It creates a disposable
+SQLite database, upgrades from the prior migration head, checks upgrade/downgrade/
+re-upgrade preservation, then exercises the actual FastAPI session, CSRF, origin,
+logout, and WebSocket-auth route logic through an in-process ASGI harness. It does
+not bind a port or touch the configured application database. Set `PYTHON` to the
+desired Python executable when `.venv/bin/python` is not available.
 
 ## Organization
 
@@ -61,3 +69,5 @@ Direct imports cover user/host form mapping, users/hosts/core resources, core co
 Deployment recovery never reloads automatically. Drafts are tab-scoped, expire after six hours, and clear on save/discard/logout. Tests flush delayed editor changes before reload and block reload when storage is unavailable. Keep test transports deterministic and settle pending async work inside `act` before cleanup.
 
 Dialog opening regressions also assert that real shells appear synchronously without a generic loading step, remain mounted across close/reopen, and that intent preloading deduplicates downloads while permitting retries after failure. Heavy editor/chart code stays lazy inside the shell.
+
+Installation and workflow checks live in `installation`; see [their guide](installation/README.md). Normal tests run offline policy checks and skip the opt-in clean-install integration case. CI explicitly runs the cold-cache case separately.
