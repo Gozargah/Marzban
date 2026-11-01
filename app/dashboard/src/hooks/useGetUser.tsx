@@ -9,16 +9,16 @@ const useGetUser = (): UseGetUserReturn => {
     discord_webook: "",
     is_sudo: false,
     telegram_id: "",
-    username: ""
-  }
+    username: "",
+  };
 
   return {
     userData: data || userDataEmpty,
     getUserIsPending: isLoading,
     getUserIsSuccess: isSuccess,
     getUserIsError: isError,
-    getUserError: error
-  }
+    getUserError: error,
+  };
 };
 
 export default useGetUser;

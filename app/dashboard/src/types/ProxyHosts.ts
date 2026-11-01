@@ -1,1 +1,1 @@
-export type ProxyHostSecurity = "inbound_default" | "none" | "tls"
+export type ProxyHostSecurity = "inbound_default" | "none" | "tls";

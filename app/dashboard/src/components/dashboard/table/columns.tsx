@@ -4,18 +4,7 @@ import { FC, useEffect, useRef, useState } from "react";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import {
-  ArrowUpDown,
-  Check,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  Copy,
-  Filter,
-  Link2,
-  Pencil,
-  QrCode,
-} from "lucide-react";
+import { ArrowUpDown, Check, ChevronDown, ChevronUp, Clock, Copy, Filter, Link2, Pencil, QrCode } from "lucide-react";
 
 import { OnlineBadge } from "@/components/dashboard/table/online-badge";
 import { OnlineStatus } from "@/components/dashboard/table/online-status";
@@ -94,26 +83,29 @@ export const UsageSlider: FC<UsageSliderProps> = ({
   const isReached = !isUnlimited && (used / (total || 1)) * 100 >= 100;
   const isWarning = !isUnlimited && percent >= 85 && !isReached;
   const resetTitle = getResetStrategy(dataLimitResetStrategy);
-  const resetLabel = resetTitle
-    ? t(`userDialog.resetStrategy${resetTitle}`, { defaultValue: resetTitle })
-    : "";
+  const resetLabel = resetTitle ? t(`userDialog.resetStrategy${resetTitle}`, { defaultValue: resetTitle }) : "";
 
   return (
     <div className={cn("flex flex-col gap-1.5 w-full", className)}>
       <div className="flex items-center justify-between text-xs font-medium">
         <div className="flex items-center gap-1.5 truncate">
-          <span className="font-semibold text-foreground">
-            {formatBytes(used)}
-          </span>
+          <span className="font-semibold text-foreground">{formatBytes(used)}</span>
           <span className="text-muted-foreground/60">/</span>
-          <span className="text-muted-foreground" aria-label={isUnlimited ? t("usersTable.unlimitedUsage", { defaultValue: "{{used}} used, unlimited allowance", used: formatBytes(used) }) : undefined}>
+          <span
+            className="text-muted-foreground"
+            aria-label={
+              isUnlimited
+                ? t("usersTable.unlimitedUsage", {
+                    defaultValue: "{{used}} used, unlimited allowance",
+                    used: formatBytes(used),
+                  })
+                : undefined
+            }
+          >
             {isUnlimited ? "∞" : formatBytes(total)}
           </span>
           {resetLabel && (
-            <Badge
-              variant="outline"
-              className="text-[10px] px-1.5 py-0 h-4 font-normal text-muted-foreground"
-            >
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-normal text-muted-foreground">
               {resetLabel}
             </Badge>
           )}
@@ -122,11 +114,7 @@ export const UsageSlider: FC<UsageSliderProps> = ({
           <span
             className={cn(
               "text-[11px] font-semibold tabular-nums shrink-0",
-              isReached
-                ? "text-destructive"
-                : isWarning
-                  ? "text-warning"
-                  : "text-muted-foreground"
+              isReached ? "text-destructive" : isWarning ? "text-warning" : "text-muted-foreground",
             )}
           >
             {percent.toFixed(0)}%
@@ -136,26 +124,20 @@ export const UsageSlider: FC<UsageSliderProps> = ({
 
       {isUnlimited ? (
         <div className="h-1.5 w-full bg-muted" aria-hidden="true" />
-      ) : <Progress
-        value={percent}
-        aria-label={t("usersTable.dataUsage")}
+      ) : (
+        <Progress
+          value={percent}
+          aria-label={t("usersTable.dataUsage")}
 
-        className="h-1.5 w-full rounded-none bg-secondary rtl:rotate-180"
-        indicatorClassName={
-          isReached
-            ? "bg-destructive"
-            : isWarning
-              ? "bg-warning"
-              : "bg-primary"
-        }
-      />}
+          className="h-1.5 w-full rounded-none bg-secondary rtl:rotate-180"
+          indicatorClassName={isReached ? "bg-destructive" : isWarning ? "bg-warning" : "bg-primary"}
+        />
+      )}
 
       <div className="flex items-center justify-between text-[11px] text-muted-foreground">
         <span>
           {t("usersTable.total")}:{" "}
-          <span className="tabular-nums font-medium text-foreground/80">
-            {formatBytes(totalUsedTraffic)}
-          </span>
+          <span className="tabular-nums font-medium text-foreground/80">{formatBytes(totalUsedTraffic)}</span>
         </span>
       </div>
     </div>
@@ -176,16 +158,27 @@ export function ExpiryInfo({
   const { t } = useTranslation();
   const { language } = useLocale();
   const durationLabel = (seconds: number) => {
-    const units = [[31536000, "year"], [2592000, "month"], [86400, "day"], [3600, "hour"], [60, "minute"], [1, "second"]] as const;
+    const units = [
+      [31536000, "year"],
+      [2592000, "month"],
+      [86400, "day"],
+      [3600, "hour"],
+      [60, "minute"],
+      [1, "second"],
+    ] as const;
     const [size, unit] = units.find(([size]) => Math.abs(seconds) >= size) || units[units.length - 1];
-    return new Intl.NumberFormat(language, { style: "unit", unit, unitDisplay: "long" }).format(Math.floor(Math.abs(seconds) / size));
+    return new Intl.NumberFormat(language, { style: "unit", unit, unitDisplay: "long" }).format(
+      Math.floor(Math.abs(seconds) / size),
+    );
   };
 
   if (status === "on_hold" && onHoldDuration) {
     return (
       <span className={cn("text-[11px] text-muted-foreground flex items-center gap-1", className)}>
         <Clock className="size-3 shrink-0 opacity-70" />
-        <span>{durationLabel(onHoldDuration)} ({t("on_hold", { defaultValue: "on hold" })})</span>
+        <span>
+          {durationLabel(onHoldDuration)} ({t("on_hold", { defaultValue: "on hold" })})
+        </span>
       </span>
     );
   }
@@ -206,7 +199,7 @@ export function ExpiryInfo({
       className={cn(
         "text-[11px] flex items-center gap-1 whitespace-nowrap",
         isExpired ? "text-destructive font-medium" : "text-muted-foreground",
-        className
+        className,
       )}
     >
       <Clock className="size-3 shrink-0 opacity-70" />
@@ -233,9 +226,12 @@ export const ActionButtons: FC<ActionButtonsProps> = ({ user, className }) => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => () => {
-    if (copyTimer.current) clearTimeout(copyTimer.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (copyTimer.current) clearTimeout(copyTimer.current);
+    },
+    [],
+  );
 
   const onCopy = (index: number, success: boolean) => {
     if (!success) {
@@ -250,28 +246,42 @@ export const ActionButtons: FC<ActionButtonsProps> = ({ user, className }) => {
   const actions = [
     { label: t("usersTable.copyLink"), icon: Link2, text: subUrl },
     { label: t("usersTable.copyConfigs"), icon: Copy, text: proxyLinks },
-    { label: t("usersTable.qrCode", { defaultValue: "QR code" }), icon: QrCode,
-      onClick: () => { setQRCode(user.links); setSubLink(user.subscription_url); } },
-    { label: t("userDialog.editUser", { defaultValue: "Edit user" }), icon: Pencil,
-      onClick: () => onEditingUser(user) },
+    {
+      label: t("usersTable.qrCode", { defaultValue: "QR code" }),
+      icon: QrCode,
+      onClick: () => {
+        setQRCode(user.links);
+        setSubLink(user.subscription_url);
+      },
+    },
+    {
+      label: t("userDialog.editUser", { defaultValue: "Edit user" }),
+      icon: Pencil,
+      onClick: () => onEditingUser(user),
+    },
   ];
 
   return (
-    <div className={cn("flex items-center justify-end gap-1", className)}
-      onClick={(event) => event.stopPropagation()}>
+    <div className={cn("flex items-center justify-end gap-1", className)} onClick={(event) => event.stopPropagation()}>
       {actions.map((action, index) => {
         const copied = copiedIndex === index;
         const Icon = copied ? Check : action.icon;
         const trigger = (
-          <TooltipTrigger render={
-            <Button type="button" variant="ghost" size="icon-sm"
-              aria-label={`${action.label}: ${user.username}`}
-              disabled={action.text !== undefined && !action.text}
-              className="size-9 text-muted-foreground hover:text-foreground"
-              onClick={action.onClick}>
-              <Icon aria-hidden="true" className={cn("size-4", copied && "text-success")} />
-            </Button>
-          } />
+          <TooltipTrigger
+            render={
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label={`${action.label}: ${user.username}`}
+                disabled={action.text !== undefined && !action.text}
+                className="size-9 text-muted-foreground hover:text-foreground"
+                onClick={action.onClick}
+              >
+                <Icon aria-hidden="true" className={cn("size-4", copied && "text-success")} />
+              </Button>
+            }
+          />
         );
         return (
           <Tooltip key={action.label}>
@@ -279,7 +289,9 @@ export const ActionButtons: FC<ActionButtonsProps> = ({ user, className }) => {
               <CopyToClipboard text={action.text} onCopy={(_text, success) => onCopy(index, success)}>
                 {trigger}
               </CopyToClipboard>
-            ) : trigger}
+            ) : (
+              trigger
+            )}
             <TooltipContent className="rounded-none">{copied ? t("usersTable.copied") : action.label}</TooltipContent>
           </Tooltip>
         );
@@ -309,14 +321,16 @@ export function UsernameHeader() {
   const isActive = filters.sort === "username" || filters.sort === "-username";
 
   return (
-    <Button variant="ghost" size="sm"
+    <Button
+      variant="ghost"
+      size="sm"
       type="button"
       onClick={handleSort}
       className={cn(
         "inline-flex items-center gap-1.5 text-xs font-semibold rounded-none px-1.5 py-1 transition-colors cursor-pointer select-none",
         isActive
           ? "text-foreground font-bold bg-primary/10"
-          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
       )}
     >
       <span>{t("username")}</span>
@@ -342,7 +356,8 @@ export function StatusHeader() {
 
   const handleStatusFilter = (status?: string) => {
     onFilterChange({
-      status: status && status.length > 0 ? (status as "active" | "disabled" | "limited" | "expired" | "on_hold") : undefined,
+      status:
+        status && status.length > 0 ? (status as "active" | "disabled" | "limited" | "expired" | "on_hold") : undefined,
       offset: 0,
     });
   };
@@ -358,7 +373,7 @@ export function StatusHeader() {
             "inline-flex items-center gap-1.5 text-xs font-semibold rounded-none px-2 py-1 transition-colors outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer",
             hasFilter
               ? "bg-primary/10 text-foreground hover:bg-primary/20 font-bold"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
           )}
         >
           <Filter className="size-3" />
@@ -386,7 +401,7 @@ export function StatusHeader() {
                   st === "on_hold" && "bg-purple-500",
                   st === "disabled" && "bg-neutral-400",
                   st === "limited" && "bg-destructive",
-                  st === "expired" && "bg-warning"
+                  st === "expired" && "bg-warning",
                 )}
               />
               <span>{t(`status.${st}`, { defaultValue: st })}</span>
@@ -397,14 +412,16 @@ export function StatusHeader() {
 
       <span className="text-muted-foreground/40">|</span>
 
-      <Button variant="ghost" size="sm"
+      <Button
+        variant="ghost"
+        size="sm"
         type="button"
         onClick={handleSort}
         className={cn(
           "inline-flex items-center gap-1 text-xs font-semibold rounded-none px-1.5 py-1 transition-colors cursor-pointer",
           filters.sort.includes("expire")
             ? "text-foreground font-bold bg-primary/10"
-            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
         )}
       >
         <span>{t("expire", { defaultValue: "Expiry" })}</span>
@@ -432,14 +449,16 @@ export function DataUsageHeader() {
   const isActive = filters.sort === "used_traffic" || filters.sort === "-used_traffic";
 
   return (
-    <Button variant="ghost" size="sm"
+    <Button
+      variant="ghost"
+      size="sm"
       type="button"
       onClick={handleSort}
       className={cn(
         "inline-flex items-center gap-1.5 text-xs font-semibold rounded-none px-1.5 py-1 transition-colors cursor-pointer select-none",
         isActive
           ? "text-foreground font-bold bg-primary/10"
-          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
       )}
     >
       <span>{t("usersTable.dataUsage")}</span>
@@ -455,9 +474,18 @@ function ActionsHeader() {
 
 function UsernameButton({ user }: { user: User }) {
   const onEditingUser = useDashboard((state) => state.onEditingUser);
-  return <Button variant="link" className="h-auto max-w-56 justify-start p-0 text-sm text-foreground" onClick={(event) => { event.stopPropagation(); onEditingUser(user); }}>
-    <span className="truncate">{user.username}</span>
-  </Button>;
+  return (
+    <Button
+      variant="link"
+      className="h-auto max-w-56 justify-start p-0 text-sm text-foreground"
+      onClick={(event) => {
+        event.stopPropagation();
+        onEditingUser(user);
+      }}
+    >
+      <span className="truncate">{user.username}</span>
+    </Button>
+  );
 }
 
 export const columns = helper.columns([
@@ -474,7 +502,14 @@ export const columns = helper.columns([
               <OnlineStatus lastOnline={user.online_at} className="m-0 text-[11px]" />
               {user.note && (
                 <Tooltip>
-                  <TooltipTrigger render={<span tabIndex={0} className="max-w-[140px] truncate text-[11px] text-muted-foreground/70 focus-visible:rounded-none focus-visible:outline-2 focus-visible:outline-ring" />}>
+                  <TooltipTrigger
+                    render={
+                      <span
+                        tabIndex={0}
+                        className="max-w-[140px] truncate text-[11px] text-muted-foreground/70 focus-visible:rounded-none focus-visible:outline-2 focus-visible:outline-ring"
+                      />
+                    }
+                  >
                     • {user.note}
                   </TooltipTrigger>
                   <TooltipContent className="rounded-none break-words">{user.note}</TooltipContent>
@@ -494,11 +529,7 @@ export const columns = helper.columns([
       return (
         <div className="flex flex-col gap-1 py-1">
           <StatusBadge status={user.status} showDetail={true} />
-          <ExpiryInfo
-            expire={user.expire}
-            status={user.status}
-            onHoldDuration={user.on_hold_expire_duration}
-          />
+          <ExpiryInfo expire={user.expire} status={user.status} onHoldDuration={user.on_hold_expire_duration} />
         </div>
       );
     },

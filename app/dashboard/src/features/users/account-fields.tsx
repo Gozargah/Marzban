@@ -21,7 +21,17 @@ import type { FormType } from "./form";
 
 const calendarLocales: Record<string, typeof enUS> = { en: enUS, fa: faIR, ru, zh: zhCN };
 
-export function UserAccountFields({ fieldId, disabled, isEditing, language }: { fieldId: (name: string) => string; disabled: boolean; isEditing: boolean; language: string }) {
+export function UserAccountFields({
+  fieldId,
+  disabled,
+  isEditing,
+  language,
+}: {
+  fieldId: (name: string) => string;
+  disabled: boolean;
+  isEditing: boolean;
+  language: string;
+}) {
   const form = useFormContext<FormType>();
   const { t } = useTranslation();
   const [dataLimit, userStatus] = useWatch({ control: form.control, name: ["data_limit", "status"] });
@@ -29,7 +39,10 @@ export function UserAccountFields({ fieldId, disabled, isEditing, language }: { 
   const isOnHold = userStatus === "on_hold";
   const createRandomUsername = () => {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    const username = Array.from(crypto.getRandomValues(new Uint8Array(6)), (value) => characters[value % characters.length]).join("");
+    const username = Array.from(
+      crypto.getRandomValues(new Uint8Array(6)),
+      (value) => characters[value % characters.length],
+    ).join("");
     form.setValue("username", username, { shouldDirty: true, shouldValidate: true });
   };
   return (
@@ -88,7 +101,9 @@ export function UserAccountFields({ fieldId, disabled, isEditing, language }: { 
               />
             )}
           </div>
-          <FieldError id={fieldId("username-error")}>{form.formState.errors.username?.message && t(form.formState.errors.username.message)}</FieldError>
+          <FieldError id={fieldId("username-error")}>
+            {form.formState.errors.username?.message && t(form.formState.errors.username.message)}
+          </FieldError>
         </Field>
         {!isEditing && (
           <Field className="w-auto shrink-0">
@@ -133,8 +148,12 @@ export function UserAccountFields({ fieldId, disabled, isEditing, language }: { 
                 GB
               </span>
             </div>
-            <FieldDescription id={fieldId("data-limit-description")}>{t("userDialog.unlimitedHint", { defaultValue: "Leave empty for unlimited traffic." })}</FieldDescription>
-            <FieldError id={fieldId("data-limit-error")}>{fieldState.error?.message && t(fieldState.error.message)}</FieldError>
+            <FieldDescription id={fieldId("data-limit-description")}>
+              {t("userDialog.unlimitedHint", { defaultValue: "Leave empty for unlimited traffic." })}
+            </FieldDescription>
+            <FieldError id={fieldId("data-limit-error")}>
+              {fieldState.error?.message && t(fieldState.error.message)}
+            </FieldError>
           </Field>
         )}
       />
@@ -154,11 +173,7 @@ export function UserAccountFields({ fieldId, disabled, isEditing, language }: { 
           </select>
         </Field>
       )}
-      <Field
-        data-invalid={
-          !!(isOnHold ? form.formState.errors.on_hold_expire_duration : form.formState.errors.expire)
-        }
-      >
+      <Field data-invalid={!!(isOnHold ? form.formState.errors.on_hold_expire_duration : form.formState.errors.expire)}>
         <FieldLabel htmlFor={fieldId(isOnHold ? "on_hold_expire_duration" : "expire")}>
           {isOnHold ? t("userDialog.onHoldExpireDuration") : t("userDialog.expiryDate")}
         </FieldLabel>
@@ -188,7 +203,9 @@ export function UserAccountFields({ fieldId, disabled, isEditing, language }: { 
                     {t("userDialog.days")}
                   </span>
                 </div>
-                <FieldError id={fieldId("duration-error")}>{fieldState.error?.message && t(fieldState.error.message)}</FieldError>
+                <FieldError id={fieldId("duration-error")}>
+                  {fieldState.error?.message && t(fieldState.error.message)}
+                </FieldError>
               </>
             )}
           />
@@ -259,11 +276,11 @@ export function UserAccountFields({ fieldId, disabled, isEditing, language }: { 
                     </PopoverContent>
                   </Popover>
                   {!!field.value && (
-                    <FieldDescription id={fieldId("expiry-description")}>
-                      {t(status, { time })}
-                    </FieldDescription>
+                    <FieldDescription id={fieldId("expiry-description")}>{t(status, { time })}</FieldDescription>
                   )}
-                  <FieldError id={fieldId("expire-error")}>{fieldState.error?.message && t(fieldState.error.message)}</FieldError>
+                  <FieldError id={fieldId("expire-error")}>
+                    {fieldState.error?.message && t(fieldState.error.message)}
+                  </FieldError>
                 </>
               );
             }}
@@ -280,7 +297,9 @@ export function UserAccountFields({ fieldId, disabled, isEditing, language }: { 
           aria-describedby={form.formState.errors.note ? fieldId("note-error") : undefined}
           {...form.register("note")}
         />
-        <FieldError id={fieldId("note-error")}>{form.formState.errors.note?.message && t(form.formState.errors.note.message)}</FieldError>
+        <FieldError id={fieldId("note-error")}>
+          {form.formState.errors.note?.message && t(form.formState.errors.note.message)}
+        </FieldError>
       </Field>
     </FieldSet>
   );

@@ -16,10 +16,13 @@ test.each(cases)("%s confirms the intended action", async (file, exportName, sel
   const mutation = mock(async () => {});
   const store = create(() => ({
     [selected]: selected === "isResetingAllUsage" ? true : user,
-    [action]: mutation, onResetAllUsage: mock(() => {}), onDeletingUser: mock(() => {}),
+    [action]: mutation,
+    onResetAllUsage: mock(() => {}),
+    onDeletingUser: mock(() => {}),
   }));
   const exports = loadSource(`components/dashboard/${file}.tsx`, {
-    ...localeAdapter, "@/contexts/dashboard-context": { useDashboard: store },
+    ...localeAdapter,
+    "@/contexts/dashboard-context": { useDashboard: store },
     sonner: { toast: { success: mock(() => {}) } },
   });
   const Component = exports[exportName];
@@ -33,12 +36,15 @@ test("delete node invalidates the node cache and clears selection", async () => 
   const setDeletingNode = mock((_node: unknown) => {});
   const deleteCallback = mock(() => {});
   const store = create(() => ({ deletingNode: { id: 7, name: "Edge" }, deleteNode, setDeletingNode }));
-  const { DeleteNodeModal } = loadSource<typeof import("../../src/components/dashboard/delete-node-modal")>("components/dashboard/delete-node-modal.tsx", {
-    ...localeAdapter,
-    "@/contexts/nodes-context": { useNodes: store, FetchNodesQueryKey: "nodes" },
-    "./delete-user-modal": { DeleteIcon: () => <span /> },
-    sonner: { toast: { success: mock(() => {}) } },
-  });
+  const { DeleteNodeModal } = loadSource<typeof import("../../src/components/dashboard/delete-node-modal")>(
+    "components/dashboard/delete-node-modal.tsx",
+    {
+      ...localeAdapter,
+      "@/contexts/nodes-context": { useNodes: store, FetchNodesQueryKey: "nodes" },
+      "./delete-user-modal": { DeleteIcon: () => <span /> },
+      sonner: { toast: { success: mock(() => {}) } },
+    },
+  );
   const { client } = renderFrontend(<DeleteNodeModal deleteCallback={deleteCallback} />);
   client.setQueryData(["nodes"], [{ id: 7 }]);
   fireEvent.click(await screen.findByRole("button", { name: "Delete" }));

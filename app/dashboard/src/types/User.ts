@@ -1,12 +1,4 @@
-export type Status =
-  | "active"
-  | "disabled"
-  | "limited"
-  | "expired"
-  | "on_hold"
-  | "error"
-  | "connecting"
-  | "connected";
+export type Status = "active" | "disabled" | "limited" | "expired" | "on_hold" | "error" | "connecting" | "connected";
 export type ProxyKeys = ("vmess" | "vless" | "trojan" | "shadowsocks")[];
 export type ProxyType = {
   vmess?: {
@@ -25,12 +17,7 @@ export type ProxyType = {
   };
 };
 
-export type DataLimitResetStrategy =
-  | "no_reset"
-  | "day"
-  | "week"
-  | "month"
-  | "year";
+export type DataLimitResetStrategy = "no_reset" | "day" | "week" | "month" | "year";
 
 export type UserInbounds = {
   [key: string]: string[];
@@ -70,7 +57,7 @@ export type UserApi = {
   is_sudo: boolean;
   telegram_id: number | string;
   username: string;
-}
+};
 
 export type UseGetUserReturn = {
   userData: UserApi;
@@ -78,4 +65,4 @@ export type UseGetUserReturn = {
   getUserIsSuccess: boolean;
   getUserIsError: boolean;
   getUserError: Error | null;
-}
+};

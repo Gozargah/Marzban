@@ -6,6 +6,8 @@ export function inboundsOptions(request: Transport) {
   return queryOptions({
     queryKey: queryKeys.inbounds,
     queryFn: ({ signal }) => request<Record<ProtocolType, InboundType[]>>("/inbounds", { signal, retry: 0 }),
-    staleTime: 30_000, retry: false, refetchOnWindowFocus: false,
+    staleTime: 30_000,
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 }

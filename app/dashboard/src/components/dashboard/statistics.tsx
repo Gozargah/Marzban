@@ -32,7 +32,10 @@ function StatisticCard({ title, content, icon: Icon }: StatisticCardProps) {
       <CardContent className="p-6">
         <dl className="flex flex-wrap items-center justify-between gap-4">
           <dt className="flex items-center gap-3 text-sm font-medium text-muted-foreground">
-            <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-text ring-1 ring-primary/20">
+            <span
+              aria-hidden="true"
+              className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-text ring-1 ring-primary/20"
+            >
               <Icon className="size-5" />
             </span>
             {title}
@@ -57,7 +60,11 @@ export function Statistics({ className, ...props }: ComponentProps<"section">) {
     retry: false,
   });
   const memory = data ? formatBytes(data.mem_used, 1, true) : undefined;
-  const placeholder = <span className="text-muted-foreground" aria-hidden="true">—</span>;
+  const placeholder = (
+    <span className="text-muted-foreground" aria-hidden="true">
+      —
+    </span>
+  );
 
   return (
     <section
@@ -67,18 +74,29 @@ export function Statistics({ className, ...props }: ComponentProps<"section">) {
       className={cn("mt-4 space-y-4", className)}
       {...props}
     >
-      <QueryFeedback loading={isPending} refreshing={isFetching && !isPending} failed={isError} updatedAt={dataUpdatedAt} offline={isPaused}
-        retry={() => void refetch()} message={t("statistics.loadError", { defaultValue: "Unable to refresh statistics. Please try again." })} />
+      <QueryFeedback
+        loading={isPending}
+        refreshing={isFetching && !isPending}
+        failed={isError}
+        updatedAt={dataUpdatedAt}
+        offline={isPaused}
+        retry={() => void refetch()}
+        message={t("statistics.loadError", { defaultValue: "Unable to refresh statistics. Please try again." })}
+      />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <StatisticCard
           title={t("activeUsers")}
           icon={Users}
-          content={data ? (
-            <span className="inline-flex flex-wrap items-baseline gap-2">
-              <span>{numberWithCommas(data.users_active)}</span>
-              <span className="text-lg font-normal text-muted-foreground">/ {numberWithCommas(data.total_user)}</span>
-            </span>
-          ) : placeholder}
+          content={
+            data ? (
+              <span className="inline-flex flex-wrap items-baseline gap-2">
+                <span>{numberWithCommas(data.users_active)}</span>
+                <span className="text-lg font-normal text-muted-foreground">/ {numberWithCommas(data.total_user)}</span>
+              </span>
+            ) : (
+              placeholder
+            )
+          }
         />
         <StatisticCard
           title={t("dataUsage")}
@@ -88,12 +106,18 @@ export function Statistics({ className, ...props }: ComponentProps<"section">) {
         <StatisticCard
           title={t("memoryUsage")}
           icon={MemoryStick}
-          content={data && memory ? (
-            <span className="inline-flex flex-wrap items-baseline gap-2">
-              <span>{memory[0]}</span>
-              <span className="text-lg font-normal text-muted-foreground">{memory[1]} / {formatBytes(data.mem_total, 1)}</span>
-            </span>
-          ) : placeholder}
+          content={
+            data && memory ? (
+              <span className="inline-flex flex-wrap items-baseline gap-2">
+                <span>{memory[0]}</span>
+                <span className="text-lg font-normal text-muted-foreground">
+                  {memory[1]} / {formatBytes(data.mem_total, 1)}
+                </span>
+              </span>
+            ) : (
+              placeholder
+            )
+          }
         />
       </div>
     </section>

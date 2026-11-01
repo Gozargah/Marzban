@@ -6,7 +6,14 @@ import { createLogBuffer } from "../../src/utils/log-buffer";
 import { createLatestRequest } from "../../src/utils/latest-request";
 
 describe("traffic formatting", () => {
-  test.each([[0, "0 B"], [1, "1 B"], [1023, "1023 B"], [1024, "1 KB"], [1536, "1.5 KB"], [1073741824, "1 GB"]])("%s bytes -> %s", (bytes, result) => {
+  test.each([
+    [0, "0 B"],
+    [1, "1 B"],
+    [1023, "1023 B"],
+    [1024, "1 KB"],
+    [1536, "1.5 KB"],
+    [1073741824, "1 GB"],
+  ])("%s bytes -> %s", (bytes, result) => {
     expect(formatBytes(bytes as number)).toBe(result);
   });
   test("precision and chart array output", () => {
@@ -14,7 +21,12 @@ describe("traffic formatting", () => {
     expect(formatBytes(1536, -1)).toBe("2 KB");
     expect(formatBytes(1536, 2, true)).toEqual([1.5, "KB"]);
   });
-  test.each([[0, "0"], [1234567, "1,234,567"], [-1234, "-1,234"], [1234.5, "1,234.5"]])("group %s", (value, result) => {
+  test.each([
+    [0, "0"],
+    [1234567, "1,234,567"],
+    [-1234, "-1,234"],
+    [1234.5, "1,234.5"],
+  ])("group %s", (value, result) => {
     expect(numberWithCommas(value as number)).toBe(result);
   });
 });
@@ -23,7 +35,12 @@ describe("expiry", () => {
   test.each([null, undefined])("unlimited expiry %s", (expiry) => {
     expect(relativeExpiryDate(expiry)).toEqual({ status: "", time: "" });
   });
-  test.each([[86400, "expires", "1 day"], [-172800, "expired", "2 days"], [3660, "expires", "1 hour, 1 min"], [0, "expired", ""]])("relative offset %s", (offset, status, time) => {
+  test.each([
+    [86400, "expires", "1 day"],
+    [-172800, "expired", "2 days"],
+    [3660, "expires", "1 hour, 1 min"],
+    [0, "expired", ""],
+  ])("relative offset %s", (offset, status, time) => {
     setSystemTime(new Date("2026-01-15T12:00:00Z"));
     expect(relativeExpiryDate(Date.now() / 1000 + Number(offset))).toEqual({ status, time });
   });

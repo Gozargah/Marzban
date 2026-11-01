@@ -1,20 +1,19 @@
 import { ProxyHostSecurity } from "types/ProxyHosts";
 
-export const proxyHostSecurity: { title: string; value: ProxyHostSecurity }[] =
-  [
-    {
-      title: "Inbound's default",
-      value: "inbound_default",
-    },
-    {
-      title: "TLS",
-      value: "tls",
-    },
-    {
-      title: "None",
-      value: "none",
-    },
-  ];
+export const proxyHostSecurity: { title: string; value: ProxyHostSecurity }[] = [
+  {
+    title: "Inbound's default",
+    value: "inbound_default",
+  },
+  {
+    title: "TLS",
+    value: "tls",
+  },
+  {
+    title: "None",
+    value: "none",
+  },
+];
 
 export const proxyALPN: { title: string; value: string }[] = [
   {
@@ -52,18 +51,10 @@ export const proxyFingerprint: { title: string; value: string }[] = [
     title: "",
     value: "",
   },
-  ...[
-    "chrome",
-    "firefox",
-    "safari",
-    "ios",
-    "android",
-    "edge",
-    "360",
-    "qq",
-    "random",
-    "randomized",
-  ].map((key) => ({ title: key, value: key })),
+  ...["chrome", "firefox", "safari", "ios", "android", "edge", "360", "qq", "random", "randomized"].map((key) => ({
+    title: key,
+    value: key,
+  })),
 ];
 
 export const XTLSFlows = [
@@ -71,8 +62,4 @@ export const XTLSFlows = [
   { title: "xtls-rprx-vision", value: "xtls-rprx-vision" },
 ];
 
-export const shadowsocksMethods = [
-  "aes-128-gcm",
-  "aes-256-gcm",
-  "chacha20-ietf-poly1305",
-];
+export const shadowsocksMethods = ["aes-128-gcm", "aes-256-gcm", "chacha20-ietf-poly1305"];

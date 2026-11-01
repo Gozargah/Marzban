@@ -11,7 +11,11 @@ const statusConfig: Record<NonNullable<NodeType["status"]>, { icon: LucideIcon; 
   error: { icon: AlertCircle, className: "bg-destructive/10 text-destructive" },
 };
 
-export function NodeModalStatusBadge({ status, compact = false, className }: {
+export function NodeModalStatusBadge({
+  status,
+  compact = false,
+  className,
+}: {
   status: NonNullable<NodeType["status"]>;
   compact?: boolean;
   className?: string;
@@ -20,8 +24,19 @@ export function NodeModalStatusBadge({ status, compact = false, className }: {
   const config = statusConfig[status] ?? statusConfig.error;
   const Icon = config.icon;
   return (
-    <Badge variant="secondary" className={cn("gap-1.5 font-medium capitalize", config.className, compact ? "px-2 py-0.5 text-[0.7rem]" : "px-2.5 py-1 text-xs", className)}>
-      <Icon aria-hidden="true" className={cn("size-3 shrink-0", status === "connecting" && "motion-safe:animate-spin")} />
+    <Badge
+      variant="secondary"
+      className={cn(
+        "gap-1.5 font-medium capitalize",
+        config.className,
+        compact ? "px-2 py-0.5 text-[0.7rem]" : "px-2.5 py-1 text-xs",
+        className,
+      )}
+    >
+      <Icon
+        aria-hidden="true"
+        className={cn("size-3 shrink-0", status === "connecting" && "motion-safe:animate-spin")}
+      />
       {t(`nodeModal.status.${status}`)}
     </Badge>
   );

@@ -10,8 +10,22 @@ function setup(patch = {}) {
   const onFilterChange = mock((_value: any) => {});
   const refetchUsers = mock(() => {});
   const onCreateUser = mock((_open: boolean) => {});
-  const store = create(subscribeWithSelector(() => ({ users: { users: [], total: 0 }, filters: { search: "", offset: 20 }, loading: false, usersError: false, onFilterChange, refetchUsers, onCreateUser, ...patch })));
-  const { Filters } = loadSource<typeof import("../../src/components/dashboard/filters")>("components/dashboard/filters.tsx", { ...usersAdapter(store), "@/contexts/dashboard-context": { useDashboard: store } });
+  const store = create(
+    subscribeWithSelector(() => ({
+      users: { users: [], total: 0 },
+      filters: { search: "", offset: 20 },
+      loading: false,
+      usersError: false,
+      onFilterChange,
+      refetchUsers,
+      onCreateUser,
+      ...patch,
+    })),
+  );
+  const { Filters } = loadSource<typeof import("../../src/components/dashboard/filters")>(
+    "components/dashboard/filters.tsx",
+    { ...usersAdapter(store), "@/contexts/dashboard-context": { useDashboard: store } },
+  );
   return { ...renderFrontend(<Filters />), store, onFilterChange, refetchUsers, onCreateUser };
 }
 

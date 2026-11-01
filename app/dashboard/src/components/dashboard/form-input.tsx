@@ -16,7 +16,9 @@ export const FormInput = forwardRef<
         ref={ref}
         id={inputId}
         aria-invalid={!!error}
-        aria-describedby={[description && `${inputId}-description`, error && `${inputId}-error`].filter(Boolean).join(" ") || undefined}
+        aria-describedby={
+          [description && `${inputId}-description`, error && `${inputId}-error`].filter(Boolean).join(" ") || undefined
+        }
         {...props}
       />
       {description && <FieldDescription id={`${inputId}-description`}>{description}</FieldDescription>}

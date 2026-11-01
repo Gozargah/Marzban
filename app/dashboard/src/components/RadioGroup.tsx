@@ -34,15 +34,9 @@ const InboundCard: FC<{
       )}
     >
       <div className="flex items-center gap-2 min-w-0">
-        <Checkbox
-          checked={isChecked}
-          disabled={disabled}
-          onCheckedChange={onToggle}
-          className="pointer-events-none"
-        />
+        <Checkbox checked={isChecked} disabled={disabled} onCheckedChange={onToggle} className="pointer-events-none" />
         <span className="truncate uppercase font-medium">
-          {inbound.tag}{" "}
-          <span className="normal-case text-muted-foreground">({inbound.network})</span>
+          {inbound.tag} <span className="normal-case text-muted-foreground">({inbound.network})</span>
         </span>
       </div>
       {inbound.tls && inbound.tls !== "none" && (
@@ -103,19 +97,14 @@ const RadioCard: FC<{
     <div
       className={cn(
         "rounded-lg border transition-all overflow-hidden",
-        isSelected
-          ? "border-primary/50 bg-card shadow-xs"
-          : "border-border bg-card/60 hover:bg-card",
+        isSelected ? "border-primary/50 bg-card shadow-xs" : "border-border bg-card/60 hover:bg-card",
         shouldBeDisabled && "opacity-50 pointer-events-none",
       )}
     >
       {/* Protocol header */}
       <div className="relative flex items-center justify-between p-3 select-none">
         {isPartialSelected && (
-          <span
-            className="absolute top-2 start-2 size-1.5 rounded-full bg-amber-500"
-            title="Partially selected"
-          />
+          <span className="absolute top-2 start-2 size-1.5 rounded-full bg-amber-500" title="Partially selected" />
         )}
         <label
           onClick={(e) => {
@@ -132,9 +121,7 @@ const RadioCard: FC<{
             className="pointer-events-none"
           />
           <div className="flex flex-col min-w-0">
-            <span className="text-sm font-semibold capitalize text-foreground leading-tight">
-              {title}
-            </span>
+            <span className="text-sm font-semibold capitalize text-foreground leading-tight">{title}</span>
             <span className="text-xs text-muted-foreground truncate">{description}</span>
           </div>
         </label>
@@ -237,9 +224,7 @@ const RadioCard: FC<{
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs font-medium text-muted-foreground">
-                  {t("userDialog.method")}
-                </Label>
+                <Label className="text-xs font-medium text-muted-foreground">{t("userDialog.method")}</Label>
                 <select
                   className="h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-xs text-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 cursor-pointer"
                   {...form.register("proxies.shadowsocks.method")}
@@ -269,57 +254,53 @@ export type RadioGroupProps = ControllerRenderProps & {
   disabled?: boolean;
 };
 
-export const RadioGroup = forwardRef<any, RadioGroupProps>(
-  ({ name, list, onChange, disabled, value }, ref) => {
-    const form = useFormContext();
-    const { inbounds } = useInbounds();
-    const [expandedAccordions, setExpandedAccordions] = useState<string[]>([]);
-    const selectedValues: string[] = Array.isArray(value) ? value : [];
+export const RadioGroup = forwardRef<any, RadioGroupProps>(({ name, list, onChange, disabled, value }, ref) => {
+  const form = useFormContext();
+  const { inbounds } = useInbounds();
+  const [expandedAccordions, setExpandedAccordions] = useState<string[]>([]);
+  const selectedValues: string[] = Array.isArray(value) ? value : [];
 
-    const toggleAccordion = (title: string) => {
-      setExpandedAccordions((prev) =>
-        prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title],
+  const toggleAccordion = (title: string) => {
+    setExpandedAccordions((prev) => (prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title]));
+  };
+
+  const handleToggleSelect = (title: string) => {
+    let nextValue: string[];
+    if (selectedValues.includes(title)) {
+      nextValue = selectedValues.filter((v) => v !== title);
+      setExpandedAccordions((prev) => prev.filter((t) => t !== title));
+    } else {
+      nextValue = [...selectedValues, title];
+      // Activate all inbounds for this protocol
+      const defaultInbounds = inbounds.get(title as ProtocolType) || [];
+      form.setValue(
+        `inbounds.${title}`,
+        defaultInbounds.map((i) => i.tag),
       );
-    };
+    }
+    onChange({
+      target: {
+        value: nextValue,
+        name,
+      },
+    });
+  };
 
-    const handleToggleSelect = (title: string) => {
-      let nextValue: string[];
-      if (selectedValues.includes(title)) {
-        nextValue = selectedValues.filter((v) => v !== title);
-        setExpandedAccordions((prev) => prev.filter((t) => t !== title));
-      } else {
-        nextValue = [...selectedValues, title];
-        // Activate all inbounds for this protocol
-        const defaultInbounds = inbounds.get(title as ProtocolType) || [];
-        form.setValue(
-          `inbounds.${title}`,
-          defaultInbounds.map((i) => i.tag),
-        );
-      }
-      onChange({
-        target: {
-          value: nextValue,
-          name,
-        },
-      });
-    };
-
-    return (
-      <div ref={ref} className="grid grid-cols-1 gap-2.5">
-        {list.map((item) => (
-          <RadioCard
-            key={item.title}
-            title={item.title}
-            description={item.description}
-            isSelected={selectedValues.includes(item.title)}
-            isExpanded={expandedAccordions.includes(item.title)}
-            onToggleSelect={() => handleToggleSelect(item.title)}
-            onToggleExpand={() => toggleAccordion(item.title)}
-            disabled={disabled}
-          />
-        ))}
-      </div>
-    );
-  },
-);
+  return (
+    <div ref={ref} className="grid grid-cols-1 gap-2.5">
+      {list.map((item) => (
+        <RadioCard
+          key={item.title}
+          title={item.title}
+          description={item.description}
+          isSelected={selectedValues.includes(item.title)}
+          isExpanded={expandedAccordions.includes(item.title)}
+          onToggleSelect={() => handleToggleSelect(item.title)}
+          onToggleExpand={() => toggleAccordion(item.title)}
+          disabled={disabled}
+        />
+      ))}
+    </div>
+  );
+});
 RadioGroup.displayName = "RadioGroup";

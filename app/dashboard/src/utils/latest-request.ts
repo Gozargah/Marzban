@@ -9,7 +9,9 @@ export function createLatestRequest() {
       return {
         signal: current.signal,
         isCurrent: () => controller === current && !current.signal.aborted,
-        finish: () => { if (controller === current) controller = undefined; },
+        finish: () => {
+          if (controller === current) controller = undefined;
+        },
       };
     },
     cancel() {

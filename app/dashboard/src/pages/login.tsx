@@ -81,9 +81,10 @@ export function Login() {
       const detail: unknown = error instanceof FetchError ? error.data?.detail : undefined;
       setError("root.server", {
         type: "server",
-        message: typeof detail === "string" && detail.trim()
-          ? detail
-          : t("login.error", { defaultValue: "Unable to sign in. Please try again." }),
+        message:
+          typeof detail === "string" && detail.trim()
+            ? detail
+            : t("login.error", { defaultValue: "Unable to sign in. Please try again." }),
       });
     }
   }
@@ -108,11 +109,7 @@ export function Login() {
             <p className="text-muted-foreground">{t("login.welcomeBack")}</p>
           </div>
 
-          <form
-            onSubmit={handleSubmit(login)}
-            aria-busy={isPending}
-            className="mx-auto mt-8 w-full max-w-[300px]"
-          >
+          <form onSubmit={handleSubmit(login)} aria-busy={isPending} className="mx-auto mt-8 w-full max-w-[300px]">
             <FieldGroup>
               <Field data-invalid={!!errors.username}>
                 <FieldLabel htmlFor="login-username">{t("username")}</FieldLabel>
@@ -127,7 +124,6 @@ export function Login() {
                   placeholder={t("username")}
                   aria-invalid={!!errors.username}
                   aria-describedby={errors.username ? "login-username-error" : undefined}
-
                 />
                 {errors.username?.message && (
                   <FieldError id="login-username-error">{t(errors.username.message)}</FieldError>

@@ -21,16 +21,31 @@ try {
     download(name).then((response) => response.arrayBuffer()),
     download(`actionlint_${version}_checksums.txt`).then((response) => response.text()),
   ]);
-  const expected = checksums.split("\n").find((line) => line.trim().split(/\s+/)[1] === name)?.split(/\s+/)[0];
-  if (!expected || new Bun.CryptoHasher("sha256").update(archive).digest("hex") !== expected) throw new Error("actionlint checksum verification failed");
+  const expected = checksums
+    .split("\n")
+    .find((line) => line.trim().split(/\s+/)[1] === name)
+    ?.split(/\s+/)[0];
+  if (!expected || new Bun.CryptoHasher("sha256").update(archive).digest("hex") !== expected)
+    throw new Error("actionlint checksum verification failed");
   const archivePath = resolve(temporary, name);
   await Bun.write(archivePath, archive);
-  const extract = Bun.spawnSync(["tar", "-xzf", archivePath, "-C", temporary, "actionlint"], { stdout: "inherit", stderr: "inherit" });
-  if (extract.exitCode !== 0) throw new Error("Could not extract actionlint");
-  const executable = resolve(temporary, "actionlint"); chmodSync(executable, 0o755);
-  const result = Bun.spawnSync([executable, "-shellcheck=", "-pyflakes=", ".github/workflows/frontend.yml", ".github/workflows/build.yml"], {
-    cwd: resolve(import.meta.dir, "../../.."), stdout: "inherit", stderr: "inherit",
+  const extract = Bun.spawnSync(["tar", "-xzf", archivePath, "-C", temporary, "actionlint"], {
+    stdout: "inherit",
+    stderr: "inherit",
   });
+  if (extract.exitCode !== 0) throw new Error("Could not extract actionlint");
+  const executable = resolve(temporary, "actionlint");
+  chmodSync(executable, 0o755);
+  const result = Bun.spawnSync(
+    [executable, "-shellcheck=", "-pyflakes=", ".github/workflows/frontend.yml", ".github/workflows/build.yml"],
+    {
+      cwd: resolve(import.meta.dir, "../../.."),
+      stdout: "inherit",
+      stderr: "inherit",
+    },
+  );
   if (result.exitCode !== 0) throw new Error("GitHub Actions workflow validation failed");
   console.log(`actionlint ${version}: frontend and release workflows passed`);
-} finally { rmSync(temporary, { recursive: true, force: true }); }
+} finally {
+  rmSync(temporary, { recursive: true, force: true });
+}

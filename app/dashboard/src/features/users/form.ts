@@ -75,7 +75,9 @@ const baseSchema = {
     .min(0)
     .or(z.number())
     .nullable()
-    .refine((value) => value === null || value === "" || (Number.isFinite(Number(value)) && Number(value) >= 0), { message: "userDialog.invalidDataLimit" })
+    .refine((value) => value === null || value === "" || (Number.isFinite(Number(value)) && Number(value) >= 0), {
+      message: "userDialog.invalidDataLimit",
+    })
     .transform((str) => {
       if (str) return Number((Number(str) * 1073741824).toFixed(5));
       return 0;
@@ -125,7 +127,11 @@ export function toUserCreate(values: FormType): UserCreate {
   return {
     ...rest,
     proxies: mergeProxies(selected_proxies, values.proxies),
-    data_limit_reset_strategy: values.data_limit && values.data_limit > 0 ? values.data_limit_reset_strategy : "no_reset",
-    status: values.status === "active" || values.status === "disabled" || values.status === "on_hold" ? values.status : "active",
+    data_limit_reset_strategy:
+      values.data_limit && values.data_limit > 0 ? values.data_limit_reset_strategy : "no_reset",
+    status:
+      values.status === "active" || values.status === "disabled" || values.status === "on_hold"
+        ? values.status
+        : "active",
   };
 }

@@ -16,43 +16,23 @@ export const relativeExpiryDate = (expiryDate: number | null | undefined) => {
     const duration = dayjs.duration(
       dayjs(expiryDate * 1000)
         .utc()
-        .diff(dayjs())
+        .diff(dayjs()),
     );
     if (duration.years() != 0) {
-      durationSlots.push(
-        Math.abs(duration.years()) +
-          " year" +
-          (Math.abs(duration.years()) != 1 ? "s" : "")
-      );
+      durationSlots.push(Math.abs(duration.years()) + " year" + (Math.abs(duration.years()) != 1 ? "s" : ""));
     }
     if (duration.months() != 0) {
-      durationSlots.push(
-        Math.abs(duration.months()) +
-          " month" +
-          (Math.abs(duration.months()) != 1 ? "s" : "")
-      );
+      durationSlots.push(Math.abs(duration.months()) + " month" + (Math.abs(duration.months()) != 1 ? "s" : ""));
     }
     if (duration.days() != 0) {
-      durationSlots.push(
-        Math.abs(duration.days()) +
-          " day" +
-          (Math.abs(duration.days()) != 1 ? "s" : "")
-      );
+      durationSlots.push(Math.abs(duration.days()) + " day" + (Math.abs(duration.days()) != 1 ? "s" : ""));
     }
     if (durationSlots.length === 0) {
       if (duration.hours() != 0) {
-        durationSlots.push(
-          Math.abs(duration.hours()) +
-            " hour" +
-            (Math.abs(duration.hours()) != 1 ? "s" : "")
-        );
+        durationSlots.push(Math.abs(duration.hours()) + " hour" + (Math.abs(duration.hours()) != 1 ? "s" : ""));
       }
       if (duration.minutes() != 0) {
-        durationSlots.push(
-          Math.abs(duration.minutes()) +
-            " min" +
-            (Math.abs(duration.minutes()) != 1 ? "s" : "")
-        );
+        durationSlots.push(Math.abs(duration.minutes()) + " min" + (Math.abs(duration.minutes()) != 1 ? "s" : ""));
       }
     }
     dateInfo.time = durationSlots.join(", ");

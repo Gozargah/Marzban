@@ -7,10 +7,21 @@ import { renderFrontend } from "../helpers/render";
 
 function setup(patch: Record<string, unknown> = {}) {
   const onFilterChange = mock((_filters: any) => {});
-  const store = create(() => ({ filters: { limit: 10, offset: 0 }, users: { users: [], total: 35 }, loading: false, usersError: false, onFilterChange, ...patch }));
-  const { Pagination } = loadSource<typeof import("../../src/components/dashboard/table/users-pagination")>("components/dashboard/table/users-pagination.tsx", {
-    ...usersAdapter(store), "@/contexts/dashboard-context": { useDashboard: store },
-  });
+  const store = create(() => ({
+    filters: { limit: 10, offset: 0 },
+    users: { users: [], total: 35 },
+    loading: false,
+    usersError: false,
+    onFilterChange,
+    ...patch,
+  }));
+  const { Pagination } = loadSource<typeof import("../../src/components/dashboard/table/users-pagination")>(
+    "components/dashboard/table/users-pagination.tsx",
+    {
+      ...usersAdapter(store),
+      "@/contexts/dashboard-context": { useDashboard: store },
+    },
+  );
   renderFrontend(<Pagination />);
   return { onFilterChange, store };
 }
@@ -49,7 +60,11 @@ test("deleted last page moves to the last valid offset", async () => {
   await waitFor(() => expect(onFilterChange).toHaveBeenCalledWith({ offset: 10 }));
 });
 test("failed results do not silently change page", () => {
-  const { onFilterChange } = setup({ filters: { limit: 10, offset: 30 }, users: { users: [], total: 0 }, usersError: true });
+  const { onFilterChange } = setup({
+    filters: { limit: 10, offset: 30 },
+    users: { users: [], total: 0 },
+    usersError: true,
+  });
   expect(onFilterChange).not.toHaveBeenCalled();
 });
 test("large result sets bound the number of page buttons", () => {

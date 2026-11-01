@@ -4,23 +4,26 @@ import { adminQueryOptions } from "utils/admin-query";
 import { queryClient } from "utils/react-query";
 import { Dashboard } from "./dashboard";
 import { Login } from "./login";
-const fetchAdminLoader = () => queryClient.fetchQuery({
-  ...adminQueryOptions,
-  // Revalidate access on navigation; the header consumes the same fresh cache.
-  staleTime: 0,
-});
-export const router = createBrowserRouter([
-
+const fetchAdminLoader = () =>
+  queryClient.fetchQuery({
+    ...adminQueryOptions,
+    // Revalidate access on navigation; the header consumes the same fresh cache.
+    staleTime: 0,
+  });
+export const router = createBrowserRouter(
+  [
+    {
+      path: "/",
+      element: <Dashboard />,
+      errorElement: <AccessError />,
+      loader: fetchAdminLoader,
+    },
+    {
+      path: "/login/",
+      element: <Login />,
+    },
+  ],
   {
-    path: "/",
-    element: <Dashboard />,
-    errorElement: <AccessError />,
-    loader: fetchAdminLoader,
+    basename: import.meta.env.BASE_URL,
   },
-  {
-    path: "/login/",
-    element: <Login />,
-  },
-], {
-  basename: import.meta.env.BASE_URL,
-});
+);

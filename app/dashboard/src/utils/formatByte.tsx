@@ -6,8 +6,7 @@ export function formatBytes(bytes: number, decimals = 2, asArray = false) {
   const sizes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
 
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  if (!asArray)
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+  if (!asArray) return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
   else return [parseFloat((bytes / Math.pow(k, i)).toFixed(dm)), sizes[i]];
 }
 

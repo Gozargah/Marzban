@@ -11,7 +11,8 @@ describe("authentication state", () => {
     expect(localStorage.getItem("marzban-num-users-per-page")).toBe("50");
   });
   test("logout preserves unrelated preferences", () => {
-    setUsersPerPageLimitSize("50"); clearAuthState();
+    setUsersPerPageLimitSize("50");
+    clearAuthState();
     expect(getUsersPerPageLimitSize()).toBe(50);
   });
 });

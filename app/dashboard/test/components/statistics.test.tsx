@@ -6,11 +6,21 @@ import { renderFrontend, localeAdapter } from "../helpers/render";
 
 function setup() {
   const net = network();
-  const { Statistics } = loadSource<typeof import("../../src/components/dashboard/statistics")>("components/dashboard/statistics.tsx", { ...localeAdapter, "service/http": net });
+  const { Statistics } = loadSource<typeof import("../../src/components/dashboard/statistics")>(
+    "components/dashboard/statistics.tsx",
+    { ...localeAdapter, "service/http": net },
+  );
   const view = renderFrontend(<Statistics />);
   return { net, ...view };
 }
-const data = { users_active: 1234, total_user: 2000, incoming_bandwidth: 1024, outgoing_bandwidth: 1024, mem_used: 1073741824, mem_total: 2147483648 };
+const data = {
+  users_active: 1234,
+  total_user: 2000,
+  incoming_bandwidth: 1024,
+  outgoing_bandwidth: 1024,
+  mem_used: 1073741824,
+  mem_total: 2147483648,
+};
 
 test("statistics announces loading and renders API values", async () => {
   const { net, container } = setup();

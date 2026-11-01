@@ -10,7 +10,8 @@ test("failed refresh exposes retry without a last-updated timestamp", () => {
   const retry = mock(() => {});
   renderFrontend(<QueryFeedback loading={false} refreshing={false} failed updatedAt={Date.now()} retry={retry} />);
   expect(screen.getByRole("alert")).toHaveTextContent(/last loaded data/i);
-  expect(screen.queryByText(/last updated/i)).toBeNull(); fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+  expect(screen.queryByText(/last updated/i)).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Retry" }));
   expect(retry).toHaveBeenCalledTimes(1);
 });
 

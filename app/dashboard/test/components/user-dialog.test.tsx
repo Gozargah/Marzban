@@ -8,21 +8,35 @@ import { deferred } from "../helpers/network";
 import { renderFrontend, localeAdapter } from "../helpers/render";
 import { makeUser } from "../helpers/fixtures";
 
-function setup(inbounds = new Map([ ["vless", [{ tag: "vless-tcp", protocol: "vless", network: "tcp", tls: "none" }]] ]), editingUser: ReturnType<typeof makeUser> | null = null) {
+function setup(
+  inbounds = new Map([["vless", [{ tag: "vless-tcp", protocol: "vless", network: "tcp", tls: "none" }]]]),
+  editingUser: ReturnType<typeof makeUser> | null = null,
+) {
   const request = deferred();
   const createUser = mock((_body: any) => request.promise);
-  const store = create(subscribeWithSelector(() => ({
-    editingUser, isCreatingNewUser: !editingUser, inbounds,
-    onCreateUser: mock((_open: boolean) => {}), onEditingUser: mock((_user: unknown) => {}),
-    onDeletingUser: mock(() => {}), createUser, editUser: mock((_body: any) => request.promise),
-    fetchUserUsage: mock(async () => ({ usages: [] })),
-  })));
-  const { UserDialog } = loadSource<typeof import("../../src/components/dashboard/user-dialog")>("components/dashboard/user-dialog.tsx", {
-    ...localeAdapter, "@/contexts/dashboard-context": { useDashboard: store },
-    "@/features/users/use-inbounds": { useInbounds: () => ({ inbounds, loading: false, failed: false }) },
-    "@/components/theme-provider": { useTheme: () => ({ resolvedTheme: "light" }) },
-    sonner: { toast: { success: mock(() => {}) } },
-  });
+  const store = create(
+    subscribeWithSelector(() => ({
+      editingUser,
+      isCreatingNewUser: !editingUser,
+      inbounds,
+      onCreateUser: mock((_open: boolean) => {}),
+      onEditingUser: mock((_user: unknown) => {}),
+      onDeletingUser: mock(() => {}),
+      createUser,
+      editUser: mock((_body: any) => request.promise),
+      fetchUserUsage: mock(async () => ({ usages: [] })),
+    })),
+  );
+  const { UserDialog } = loadSource<typeof import("../../src/components/dashboard/user-dialog")>(
+    "components/dashboard/user-dialog.tsx",
+    {
+      ...localeAdapter,
+      "@/contexts/dashboard-context": { useDashboard: store },
+      "@/features/users/use-inbounds": { useInbounds: () => ({ inbounds, loading: false, failed: false }) },
+      "@/components/theme-provider": { useTheme: () => ({ resolvedTheme: "light" }) },
+      sonner: { toast: { success: mock(() => {}) } },
+    },
+  );
   const view = renderFrontend(<UserDialog />);
   const submit = () => fireEvent.submit(document.querySelector('[data-slot="sheet-content"] form')!);
   return { ...view, store, createUser, editUser: store.getState().editUser, request, submit };
@@ -36,10 +50,19 @@ test("create form submits selected protocols and converts GiB to bytes", async (
   fireEvent.change(data, { target: { value: "1.5" } });
   submit();
   await waitFor(() => expect(createUser).toHaveBeenCalledTimes(1));
-  expect(createUser.mock.calls[0][0]).toMatchObject({ username: "alice", data_limit: 1610612736, status: "active", proxies: { vless: { flow: "" } }, inbounds: { vless: ["vless-tcp"] } });
+  expect(createUser.mock.calls[0][0]).toMatchObject({
+    username: "alice",
+    data_limit: 1610612736,
+    status: "active",
+    proxies: { vless: { flow: "" } },
+    inbounds: { vless: ["vless-tcp"] },
+  });
   expect(createUser.mock.calls[0][0]).not.toHaveProperty("selected_proxies");
-  submit(); expect(createUser).toHaveBeenCalledTimes(1);
-  await act(async () => { request.resolve(undefined); });
+  submit();
+  expect(createUser).toHaveBeenCalledTimes(1);
+  await act(async () => {
+    request.resolve(undefined);
+  });
   await waitFor(() => expect(store.getState().onCreateUser).toHaveBeenCalledWith(false));
 });
 test("create form selects an expiration from the shared calendar and submits end of day", async () => {
@@ -51,18 +74,28 @@ test("create form selects an expiration from the shared calendar and submits end
   submit();
   await waitFor(() => expect(createUser).toHaveBeenCalledTimes(1));
   expect(createUser.mock.calls[0][0].expire).toBe(Math.floor(new Date(2026, 0, 20, 23, 59, 59).getTime() / 1000));
-  await act(async () => { request.resolve(undefined); });
+  await act(async () => {
+    request.resolve(undefined);
+  });
 });
 test("edit form changes expiration with the shared calendar", async () => {
-  const { editUser, request, submit } = setup(undefined, makeUser({ expire: Math.floor(new Date(2026, 0, 10, 23, 59, 59).getTime() / 1000) }));
+  const { editUser, request, submit } = setup(
+    undefined,
+    makeUser({ expire: Math.floor(new Date(2026, 0, 10, 23, 59, 59).getTime() / 1000) }),
+  );
   setSystemTime(new Date("2026-01-15T12:34:00Z"));
   expect(document.querySelector('button[id$="-expire"]')).toHaveTextContent("January 10, 2026");
   fireEvent.click(document.querySelector('button[id$="-expire"]')!);
   fireEvent.click(screen.getByRole("button", { name: /January 20th, 2026/ }));
   submit();
   await waitFor(() => expect(editUser).toHaveBeenCalledTimes(1));
-  expect(editUser.mock.calls[0][0]).toMatchObject({ username: "alice", expire: Math.floor(new Date(2026, 0, 20, 23, 59, 59).getTime() / 1000) });
-  await act(async () => { request.resolve(undefined); });
+  expect(editUser.mock.calls[0][0]).toMatchObject({
+    username: "alice",
+    expire: Math.floor(new Date(2026, 0, 20, 23, 59, 59).getTime() / 1000),
+  });
+  await act(async () => {
+    request.resolve(undefined);
+  });
 });
 test("no available protocols blocks creation with validation feedback", async () => {
   const { submit, createUser } = setup(new Map());
@@ -74,30 +107,42 @@ test("no available protocols blocks creation with validation feedback", async ()
 test("failed save keeps the form open and permits another save", async () => {
   const { createUser, request, submit, store } = setup();
   await userEvent.setup().type(await screen.findByRole("textbox", { name: "Username" }), "alice");
-  submit(); await waitFor(() => expect(createUser).toHaveBeenCalledTimes(1));
-  await act(async () => { request.reject(new Error("offline")); });
+  submit();
+  await waitFor(() => expect(createUser).toHaveBeenCalledTimes(1));
+  await act(async () => {
+    request.reject(new Error("offline"));
+  });
   expect(await screen.findByText(/could not save/i)).toBeInTheDocument();
   expect(store.getState().onCreateUser).not.toHaveBeenCalled();
   createUser.mockResolvedValueOnce(undefined);
-  submit(); await waitFor(() => expect(store.getState().onCreateUser).toHaveBeenCalledWith(false));
+  submit();
+  await waitFor(() => expect(store.getState().onCreateUser).toHaveBeenCalledWith(false));
   expect(createUser).toHaveBeenCalledTimes(2);
 });
 
 test("invalid traffic limit shows a translated error instead of sending a payload", async () => {
   const { createUser, submit } = setup();
   await userEvent.setup().type(await screen.findByRole("textbox", { name: "Username" }), "alice");
-  fireEvent.change(screen.getByLabelText(/data limit/i), { target: { value: "-1" } }); submit();
+  fireEvent.change(screen.getByLabelText(/data limit/i), { target: { value: "-1" } });
+  submit();
   expect(await screen.findByText("Enter a valid non-negative data limit")).toBeInTheDocument();
   expect(createUser).not.toHaveBeenCalled();
 });
 
 test("keyboard protocol selection restores inbound tags from query data", async () => {
-  const { submit, createUser, request } = setup(); const user = userEvent.setup();
+  const { submit, createUser, request } = setup();
+  const user = userEvent.setup();
   await user.type(await screen.findByRole("textbox", { name: "Username" }), "alice");
   const checkbox = screen.getByRole("checkbox", { name: /vless/i });
-  act(() => checkbox.focus()); await user.keyboard("[Space]"); expect(checkbox).not.toBeChecked();
-  await user.keyboard("[Space]"); expect(checkbox).toBeChecked(); submit();
+  act(() => checkbox.focus());
+  await user.keyboard("[Space]");
+  expect(checkbox).not.toBeChecked();
+  await user.keyboard("[Space]");
+  expect(checkbox).toBeChecked();
+  submit();
   await waitFor(() => expect(createUser).toHaveBeenCalledTimes(1));
   expect(createUser.mock.calls[0][0].inbounds).toEqual({ vless: ["vless-tcp"] });
-  await act(async () => { request.resolve(undefined); });
+  await act(async () => {
+    request.resolve(undefined);
+  });
 });

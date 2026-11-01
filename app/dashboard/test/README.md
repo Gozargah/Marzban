@@ -29,14 +29,14 @@ desired Python executable when `.venv/bin/python` is not available.
 
 ## Organization
 
-| Folder | Behaviors covered |
-| --- | --- |
-| `unit` | Authentication storage, page preferences, HTTP authentication, byte/number/date formatting, chart palette, log bounds, request ownership |
-| `state` | User mutations and filters, node validation and API actions, hosts and core success/failure paths, access loader and shared admin cache |
+| Folder       | Behaviors covered                                                                                                                                                                                                                                                                                                                 |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `unit`       | Authentication storage, page preferences, HTTP authentication, byte/number/date formatting, chart palette, log bounds, request ownership                                                                                                                                                                                          |
+| `state`      | User mutations and filters, node validation and API actions, hosts and core success/failure paths, access loader and shared admin cache                                                                                                                                                                                           |
 | `components` | Login validation and retry, user form validation/payload conversion, table empty/error/sort states, search debounce and cleanup, pagination, translated connection/status labels, theme persistence, statistics retry, usage ranges, node usage races, hosts/core/nodes dialogs, destructive actions, QR carousel, websocket logs |
-| `hooks` | Reactive locale, authenticated admin, inbound loading/error/retry/cancellation |
-| `regression` | Existing request race, cancellation, store subscription, editor disposal, cache reuse, and language metadata regressions migrated from `node:test` to `bun:test` |
-| `helpers` | Fresh fixtures, deferred network requests, isolated source loading, real translation/query providers |
+| `hooks`      | Reactive locale, authenticated admin, inbound loading/error/retry/cancellation                                                                                                                                                                                                                                                    |
+| `regression` | Existing request race, cancellation, store subscription, editor disposal, cache reuse, and language metadata regressions migrated from `node:test` to `bun:test`                                                                                                                                                                  |
+| `helpers`    | Fresh fixtures, deferred network requests, isolated source loading, real translation/query providers                                                                                                                                                                                                                              |
 
 ## Adding tests
 

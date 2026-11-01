@@ -15,7 +15,9 @@ let baseUrl = "";
 let origin = "";
 let server: ReturnType<typeof Bun.spawn> | undefined;
 let serverReader: ReadableStreamDefaultReader<Uint8Array> | undefined;
-let serverInput: { write(data: string): number | Promise<number>; flush(): number | void | Promise<number | void> } | undefined;
+let serverInput:
+  | { write(data: string): number | Promise<number>; flush(): number | void | Promise<number | void> }
+  | undefined;
 let outputBuffer = "";
 let migrationSnapshot: any;
 let migrationBefore: any;
@@ -58,11 +60,13 @@ function inspectDb() {
 
 function hasSessionsTable() {
   const output = runPython([fixture, "has-sessions-table"]).output;
-  const value = output.split(/\r?\n/).map((line) => line.trim()).find((line) => line === "true" || line === "false");
+  const value = output
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find((line) => line === "true" || line === "false");
   if (!value) throw new Error(`Could not read migration table check:\n${output}`);
   return value === "true";
 }
-
 
 type ApiResponse = { status: number; headers: Array<[string, string]>; body: string };
 async function nextResponse(): Promise<ApiResponse> {
@@ -84,13 +88,19 @@ function headerValues(response: ApiResponse, name: string) {
   return response.headers.filter(([key]) => key.toLowerCase() === name.toLowerCase()).map(([, value]) => value);
 }
 
-function responseJson<T>(response: ApiResponse): T { return JSON.parse(response.body) as T; }
+function responseJson<T>(response: ApiResponse): T {
+  return JSON.parse(response.body) as T;
+}
 
 class CookieJar {
   private readonly values = new Map<string, string>();
 
-  header() { return [...this.values].map(([key, value]) => `${key}=${value}`).join("; "); }
-  get(name: string) { return this.values.get(name); }
+  header() {
+    return [...this.values].map(([key, value]) => `${key}=${value}`).join("; ");
+  }
+  get(name: string) {
+    return this.values.get(name);
+  }
   absorb(response: ApiResponse) {
     const lines = headerValues(response, "set-cookie");
     for (const line of lines) {
@@ -110,8 +120,15 @@ async function request(path: string, options: RequestInit = {}, jar?: CookieJar,
   const headers = Object.fromEntries(new Headers(options.headers).entries());
   headers.Origin = requestOrigin;
   if (jar?.header()) headers.Cookie = jar.header();
-  const body = options.body instanceof URLSearchParams ? options.body.toString() : typeof options.body === "string" ? options.body : "";
-  await serverInput.write(`${JSON.stringify({ url: `${baseUrl}${path}`, method: options.method ?? "GET", headers, body })}\n`);
+  const body =
+    options.body instanceof URLSearchParams
+      ? options.body.toString()
+      : typeof options.body === "string"
+        ? options.body
+        : "";
+  await serverInput.write(
+    `${JSON.stringify({ url: `${baseUrl}${path}`, method: options.method ?? "GET", headers, body })}\n`,
+  );
   await serverInput.flush();
   const response = await nextResponse();
   jar?.absorb(response);
@@ -121,11 +138,15 @@ async function request(path: string, options: RequestInit = {}, jar?: CookieJar,
 async function login(username: string, password: string) {
   const jar = new CookieJar();
   const body = new URLSearchParams({ username, password, grant_type: "password" });
-  const response = await request("/api/admin/session", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body,
-  }, jar);
+  const response = await request(
+    "/api/admin/session",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+    },
+    jar,
+  );
   return { jar, response };
 }
 
@@ -179,16 +200,26 @@ test("admin session migration upgrades and downgrades safely from the prior rele
   expect(migrationAfterDowngrade.hasTable).toBe(false);
   expect(migrationAfterDowngrade.snapshot.revision).toBe(previousHead);
   expect(migrationAfterDowngrade.snapshot.admins).toEqual([
-    { username: "alice", is_sudo: true }, { username: "bob", is_sudo: false },
+    { username: "alice", is_sudo: true },
+    { username: "bob", is_sudo: false },
   ]);
   expect(migrationSnapshot.revision).toBe("31d941bdb713");
   expect(migrationSnapshot.admins).toEqual([
-    { username: "alice", is_sudo: true }, { username: "bob", is_sudo: false },
+    { username: "alice", is_sudo: true },
+    { username: "bob", is_sudo: false },
   ]);
   expect(migrationSnapshot.session_columns).toEqual(["id", "session_hash", "username", "expires_at", "created_at"]);
-  expect(migrationSnapshot.session_nullable).toEqual({ id: false, session_hash: false, username: false, expires_at: true, created_at: false });
+  expect(migrationSnapshot.session_nullable).toEqual({
+    id: false,
+    session_hash: false,
+    username: false,
+    expires_at: true,
+    created_at: false,
+  });
   expect(migrationSnapshot.session_indexes.map((index: any) => [index.name, Boolean(index.unique)]).sort()).toEqual([
-    ["ix_admin_sessions_expires_at", false], ["ix_admin_sessions_session_hash", true], ["ix_admin_sessions_username", false],
+    ["ix_admin_sessions_expires_at", false],
+    ["ix_admin_sessions_session_hash", true],
+    ["ix_admin_sessions_username", false],
   ]);
 });
 
@@ -196,17 +227,27 @@ test("cookie login, token compatibility, CSRF, origin checks, logout revocation,
   const missingAuth = await request("/api/test/protected");
   expect(missingAuth.status).toBe(401);
 
-  const noOrigin = await request("/api/admin/session", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ username: "alice", password: "alice-pass", grant_type: "password" }),
-  }, undefined, "");
+  const noOrigin = await request(
+    "/api/admin/session",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ username: "alice", password: "alice-pass", grant_type: "password" }),
+    },
+    undefined,
+    "",
+  );
   expect(noOrigin.status).toBe(403);
-  const hostileOrigin = await request("/api/admin/session", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ username: "alice", password: "alice-pass", grant_type: "password" }),
-  }, undefined, "https://attacker.invalid");
+  const hostileOrigin = await request(
+    "/api/admin/session",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ username: "alice", password: "alice-pass", grant_type: "password" }),
+    },
+    undefined,
+    "https://attacker.invalid",
+  );
   expect(hostileOrigin.status).toBe(403);
 
   const wrongPassword = await login("alice", "wrong-pass");
@@ -246,8 +287,19 @@ test("cookie login, token compatibility, CSRF, origin checks, logout revocation,
   expect(responseJson(csrfBootstrap)).toEqual({ csrf_token: csrf });
 
   expect((await request("/api/test/mutate", { method: "POST" }, alice.jar)).status).toBe(403);
-  expect((await request("/api/test/mutate", { method: "POST", headers: { "X-CSRF-Token": "wrong" } }, alice.jar)).status).toBe(403);
-  expect((await request("/api/test/mutate", { method: "POST", headers: { "X-CSRF-Token": csrf } }, alice.jar, "https://attacker.invalid")).status).toBe(403);
+  expect(
+    (await request("/api/test/mutate", { method: "POST", headers: { "X-CSRF-Token": "wrong" } }, alice.jar)).status,
+  ).toBe(403);
+  expect(
+    (
+      await request(
+        "/api/test/mutate",
+        { method: "POST", headers: { "X-CSRF-Token": csrf } },
+        alice.jar,
+        "https://attacker.invalid",
+      )
+    ).status,
+  ).toBe(403);
   const mutation = await request("/api/test/mutate", { method: "POST", headers: { "X-CSRF-Token": csrf } }, alice.jar);
   expect(mutation.status).toBe(200);
   expect(responseJson(mutation)).toEqual({ changed_by: "alice" });
@@ -257,9 +309,17 @@ test("cookie login, token compatibility, CSRF, origin checks, logout revocation,
   for (const kind of ["core", "node"]) {
     const validSocket = await request(`/test/socket-auth/${kind}`, { method: "POST" }, alice.jar);
     expect(responseJson(validSocket)).toEqual({ accepted: true, closed: null });
-    const badOriginSocket = await request(`/test/socket-auth/${kind}`, { method: "POST" }, alice.jar, "https://attacker.invalid");
+    const badOriginSocket = await request(
+      `/test/socket-auth/${kind}`,
+      { method: "POST" },
+      alice.jar,
+      "https://attacker.invalid",
+    );
     expect(responseJson(badOriginSocket)).toMatchObject({ accepted: false, closed: { code: 4403 } });
-    const queryTokenSocket = await request(`/test/socket-auth/${kind}?token=${encodeURIComponent(alice.jar.get("marzban_session")!)}`, { method: "POST" });
+    const queryTokenSocket = await request(
+      `/test/socket-auth/${kind}?token=${encodeURIComponent(alice.jar.get("marzban_session")!)}`,
+      { method: "POST" },
+    );
     expect(responseJson(queryTokenSocket)).toMatchObject({ accepted: false, closed: { code: 4401 } });
   }
 
@@ -281,27 +341,37 @@ test("cookie login, token compatibility, CSRF, origin checks, logout revocation,
     body: new URLSearchParams({ username: "alice", password: "alice-pass", grant_type: "password" }),
   });
   expect(tokenResponse.status).toBe(200);
-  const token = (responseJson<{ access_token: string }>(tokenResponse)).access_token;
+  const token = responseJson<{ access_token: string }>(tokenResponse).access_token;
   expect((await request("/api/test/protected", { headers: { Authorization: `Bearer ${token}` } })).status).toBe(200);
-  expect((await request("/api/test/mutate", { method: "POST", headers: { Authorization: `Bearer ${token}` } })).status).toBe(200);
+  expect(
+    (await request("/api/test/mutate", { method: "POST", headers: { Authorization: `Bearer ${token}` } })).status,
+  ).toBe(200);
 
   // Logout remains possible with a stale browser that has no CSRF cookie.
   const sessionValue = alice.jar.get("marzban_session")!;
-  const crossSiteLogout = await request("/api/admin/session", {
-    method: "DELETE",
-    headers: { Cookie: `marzban_session=${sessionValue}` },
-  }, undefined, "https://attacker.invalid");
+  const crossSiteLogout = await request(
+    "/api/admin/session",
+    {
+      method: "DELETE",
+      headers: { Cookie: `marzban_session=${sessionValue}` },
+    },
+    undefined,
+    "https://attacker.invalid",
+  );
   expect(crossSiteLogout.status).toBe(403);
   const logout = await request("/api/admin/session", {
     method: "DELETE",
     headers: { Cookie: `marzban_session=${sessionValue}` },
   });
   expect(logout.status).toBe(204);
-  expect((await request("/api/test/protected", { headers: { Cookie: `marzban_session=${sessionValue}` } })).status).toBe(401);
+  expect(
+    (await request("/api/test/protected", { headers: { Cookie: `marzban_session=${sessionValue}` } })).status,
+  ).toBe(401);
   expect((await request("/api/test/protected", {}, aliceSecondSession.jar)).status).toBe(200);
   for (const kind of ["core", "node"]) {
     const revokedSocket = await request(`/test/socket-auth/${kind}`, {
-      method: "POST", headers: { Cookie: `marzban_session=${sessionValue}` },
+      method: "POST",
+      headers: { Cookie: `marzban_session=${sessionValue}` },
     });
     expect(responseJson(revokedSocket)).toMatchObject({ accepted: false, closed: { code: 4401 } });
   }

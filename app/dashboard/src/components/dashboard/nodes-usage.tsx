@@ -12,7 +12,9 @@ import { useTranslation } from "react-i18next";
 import { createLatestRequest } from "utils/latest-request";
 import { UsageFilter } from "./usage-filter";
 
-const TrafficChart = lazy(() => import("@/features/shared/traffic-chart").then((module) => ({ default: module.TrafficChart })));
+const TrafficChart = lazy(() =>
+  import("@/features/shared/traffic-chart").then((module) => ({ default: module.TrafficChart })),
+);
 
 export function NodesUsage() {
   const isShowingNodesUsage = useDashboard((state) => state.isShowingNodesUsage);
@@ -58,10 +60,7 @@ export function NodesUsage() {
       request.current.cancel();
     };
   }, [isShowingNodesUsage, fetchUsage]);
-  const usage = useMemo(
-    () => createUsageData(data.series, data.labels),
-    [data],
-  );
+  const usage = useMemo(() => createUsageData(data.series, data.labels), [data]);
   return (
     <Dialog open={isShowingNodesUsage} onOpenChange={onShowingNodesUsage}>
       <DialogContent
@@ -93,7 +92,9 @@ export function NodesUsage() {
           </Alert>
         ) : (
           <div className="mx-auto w-full max-w-md">
-            <Suspense fallback={<Spinner aria-label={t("loading")} />}><TrafficChart usage={usage} height={360} /></Suspense>
+            <Suspense fallback={<Spinner aria-label={t("loading")} />}>
+              <TrafficChart usage={usage} height={360} />
+            </Suspense>
           </div>
         )}
       </DialogContent>

@@ -1,6 +1,13 @@
 import { useInbounds } from "@/features/users/use-inbounds";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { FieldError, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -11,7 +18,13 @@ import { clearDraft } from "@/features/shared/drafts";
 import { createUsageData } from "@/features/shared/traffic";
 import { useRecoverableDraft } from "@/features/shared/use-recoverable-draft";
 import { UserAccountFields } from "@/features/users/account-fields";
-import { getDefaultValues as createDefaultValues, formatUser, toUserCreate, userFormSchema, type FormType } from "@/features/users/form";
+import {
+  getDefaultValues as createDefaultValues,
+  formatUser,
+  toUserCreate,
+  userFormSchema,
+  type FormType,
+} from "@/features/users/form";
 import { useLocale } from "@/hooks/use-locale";
 import { zodResolver } from "@hookform/resolvers/zod";
 import dayjs from "dayjs";
@@ -25,7 +38,9 @@ import { createLatestRequest } from "utils/latest-request";
 import { RadioGroup } from "../RadioGroup";
 import { UsageFilter } from "./usage-filter";
 
-const TrafficChart = lazy(() => import("@/features/shared/traffic-chart").then((module) => ({ default: module.TrafficChart })));
+const TrafficChart = lazy(() =>
+  import("@/features/shared/traffic-chart").then((module) => ({ default: module.TrafficChart })),
+);
 
 export type { FormType } from "@/features/users/form";
 
@@ -54,7 +69,6 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const { t } = useTranslation();
   const { direction, language } = useLocale();
 
-
   const [usageVisible, setUsageVisible] = useState(false);
   const handleUsageToggle = () => {
     setUsageVisible((current) => !current);
@@ -81,21 +95,24 @@ export const UserDialog: FC<UserDialogProps> = () => {
     const pending = usageRequest.current.start();
     setUsageLoading(true);
     setUsageError(false);
-    fetchUserUsage(editingUser, query, pending.signal).then((data: any) => {
-      if (!pending.isCurrent()) return;
-      const labels = [];
-      const series = [];
-      for (const key in data.usages) {
-        series.push(data.usages[key].used_traffic);
-        labels.push(data.usages[key].node_name);
-      }
-      setUsage(createUsageData(series, labels));
-    }).catch(() => {
-      if (pending.isCurrent()) setUsageError(true);
-    }).finally(() => {
-      if (pending.isCurrent()) setUsageLoading(false);
-      pending.finish();
-    });
+    fetchUserUsage(editingUser, query, pending.signal)
+      .then((data: any) => {
+        if (!pending.isCurrent()) return;
+        const labels = [];
+        const series = [];
+        for (const key in data.usages) {
+          series.push(data.usages[key].used_traffic);
+          labels.push(data.usages[key].node_name);
+        }
+        setUsage(createUsageData(series, labels));
+      })
+      .catch(() => {
+        if (pending.isCurrent()) setUsageError(true);
+      })
+      .finally(() => {
+        if (pending.isCurrent()) setUsageLoading(false);
+        pending.finish();
+      });
   };
 
   useEffect(() => {
@@ -215,8 +232,12 @@ export const UserDialog: FC<UserDialogProps> = () => {
                 </SheetTitle>
                 <SheetDescription id={fieldId("description")}>
                   {isEditing
-                    ? t("userDialog.editDescription", { defaultValue: "Manage this user’s access, limits, and connection settings." })
-                    : t("userDialog.createDescription", { defaultValue: "Set up access and choose the connection protocols for your new user." })}
+                    ? t("userDialog.editDescription", {
+                        defaultValue: "Manage this user’s access, limits, and connection settings.",
+                      })
+                    : t("userDialog.createDescription", {
+                        defaultValue: "Set up access and choose the connection protocols for your new user.",
+                      })}
                 </SheetDescription>
               </SheetHeader>
               <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain px-6 py-6">
@@ -248,10 +269,16 @@ export const UserDialog: FC<UserDialogProps> = () => {
                     )}
                   </FieldSet>
                   {isEditing && usageVisible && (
-                    <section ref={usageSection} id={fieldId("usage")} aria-labelledby={fieldId("usage-title")}
-                      className="min-w-0 max-w-full space-y-4 border border-border p-4 scroll-mt-6">
+                    <section
+                      ref={usageSection}
+                      id={fieldId("usage")}
+                      aria-labelledby={fieldId("usage-title")}
+                      className="min-w-0 max-w-full space-y-4 border border-border p-4 scroll-mt-6"
+                    >
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <h3 id={fieldId("usage-title")} className="text-sm font-medium">{t("userDialog.usage")}</h3>
+                        <h3 id={fieldId("usage-title")} className="text-sm font-medium">
+                          {t("userDialog.usage")}
+                        </h3>
                         {!usageLoading && !usageError && (
                           <span className="text-xs text-muted-foreground tabular-nums">
                             {usageTitle} {formatBytes(usage.series.reduce((sum, value) => sum + value, 0))}
@@ -267,22 +294,41 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       />
                       <div aria-busy={usageLoading} className="min-w-0 max-w-full">
                         {usageLoading ? (
-                          <div role="status" className="flex min-h-64 items-center justify-center gap-2 text-xs text-muted-foreground">
+                          <div
+                            role="status"
+                            className="flex min-h-64 items-center justify-center gap-2 text-xs text-muted-foreground"
+                          >
                             <Spinner /> {t("loading", { defaultValue: "Loading" })}
                           </div>
                         ) : usageError ? (
-                          <Alert variant="destructive"><AlertCircle /><AlertDescription>
-                            {t("userDialog.usageLoadError", { defaultValue: "Could not load usage." })}
-                          </AlertDescription></Alert>
+                          <Alert variant="destructive">
+                            <AlertCircle />
+                            <AlertDescription>
+                              {t("userDialog.usageLoadError", { defaultValue: "Could not load usage." })}
+                            </AlertDescription>
+                          </Alert>
                         ) : usage.series.some((value) => value > 0) ? (
                           <>
-                            <Suspense fallback={<Spinner aria-label={t("loading")} />}><TrafficChart usage={usage} hideLegend /></Suspense>
+                            <Suspense fallback={<Spinner aria-label={t("loading")} />}>
+                              <TrafficChart usage={usage} hideLegend />
+                            </Suspense>
                             <ul className="space-y-2 text-xs">
                               {usage.series.map((value, index) => (
                                 <li key={index} className="flex min-w-0 items-start gap-2">
-                                  <span aria-hidden="true" className="mt-1 size-2 shrink-0" style={{ backgroundColor: typeof usage.colors?.[index] === "string" ? usage.colors[index] as string : "var(--primary)" }} />
+                                  <span
+                                    aria-hidden="true"
+                                    className="mt-1 size-2 shrink-0"
+                                    style={{
+                                      backgroundColor:
+                                        typeof usage.colors?.[index] === "string"
+                                          ? (usage.colors[index] as string)
+                                          : "var(--primary)",
+                                    }}
+                                  />
                                   <span className="min-w-0 flex-1 break-all">{usage.labels?.[index]}</span>
-                                  <span className="shrink-0 tabular-nums text-muted-foreground">{formatBytes(value)}</span>
+                                  <span className="shrink-0 tabular-nums text-muted-foreground">
+                                    {formatBytes(value)}
+                                  </span>
                                 </li>
                               ))}
                             </ul>
@@ -308,38 +354,42 @@ export const UserDialog: FC<UserDialogProps> = () => {
                   {isEditing && (
                     <>
                       <Tooltip>
-                        <TooltipTrigger render={
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon-sm"
-                            disabled={disabled}
-                            aria-label={t("delete")}
-                            onClick={() => {
-                              onDeletingUser(editingUser);
-                              onClose();
-                            }}
-                          >
-                            <Trash2 />
-                          </Button>
-                        } />
+                        <TooltipTrigger
+                          render={
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon-sm"
+                              disabled={disabled}
+                              aria-label={t("delete")}
+                              onClick={() => {
+                                onDeletingUser(editingUser);
+                                onClose();
+                              }}
+                            >
+                              <Trash2 />
+                            </Button>
+                          }
+                        />
                         <TooltipContent>{t("delete")}</TooltipContent>
                       </Tooltip>
                       <Tooltip>
-                        <TooltipTrigger render={
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon-sm"
-                            disabled={disabled}
-                            aria-label={t("userDialog.usage")}
-                            aria-expanded={usageVisible}
-                            aria-controls={usageVisible ? fieldId("usage") : undefined}
-                            onClick={handleUsageToggle}
-                          >
-                            <ChartPie />
-                          </Button>
-                        } />
+                        <TooltipTrigger
+                          render={
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon-sm"
+                              disabled={disabled}
+                              aria-label={t("userDialog.usage")}
+                              aria-expanded={usageVisible}
+                              aria-controls={usageVisible ? fieldId("usage") : undefined}
+                              onClick={handleUsageToggle}
+                            >
+                              <ChartPie />
+                            </Button>
+                          }
+                        />
                         <TooltipContent>{t("userDialog.usage")}</TooltipContent>
                       </Tooltip>
                       <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={handleResetUsage}>
@@ -374,12 +424,22 @@ export const UserDialog: FC<UserDialogProps> = () => {
       <AlertDialog open={discardOpen} onOpenChange={setDiscardOpen}>
         <AlertDialogContent initialFocus={cancelDiscardRef} dir={direction}>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("userDialog.unsavedTitle", { defaultValue: "Discard unsaved changes?" })}</AlertDialogTitle>
-            <AlertDialogDescription>{t("userDialog.unsavedDescription", { defaultValue: "Your changes have not been saved. Keep editing or discard them to close this panel." })}</AlertDialogDescription>
+            <AlertDialogTitle>
+              {t("userDialog.unsavedTitle", { defaultValue: "Discard unsaved changes?" })}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("userDialog.unsavedDescription", {
+                defaultValue: "Your changes have not been saved. Keep editing or discard them to close this panel.",
+              })}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <Button ref={cancelDiscardRef} variant="outline" onClick={() => setDiscardOpen(false)}>{t("userDialog.keepEditing", { defaultValue: "Keep editing" })}</Button>
-            <Button variant="destructive" onClick={onClose}>{t("userDialog.discardChanges", { defaultValue: "Discard changes" })}</Button>
+            <Button ref={cancelDiscardRef} variant="outline" onClick={() => setDiscardOpen(false)}>
+              {t("userDialog.keepEditing", { defaultValue: "Keep editing" })}
+            </Button>
+            <Button variant="destructive" onClick={onClose}>
+              {t("userDialog.discardChanges", { defaultValue: "Discard changes" })}
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

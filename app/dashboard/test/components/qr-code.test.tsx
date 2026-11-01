@@ -8,11 +8,17 @@ function setup(links: string[] | null = ["vless://first", "vless://second"], sub
   const setQRCode = mock((_links: string[] | null) => {});
   const setSubLink = mock((_link: string | null) => {});
   const store = create(() => ({ QRcodeLinks: links, subscribeUrl: subscription, setQRCode, setSubLink }));
-  const { QRCodeDialog } = loadSource<typeof import("../../src/components/dashboard/qr-code-dialog")>("components/dashboard/qr-code-dialog.tsx", {
-    ...localeAdapter, "@/contexts/dashboard-context": { useDashboard: store },
-    // Canvas drawing is a browser concern. Assert the exact payload sent to QR encoder.
-    "qrcode.react": { QRCodeCanvas: ({ value }: { value: string }) => <output data-testid="qr-value">{value}</output> },
-  });
+  const { QRCodeDialog } = loadSource<typeof import("../../src/components/dashboard/qr-code-dialog")>(
+    "components/dashboard/qr-code-dialog.tsx",
+    {
+      ...localeAdapter,
+      "@/contexts/dashboard-context": { useDashboard: store },
+      // Canvas drawing is a browser concern. Assert the exact payload sent to QR encoder.
+      "qrcode.react": {
+        QRCodeCanvas: ({ value }: { value: string }) => <output data-testid="qr-value">{value}</output>,
+      },
+    },
+  );
   renderFrontend(<QRCodeDialog />);
   return { store, setQRCode, setSubLink };
 }

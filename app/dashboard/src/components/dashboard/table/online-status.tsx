@@ -30,20 +30,18 @@ export const OnlineStatus: FC<UserStatusProps> = ({ lastOnline, className }) => 
       label = t("usersTable.online");
     } else {
       const seconds = -timeDifferenceInSeconds;
-      const units = [[31536000, "year"], [2592000, "month"], [86400, "day"], [3600, "hour"], [60, "minute"], [1, "second"]] as const;
+      const units = [
+        [31536000, "year"],
+        [2592000, "month"],
+        [86400, "day"],
+        [3600, "hour"],
+        [60, "minute"],
+        [1, "second"],
+      ] as const;
       const [size, unit] = units.find(([size]) => Math.abs(seconds) >= size) || units[units.length - 1];
       label = new Intl.RelativeTimeFormat(language, { numeric: "auto" }).format(Math.trunc(seconds / size), unit);
     }
   }
 
-  return (
-    <span
-      className={cn(
-        "inline-block text-xs font-medium text-muted-foreground",
-        className
-      )}
-    >
-      {label}
-    </span>
-  );
+  return <span className={cn("inline-block text-xs font-medium text-muted-foreground", className)}>{label}</span>;
 };

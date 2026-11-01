@@ -63,7 +63,9 @@ type DashboardStateType = {
   revokeSubscription: (user: User) => Promise<void>;
 };
 
-export const cancelUsersRequest = () => { void usersResource.cancel(); };
+export const cancelUsersRequest = () => {
+  void usersResource.cancel();
+};
 
 const serializeFilters = (f: Partial<FilterType>) => {
   const filters = { ...f };
@@ -102,7 +104,9 @@ export const useDashboard = create(
       sort: "-created_at",
     },
     isEditingCore: false,
-    refetchUsers: () => { void usersResource.refresh(); },
+    refetchUsers: () => {
+      void usersResource.refresh();
+    },
     resetAllUsage: async () => {
       await usersResource.resetAll();
       get().onResetAllUsage(false);
@@ -120,8 +124,9 @@ export const useDashboard = create(
         ...get().filters,
         ...filters,
       };
-      const changed = Object.keys(allFilters).some((key) =>
-        allFilters[key as keyof FilterType] !== get().filters[key as keyof FilterType]);
+      const changed = Object.keys(allFilters).some(
+        (key) => allFilters[key as keyof FilterType] !== get().filters[key as keyof FilterType],
+      );
       if (changed) set({ filters: allFilters });
       if (pushState && changed) serializeFilters(allFilters);
       if (!changed) get().refetchUsers();

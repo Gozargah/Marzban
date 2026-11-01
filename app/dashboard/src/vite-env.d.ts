@@ -3,8 +3,8 @@
 
 declare global {
   interface Window {
-    has_unsaved_changes: boolean
+    has_unsaved_changes: boolean;
   }
 }
 
-export { }
+export {};

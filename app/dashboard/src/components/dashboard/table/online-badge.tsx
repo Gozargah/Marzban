@@ -19,10 +19,11 @@ export const OnlineBadge: FC<UserStatusProps> = ({ lastOnline, className }) => {
 
   if (!lastOnline || unixTime === null) {
     return (
-      <span aria-hidden="true"
+      <span
+        aria-hidden="true"
         className={cn(
           "inline-block size-2 rounded-full border border-neutral-400 dark:border-neutral-600 shrink-0",
-          className
+          className,
         )}
       />
     );
@@ -32,21 +33,14 @@ export const OnlineBadge: FC<UserStatusProps> = ({ lastOnline, className }) => {
 
   if (timeDifferenceInSeconds >= -60 && timeDifferenceInSeconds <= 60) {
     return (
-      <span aria-hidden="true"
-        className={cn(
-          "inline-block size-2 rounded-full bg-success shrink-0",
-          className
-        )}
-      />
+      <span aria-hidden="true" className={cn("inline-block size-2 rounded-full bg-success shrink-0", className)} />
     );
   }
 
   return (
-    <span aria-hidden="true"
-      className={cn(
-        "inline-block size-2 rounded-full bg-neutral-400 dark:bg-neutral-600 shrink-0",
-        className
-      )}
+    <span
+      aria-hidden="true"
+      className={cn("inline-block size-2 rounded-full bg-neutral-400 dark:bg-neutral-600 shrink-0", className)}
     />
   );
 };

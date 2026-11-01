@@ -6,10 +6,16 @@ import { renderFrontend } from "../helpers/render";
 
 function setup() {
   const net = network();
-  const { default: useGetUser } = loadSource<typeof import("../../src/hooks/useGetUser")>("hooks/useGetUser.tsx", { "service/http": net });
+  const { default: useGetUser } = loadSource<typeof import("../../src/hooks/useGetUser")>("hooks/useGetUser.tsx", {
+    "service/http": net,
+  });
   function Probe() {
     const { userData, getUserIsPending, getUserIsError, getUserIsSuccess } = useGetUser();
-    return <output>{getUserIsPending ? "pending" : getUserIsError ? "error" : getUserIsSuccess ? userData.username : "idle"}</output>;
+    return (
+      <output>
+        {getUserIsPending ? "pending" : getUserIsError ? "error" : getUserIsSuccess ? userData.username : "idle"}
+      </output>
+    );
   }
   renderFrontend(<Probe />);
   return net;

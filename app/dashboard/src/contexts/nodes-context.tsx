@@ -17,10 +17,7 @@ export const NodeSchema = z.object({
     .or(z.string().transform((v) => parseFloat(v))),
   xray_version: z.string().nullable().optional(),
   id: z.number().nullable().optional(),
-  status: z
-    .enum(["connected", "connecting", "error", "disabled"])
-    .nullable()
-    .optional(),
+  status: z.enum(["connected", "connecting", "error", "disabled"]).nullable().optional(),
   message: z.string().nullable().optional(),
   add_as_new_host: z.boolean().optional(),
   usage_coefficient: z.number().or(z.string().transform((v) => parseFloat(v))),

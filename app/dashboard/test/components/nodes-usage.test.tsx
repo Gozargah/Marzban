@@ -8,12 +8,23 @@ import { renderFrontend, localeAdapter } from "../helpers/render";
 function setup() {
   const net = network();
   const dashboard = create(() => ({ isShowingNodesUsage: true, onShowingNodesUsage: () => {} }));
-  const nodes = create(() => ({ fetchNodesUsage: (query: unknown, signal: AbortSignal) => net.fetch("/nodes/usage", { query, signal }) }));
-  const { NodesUsage } = loadSource<typeof import("../../src/components/dashboard/nodes-usage")>("components/dashboard/nodes-usage.tsx", {
-    ...localeAdapter, "@/contexts/dashboard-context": { useDashboard: dashboard }, "@/contexts/nodes-context": { useNodes: nodes },
-    "@/components/theme-provider": { useTheme: () => ({ resolvedTheme: "dark" }) },
-    "@/features/shared/traffic-chart": { TrafficChart: ({ usage }: any) => <output data-testid="usage-chart">{JSON.stringify({ series: usage.series, labels: usage.labels })}</output> },
-  });
+  const nodes = create(() => ({
+    fetchNodesUsage: (query: unknown, signal: AbortSignal) => net.fetch("/nodes/usage", { query, signal }),
+  }));
+  const { NodesUsage } = loadSource<typeof import("../../src/components/dashboard/nodes-usage")>(
+    "components/dashboard/nodes-usage.tsx",
+    {
+      ...localeAdapter,
+      "@/contexts/dashboard-context": { useDashboard: dashboard },
+      "@/contexts/nodes-context": { useNodes: nodes },
+      "@/components/theme-provider": { useTheme: () => ({ resolvedTheme: "dark" }) },
+      "@/features/shared/traffic-chart": {
+        TrafficChart: ({ usage }: any) => (
+          <output data-testid="usage-chart">{JSON.stringify({ series: usage.series, labels: usage.labels })}</output>
+        ),
+      },
+    },
+  );
   return { ...renderFrontend(<NodesUsage />), net };
 }
 
@@ -31,6 +42,7 @@ test("failed usage can recover by selecting another range; unmount aborts reques
   expect(await screen.findByRole("alert")).toHaveTextContent(/could not load usage/i);
   fireEvent.click(screen.getByRole("button", { name: "1w" }));
   await waitFor(() => expect(net.calls).toHaveLength(2));
-  unmount(); expect(net.calls[1].options.signal.aborted).toBe(true);
+  unmount();
+  expect(net.calls[1].options.signal.aborted).toBe(true);
   net.calls[1].resolve({ usages: [] });
 });

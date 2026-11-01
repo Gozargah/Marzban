@@ -1,12 +1,12 @@
 import { CoreConfigError } from "@/features/core/config";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
-AlertDialog,
-AlertDialogContent,
-AlertDialogDescription,
-AlertDialogFooter,
-AlertDialogHeader,
-AlertDialogTitle,
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,19 @@ export const ReloadIcon = RefreshCw;
 
 export function CoreSettingsModal() {
   const isEditingCore = useDashboard((state) => state.isEditingCore);
-  const { config, version, isLoading, isPostLoading, fetchCoreSettings, updateConfig, restartCore, isError, isRefreshing, updatedAt, offline } = useCoreSettings(isEditingCore);
+  const {
+    config,
+    version,
+    isLoading,
+    isPostLoading,
+    fetchCoreSettings,
+    updateConfig,
+    restartCore,
+    isError,
+    isRefreshing,
+    updatedAt,
+    offline,
+  } = useCoreSettings(isEditingCore);
   const { t } = useTranslation();
   const { direction } = useLocale();
   const form = useForm({ defaultValues: { config: "" } });
@@ -51,7 +63,9 @@ export function CoreSettingsModal() {
     if (isEditingCore && !dirty.current) form.reset({ config });
   }, [config, isEditingCore, form]);
   useRecoverableDraft("core", form, isEditingCore);
-  useEffect(() => { dirty.current = form.formState.isDirty; }, [form.formState.isDirty]);
+  useEffect(() => {
+    dirty.current = form.formState.isDirty;
+  }, [form.formState.isDirty]);
   const close = () => {
     if (saving.current || isPostLoading) return;
     if (dirty.current) {
@@ -78,11 +92,15 @@ export function CoreSettingsModal() {
     } catch (error: any) {
       const detail = error?.response?._data?.detail;
       const message =
-        error instanceof SyntaxError ? t("core.invalidJSON") : error instanceof CoreConfigError ? t(error.message) : typeof detail === "string"
-          ? detail
-          : detail && typeof detail === "object"
-            ? String(Object.values(detail)[0])
-            : t("core.generalErrorMessage");
+        error instanceof SyntaxError
+          ? t("core.invalidJSON")
+          : error instanceof CoreConfigError
+            ? t(error.message)
+            : typeof detail === "string"
+              ? detail
+              : detail && typeof detail === "object"
+                ? String(Object.values(detail)[0])
+                : t("core.generalErrorMessage");
       setSaveError(message);
       toast.error(message);
     } finally {
@@ -110,17 +128,39 @@ export function CoreSettingsModal() {
               {t("core.title")}
             </SheetTitle>
           </SheetHeader>
-          <QueryFeedback loading={false} refreshing={isRefreshing && !isLoading} failed={false} updatedAt={updatedAt} offline={offline} />
-          {saveError && <Alert variant="destructive"><AlertDescription>{saveError}</AlertDescription></Alert>}
+          <QueryFeedback
+            loading={false}
+            refreshing={isRefreshing && !isLoading}
+            failed={false}
+            updatedAt={updatedAt}
+            offline={offline}
+          />
+          {saveError && (
+            <Alert variant="destructive">
+              <AlertDescription>{saveError}</AlertDescription>
+            </Alert>
+          )}
           <form
             ref={formRef}
             onSubmit={form.handleSubmit(save)}
             className="flex min-h-0 flex-1 flex-col"
             aria-busy={isPostLoading}
           >
-            {isError && <Alert variant="destructive"><AlertDescription className="flex items-center justify-between gap-3">
-              <span>{t("core.generalErrorMessage")}</span><Button type="button" variant="outline" disabled={isRefreshing} onClick={() => void fetchCoreSettings().catch(() => undefined)}>{t("retry")}</Button>
-            </AlertDescription></Alert>}
+            {isError && (
+              <Alert variant="destructive">
+                <AlertDescription className="flex items-center justify-between gap-3">
+                  <span>{t("core.generalErrorMessage")}</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={isRefreshing}
+                    onClick={() => void fetchCoreSettings().catch(() => undefined)}
+                  >
+                    {t("retry")}
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
             <div className="flex min-h-0 flex-1 flex-col gap-3 px-4">
               <div className={fullHeight ? "flex min-h-0 flex-1 flex-col gap-2" : "flex h-2/3 min-h-0 flex-col gap-2"}>
                 <div className="flex items-center justify-between gap-2">
@@ -144,7 +184,6 @@ export function CoreSettingsModal() {
                           }
                         >
                           <JsonEditor
-
                             json={field.value}
                             ariaLabel={t("core.configuration")}
                             onSave={() => {

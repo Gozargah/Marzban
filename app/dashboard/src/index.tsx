@@ -10,11 +10,10 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "utils/react-query";
 import App from "./App";
 import "./index.css";
-import { TooltipProvider } from "@/components/ui/tooltip"
-import { ThemeProvider } from "@/components/theme-provider"
-import { LocaleProvider } from "@/components/locale-provider"
-import { Toaster } from "@/components/ui/sonner"
-
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/components/theme-provider";
+import { LocaleProvider } from "@/components/locale-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 dayjs.extend(Timezone);
 dayjs.extend(LocalizedFormat);
@@ -32,5 +31,5 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         </TooltipProvider>
       </LocaleProvider>
     </QueryClientProvider>
-  </ThemeProvider>
+  </ThemeProvider>,
 );

@@ -42,7 +42,10 @@ export const StatusBadge: FC<UserStatusProps> = ({
 }) => {
   const { t } = useTranslation();
   const dateInfo = relativeExpiryDate(expiryDate);
-  const config = statusConfig[userStatus] || { className: "border-border bg-secondary text-secondary-foreground", icon: Wifi };
+  const config = statusConfig[userStatus] || {
+    className: "border-border bg-secondary text-secondary-foreground",
+    icon: Wifi,
+  };
   const Icon = config.icon;
 
   return (
@@ -52,7 +55,7 @@ export const StatusBadge: FC<UserStatusProps> = ({
         className={cn(
           "rounded-none gap-1 font-medium capitalize",
           config.className,
-          compact ? "px-2 py-0.5 text-[0.7rem]" : "px-2.5 py-1 text-xs"
+          compact ? "px-2 py-0.5 text-[0.7rem]" : "px-2.5 py-1 text-xs",
         )}
       >
         <Icon className={cn(compact ? "size-3" : "size-3.5")} />

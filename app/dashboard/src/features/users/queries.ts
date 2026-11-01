@@ -11,6 +11,8 @@ export function useUsersQuery() {
     loading: query.isFetching || query.isPaused,
     initialLoading: query.isPending,
     usersError: query.isError,
-    refetchUsers: () => { void query.refetch(); },
+    refetchUsers: () => {
+      void query.refetch();
+    },
   };
 }

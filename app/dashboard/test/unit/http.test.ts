@@ -17,7 +17,12 @@ describe("authenticated HTTP adapter", () => {
     const options = { method: "POST" as const, body: { name: "demo" }, retry: 0 };
     expect(await fetch("/user", options)).toEqual({ ok: true });
     expect(create).toHaveBeenCalledWith({ baseURL: "/api", timeout: 15_000 });
-    expect(transport).toHaveBeenCalledWith("/user", { ...options, credentials: "include", timeout: 60_000, headers: { "X-CSRF-Token": "csrf-test" } });
+    expect(transport).toHaveBeenCalledWith("/user", {
+      ...options,
+      credentials: "include",
+      timeout: 60_000,
+      headers: { "X-CSRF-Token": "csrf-test" },
+    });
     expect(options).not.toHaveProperty("headers");
   });
   test("uses cookie credentials and preserves custom headers", async () => {
@@ -31,7 +36,9 @@ describe("authenticated HTTP adapter", () => {
   });
   test("bootstraps a CSRF token after reload when the API cookie is cross-origin", async () => {
     const { fetch, transport } = setup(false);
-    transport.mockImplementation(async (url: string) => url === "/admin/session/csrf" ? { ok: true, csrf_token: "bootstrapped-token" } : { ok: true });
+    transport.mockImplementation(async (url: string) =>
+      url === "/admin/session/csrf" ? { ok: true, csrf_token: "bootstrapped-token" } : { ok: true },
+    );
     await fetch("/user", { method: "POST" });
     expect(transport.mock.calls.map(([url]) => url)).toEqual(["/admin/session/csrf", "/user"]);
     expect(new Headers(transport.mock.lastCall?.[1].headers).get("X-CSRF-Token")).toBe("bootstrapped-token");

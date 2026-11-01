@@ -1,11 +1,26 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
 import { useDashboard } from "@/contexts/dashboard-context";
 import { useHostsSettings } from "@/contexts/hosts-context";
-import { firstErrorPath, hostsSchema, toFormKey, toHostFormValues, toInboundTag, type HostFormValues, type HostValues } from "@/features/hosts/form";
+import {
+  firstErrorPath,
+  hostsSchema,
+  toFormKey,
+  toHostFormValues,
+  toInboundTag,
+  type HostFormValues,
+  type HostValues,
+} from "@/features/hosts/form";
 import { CreateHostSheet, HostWorkspace } from "@/features/hosts/host-editor";
 import { clearDraft } from "@/features/shared/drafts";
 import { useRecoverableDraft } from "@/features/shared/use-recoverable-draft";
@@ -24,7 +39,8 @@ export const DownIcon = ArrowDown;
 export function HostsDialog() {
   const isEditingHosts = useDashboard((state) => state.isEditingHosts);
   const onEditingHosts = useDashboard((state) => state.onEditingHosts);
-  const { hosts, fetchHosts, setHosts, isLoading, isPostLoading, isError, isRefreshing, updatedAt, offline } = useHostsSettings(isEditingHosts);
+  const { hosts, fetchHosts, setHosts, isLoading, isPostLoading, isError, isRefreshing, updatedAt, offline } =
+    useHostsSettings(isEditingHosts);
   const { t } = useTranslation();
   const { direction } = useLocale();
   const [createOpen, setCreateOpen] = useState(false);
@@ -81,7 +97,10 @@ export function HostsDialog() {
           const location = entry?.loc;
           const tag = Array.isArray(location) && location[0] === "body" ? location[1] : null;
           if (typeof tag !== "string" || !Object.hasOwn(hosts, tag)) continue;
-          const suffix = location.slice(2).filter((part: unknown) => typeof part === "string" || typeof part === "number").join(".");
+          const suffix = location
+            .slice(2)
+            .filter((part: unknown) => typeof part === "string" || typeof part === "number")
+            .join(".");
           const path = `${toFormKey(tag)}${suffix ? `.${suffix}` : ""}`;
           form.setError(path, { type: "server", message: String(entry.msg || t("hostsDialog.validationError")) });
           firstPath ??= path;
@@ -94,7 +113,9 @@ export function HostsDialog() {
         }
       } else if (detail && typeof detail === "object")
         Object.entries(detail).forEach(([key, message]) => {
-          const tag = Object.keys(hosts).sort((a, b) => b.length - a.length).find((tag) => key === tag || key.startsWith(`${tag}.`));
+          const tag = Object.keys(hosts)
+            .sort((a, b) => b.length - a.length)
+            .find((tag) => key === tag || key.startsWith(`${tag}.`));
           form.setError(tag ? `${toFormKey(tag)}${key.slice(tag.length)}` : key, { message: String(message) });
         });
     } finally {
@@ -103,49 +124,156 @@ export function HostsDialog() {
   };
   return (
     <DirectionProvider direction={direction === "rtl" ? "rtl" : "ltr"}>
-      <Sheet open={isEditingHosts} onOpenChange={(open) => { if (!open) close(); }}
-        onOpenChangeComplete={(open) => { if (!open) { setSelectedInbound(""); setError(null); } }}>
-        <SheetContent dir={direction} className="w-full! sm:max-w-2xl! gap-0 overflow-hidden" side={direction === "rtl" ? "left" : "right"}
-          showCloseButton={!isPostLoading} initialFocus={titleRef}>
+      <Sheet
+        open={isEditingHosts}
+        onOpenChange={(open) => {
+          if (!open) close();
+        }}
+        onOpenChangeComplete={(open) => {
+          if (!open) {
+            setSelectedInbound("");
+            setError(null);
+          }
+        }}
+      >
+        <SheetContent
+          dir={direction}
+          className="w-full! sm:max-w-2xl! gap-0 overflow-hidden"
+          side={direction === "rtl" ? "left" : "right"}
+          showCloseButton={!isPostLoading}
+          initialFocus={titleRef}
+        >
           <SheetHeader className="shrink-0 border-b px-5 py-5 pe-14 sm:px-6">
-            <SheetTitle ref={titleRef} tabIndex={-1} className="flex items-center gap-2 text-lg outline-none"><span className="flex size-9 items-center justify-center rounded-none bg-primary text-primary-foreground"><Link2 className="size-5" /></span>{t("header.hostSettings")}</SheetTitle>
+            <SheetTitle ref={titleRef} tabIndex={-1} className="flex items-center gap-2 text-lg outline-none">
+              <span className="flex size-9 items-center justify-center rounded-none bg-primary text-primary-foreground">
+                <Link2 className="size-5" />
+              </span>
+              {t("header.hostSettings")}
+            </SheetTitle>
             <SheetDescription>{t("hostsDialog.editorDescription")}</SheetDescription>
           </SheetHeader>
-          <QueryFeedback loading={false} refreshing={isRefreshing && !isLoading} failed={false} updatedAt={updatedAt} offline={offline} />
+          <QueryFeedback
+            loading={false}
+            refreshing={isRefreshing && !isLoading}
+            failed={false}
+            updatedAt={updatedAt}
+            offline={offline}
+          />
           <FormProvider {...form}>
-            <form noValidate onSubmit={form.handleSubmit(save, (errors) => {
-              setSelectedInbound(Object.keys(errors)[0]);
-              setError(t("hostsDialog.validationError"));
-              const path = firstErrorPath(errors);
-              if (path) requestAnimationFrame(() => form.setFocus(path));
-            })} className="flex min-h-0 flex-1 flex-col" aria-busy={isPostLoading}>
-              {isLoading ? <div className="flex flex-1 items-center justify-center gap-2"><Spinner />{t("hostsDialog.loading")}</div> : keys.length ? (
-                <HostWorkspace keys={keys} activeInbound={activeInbound} onSelect={(key) => { setSelectedInbound(key); setError(null); }}
-                  disabled={isPostLoading || loadFailed} creationVersion={creationVersion} draftVersion={draftVersion} onCreate={() => setCreateOpen(true)} />
-              ) : <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-                <Server aria-hidden="true" className="size-8 text-muted-foreground" />
-                <p className="max-w-sm text-muted-foreground">{t("hostsDialog.noInbounds")}</p>
-                {!loadFailed && <Button type="button" variant="outline" onClick={() => {
-                  onEditingHosts(false); useDashboard.setState({ isEditingCore: true });
-                }}><Settings2 />{t("hostsDialog.configureInbounds", { defaultValue: "Configure inbounds" })}</Button>}
-              </div>}
-              <SheetFooter className="shrink-0 space-y-3 border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6">
-                {(error || loadFailed) && <Alert variant="destructive"><AlertDescription>
-                  <p>{error || t("hostsDialog.loadError")}</p>
-                  {loadFailed && <Button type="button" variant="outline" size="sm" disabled={isLoading} onClick={async () => {
+            <form
+              noValidate
+              onSubmit={form.handleSubmit(save, (errors) => {
+                setSelectedInbound(Object.keys(errors)[0]);
+                setError(t("hostsDialog.validationError"));
+                const path = firstErrorPath(errors);
+                if (path) requestAnimationFrame(() => form.setFocus(path));
+              })}
+              className="flex min-h-0 flex-1 flex-col"
+              aria-busy={isPostLoading}
+            >
+              {isLoading ? (
+                <div className="flex flex-1 items-center justify-center gap-2">
+                  <Spinner />
+                  {t("hostsDialog.loading")}
+                </div>
+              ) : keys.length ? (
+                <HostWorkspace
+                  keys={keys}
+                  activeInbound={activeInbound}
+                  onSelect={(key) => {
+                    setSelectedInbound(key);
                     setError(null);
-                    try { await fetchHosts(); } catch { setError(t("hostsDialog.loadError")); }
-                  }}>{t("hostsDialog.retry", { defaultValue: "Retry" })}</Button>}
-                </AlertDescription></Alert>}
+                  }}
+                  disabled={isPostLoading || loadFailed}
+                  creationVersion={creationVersion}
+                  draftVersion={draftVersion}
+                  onCreate={() => setCreateOpen(true)}
+                />
+              ) : (
+                <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+                  <Server aria-hidden="true" className="size-8 text-muted-foreground" />
+                  <p className="max-w-sm text-muted-foreground">{t("hostsDialog.noInbounds")}</p>
+                  {!loadFailed && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        onEditingHosts(false);
+                        useDashboard.setState({ isEditingCore: true });
+                      }}
+                    >
+                      <Settings2 />
+                      {t("hostsDialog.configureInbounds", { defaultValue: "Configure inbounds" })}
+                    </Button>
+                  )}
+                </div>
+              )}
+              <SheetFooter className="shrink-0 space-y-3 border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6">
+                {(error || loadFailed) && (
+                  <Alert variant="destructive">
+                    <AlertDescription>
+                      <p>{error || t("hostsDialog.loadError")}</p>
+                      {loadFailed && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={isLoading}
+                          onClick={async () => {
+                            setError(null);
+                            try {
+                              await fetchHosts();
+                            } catch {
+                              setError(t("hostsDialog.loadError"));
+                            }
+                          }}
+                        >
+                          {t("hostsDialog.retry", { defaultValue: "Retry" })}
+                        </Button>
+                      )}
+                    </AlertDescription>
+                  </Alert>
+                )}
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <p role="status" className="flex items-center gap-2 text-xs text-muted-foreground">
-                    {isLoading ? <Spinner /> : loadFailed ? <Info className="size-4" /> : form.formState.isDirty ? <span className="size-2 rounded-full bg-warning" /> : <Check className="size-4" />}
-                    {t(isLoading ? "hostsDialog.loading" : loadFailed ? (updatedAt ? "dataStatus.stale" : "hostsDialog.notLoaded") : form.formState.isDirty ? "hostsDialog.unsavedChanges" : "hostsDialog.savedState")}
+                    {isLoading ? (
+                      <Spinner />
+                    ) : loadFailed ? (
+                      <Info className="size-4" />
+                    ) : form.formState.isDirty ? (
+                      <span className="size-2 rounded-full bg-warning" />
+                    ) : (
+                      <Check className="size-4" />
+                    )}
+                    {t(
+                      isLoading
+                        ? "hostsDialog.loading"
+                        : loadFailed
+                          ? updatedAt
+                            ? "dataStatus.stale"
+                            : "hostsDialog.notLoaded"
+                          : form.formState.isDirty
+                            ? "hostsDialog.unsavedChanges"
+                            : "hostsDialog.savedState",
+                    )}
                   </p>
                   <div className="flex gap-2">
-                    <Button type="button" variant="outline" disabled={isPostLoading} onClick={close}>{t("cancel")}</Button>
-                    <Button type="submit" disabled={isLoading || isRefreshing || isPostLoading || loadFailed || !form.formState.isDirty || !keys.length}>
-                      {isPostLoading && <Spinner />}{t(isPostLoading ? "hostsDialog.saving" : "hostsDialog.saveAllChanges")}
+                    <Button type="button" variant="outline" disabled={isPostLoading} onClick={close}>
+                      {t("cancel")}
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={
+                        isLoading ||
+                        isRefreshing ||
+                        isPostLoading ||
+                        loadFailed ||
+                        !form.formState.isDirty ||
+                        !keys.length
+                      }
+                    >
+                      {isPostLoading && <Spinner />}
+                      {t(isPostLoading ? "hostsDialog.saving" : "hostsDialog.saveAllChanges")}
                     </Button>
                   </div>
                 </div>
@@ -154,13 +282,23 @@ export function HostsDialog() {
           </FormProvider>
         </SheetContent>
       </Sheet>
-      <CreateHostSheet open={createOpen} keys={keys} initialInbound={activeInbound} onClose={() => setCreateOpen(false)}
+      <CreateHostSheet
+        open={createOpen}
+        keys={keys}
+        initialInbound={activeInbound}
+        onClose={() => setCreateOpen(false)}
         onCreate={(host, targets) => {
           setCreationVersion((version) => version + 1);
           targets.forEach((key) => form.setValue(key, [...form.getValues(key), { ...host }], { shouldDirty: true }));
           setSelectedInbound(targets.length === 1 ? targets[0] : "");
-          toast.success(t("hostsDialog.addedToDraft", { defaultValue: "Host added to {{count}} inbounds. Save all changes to publish it.", count: targets.length }));
-        }} />
+          toast.success(
+            t("hostsDialog.addedToDraft", {
+              defaultValue: "Host added to {{count}} inbounds. Save all changes to publish it.",
+              count: targets.length,
+            }),
+          );
+        }}
+      />
       <AlertDialog open={confirmClose} onOpenChange={setConfirmClose}>
         <AlertDialogContent dir={direction} initialFocus={cancelDiscardRef}>
           <AlertDialogHeader>
@@ -168,8 +306,12 @@ export function HostsDialog() {
             <AlertDialogDescription>{t("hostsDialog.discardDescription")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <Button type="button" ref={cancelDiscardRef} variant="outline" onClick={() => setConfirmClose(false)}>{t("hostsDialog.keepEditing")}</Button>
-            <Button type="button" variant="destructive" onClick={discard}>{t("hostsDialog.discard")}</Button>
+            <Button type="button" ref={cancelDiscardRef} variant="outline" onClick={() => setConfirmClose(false)}>
+              {t("hostsDialog.keepEditing")}
+            </Button>
+            <Button type="button" variant="destructive" onClick={discard}>
+              {t("hostsDialog.discard")}
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

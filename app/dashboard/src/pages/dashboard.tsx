@@ -64,7 +64,9 @@ export function Dashboard() {
 
   useEffect(() => {
     // Warm the shared chart after initial dashboard work; cancel if navigation occurs first.
-    const warmup = window.setTimeout(() => { void preloadTrafficChart(); }, 2000);
+    const warmup = window.setTimeout(() => {
+      void preloadTrafficChart();
+    }, 2000);
     return () => window.clearTimeout(warmup);
   }, []);
 
@@ -89,22 +91,49 @@ export function Dashboard() {
       <main className="w-full">
         <Header />
         <Statistics />
-        {inbounds.failed && <Alert variant="destructive">
-          <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
-            <span>{t("inboundsLoadError", { defaultValue: "Could not load connection protocols. Retry before creating a user." })}</span>
-            <Button variant="outline" disabled={inbounds.loading} onClick={() => void inbounds.retry()}>{t("retry", { defaultValue: "Retry" })}</Button>
-          </AlertDescription>
-        </Alert>}
-        {filtersReady ? <><Filters /><UsersTable /></> : <QueryFeedback loading refreshing={false} failed={false} />}
+        {inbounds.failed && (
+          <Alert variant="destructive">
+            <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
+              <span>
+                {t("inboundsLoadError", {
+                  defaultValue: "Could not load connection protocols. Retry before creating a user.",
+                })}
+              </span>
+              <Button variant="outline" disabled={inbounds.loading} onClick={() => void inbounds.retry()}>
+                {t("retry", { defaultValue: "Retry" })}
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+        {filtersReady ? (
+          <>
+            <Filters />
+            <UsersTable />
+          </>
+        ) : (
+          <QueryFeedback loading refreshing={false} failed={false} />
+        )}
       </main>
       <DeleteUserModal open={showDeleteUser} onClose={() => useDashboard.setState({ deletingUser: null })} />
-      <QRCodeDialog open={showQRCode} onClose={() => useDashboard.setState({ QRcodeLinks: null, subscribeUrl: null })} />
+      <QRCodeDialog
+        open={showQRCode}
+        onClose={() => useDashboard.setState({ QRcodeLinks: null, subscribeUrl: null })}
+      />
       <ResetUserUsageModal open={showResetUsage} onClose={() => useDashboard.setState({ resetUsageUser: null })} />
-      <RevokeSubscriptionModal open={showRevokeSubscription} onClose={() => useDashboard.setState({ revokeSubscriptionUser: null })} />
+      <RevokeSubscriptionModal
+        open={showRevokeSubscription}
+        onClose={() => useDashboard.setState({ revokeSubscriptionUser: null })}
+      />
       <NodesUsage open={isShowingNodesUsage} onClose={() => useDashboard.setState({ isShowingNodesUsage: false })} />
-      <ResetAllUsageModal open={isResetingAllUsage} onClose={() => useDashboard.setState({ isResetingAllUsage: false })} />
+      <ResetAllUsageModal
+        open={isResetingAllUsage}
+        onClose={() => useDashboard.setState({ isResetingAllUsage: false })}
+      />
       <CoreSettingsModal open={showCore} onClose={() => useDashboard.setState({ isEditingCore: false })} />
-      <UserDialog open={showUser} onClose={() => useDashboard.setState({ isCreatingNewUser: false, editingUser: null })} />
+      <UserDialog
+        open={showUser}
+        onClose={() => useDashboard.setState({ isCreatingNewUser: false, editingUser: null })}
+      />
       <NodesDialog open={showNodes} onClose={() => useDashboard.setState({ isEditingNodes: false })} />
       <HostsDialog open={showHosts} onClose={() => useDashboard.setState({ isEditingHosts: false })} />
       <Footer />

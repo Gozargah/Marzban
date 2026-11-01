@@ -75,10 +75,11 @@ export const NodeLogs = () => {
     onMessage: (e: any) => {
       if (typeof e.data !== "string") return;
       buffer.current.append(e.data);
-      if (flushTimer.current === null) flushTimer.current = setTimeout(() => {
-        flushTimer.current = null;
-        setLogs(buffer.current.snapshot());
-      }, 100);
+      if (flushTimer.current === null)
+        flushTimer.current = setTimeout(() => {
+          flushTimer.current = null;
+          setLogs(buffer.current.snapshot());
+        }, 100);
     },
     shouldReconnect: () => true,
     reconnectAttempts: 10,

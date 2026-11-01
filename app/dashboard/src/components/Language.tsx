@@ -25,8 +25,7 @@ export function Language({ showLabel = false }: { showLabel?: boolean }) {
   const { direction, language } = useLocale();
   const languageCode = language.toLowerCase();
   const selectedLanguage =
-    languages.find(({ value }) => value.split("-")[0] === languageCode.split("-")[0]) ||
-    languages[0];
+    languages.find(({ value }) => value.split("-")[0] === languageCode.split("-")[0]) || languages[0];
 
   async function changeLanguage(value: string) {
     if (!languages.some((language) => language.value === value)) return;

@@ -14,14 +14,30 @@ export function cleanupQueryClients() {
 
 export function renderFrontend(ui: ReactNode, language = "en") {
   const i18n = createInstance();
-  void i18n.init({ lng: language, fallbackLng: "en", initImmediate: false,
+  void i18n.init({
+    lng: language,
+    fallbackLng: "en",
+    initImmediate: false,
     resources: { en: { translation: en }, fa: { translation: fa } },
-    interpolation: { escapeValue: false }, react: { useSuspense: false } });
-  const client = new QueryClient({ defaultOptions: {
-    queries: { retry: false, gcTime: Infinity }, mutations: { retry: false, networkMode: "always" },
-  }});
+    interpolation: { escapeValue: false },
+    react: { useSuspense: false },
+  });
+  const client = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, gcTime: Infinity },
+      mutations: { retry: false, networkMode: "always" },
+    },
+  });
   clients.add(client);
-  return { ...render(<I18nextProvider i18n={i18n}><QueryClientProvider client={client}>{ui}</QueryClientProvider></I18nextProvider>), client, i18n };
+  return {
+    ...render(
+      <I18nextProvider i18n={i18n}>
+        <QueryClientProvider client={client}>{ui}</QueryClientProvider>
+      </I18nextProvider>,
+    ),
+    client,
+    i18n,
+  };
 }
 
 // The real locale hook is exercised separately in the locale regression suite.

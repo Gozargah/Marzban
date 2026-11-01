@@ -6,19 +6,44 @@ import { loadSource } from "../helpers/load-source";
 import { localeAdapter, renderFrontend } from "../helpers/render";
 
 function setup(sudo = true, desktop = false) {
-  spyOn(window, "matchMedia").mockImplementation((query) => ({ matches: desktop && query === "(min-width: 768px)", media: query, onchange: null, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {}, dispatchEvent: () => false }));
-  const reset = mock(() => {}), logout = mock(() => {});
-  const store = create(() => ({ onEditingHosts: mock(() => {}), onEditingNodes: mock(() => {}), onShowingNodesUsage: mock(() => {}), onResetAllUsage: reset }));
-  const { Header } = loadSource<typeof import("../../src/components/dashboard/header")>("components/dashboard/header.tsx", {
-    ...localeAdapter,
-    "@/contexts/dashboard-context": { useDashboard: store },
-    "hooks/useGetUser": { __esModule: true, default: () => ({ userData: { username: "alice", is_sudo: sudo }, getUserIsSuccess: true, getUserIsPending: false }) },
-    "@/components/theme-provider": { useTheme: () => ({ resolvedTheme: "dark", setTheme: mock(() => {}) }) },
-    "@/components/language": { Language: () => <button>Language</button> },
-    "service/http": { fetch: mock(async () => ({})) },
-    "react-router": { Link: ({ to, ...props }: any) => <a href={to} {...props} /> },
-    "utils/authStorage": { clearAuthState: logout },
-  });
+  spyOn(window, "matchMedia").mockImplementation((query) => ({
+    matches: desktop && query === "(min-width: 768px)",
+    media: query,
+    onchange: null,
+    addListener() {},
+    removeListener() {},
+    addEventListener() {},
+    removeEventListener() {},
+    dispatchEvent: () => false,
+  }));
+  const reset = mock(() => {}),
+    logout = mock(() => {});
+  const store = create(() => ({
+    onEditingHosts: mock(() => {}),
+    onEditingNodes: mock(() => {}),
+    onShowingNodesUsage: mock(() => {}),
+    onResetAllUsage: reset,
+  }));
+  const { Header } = loadSource<typeof import("../../src/components/dashboard/header")>(
+    "components/dashboard/header.tsx",
+    {
+      ...localeAdapter,
+      "@/contexts/dashboard-context": { useDashboard: store },
+      "hooks/useGetUser": {
+        __esModule: true,
+        default: () => ({
+          userData: { username: "alice", is_sudo: sudo },
+          getUserIsSuccess: true,
+          getUserIsPending: false,
+        }),
+      },
+      "@/components/theme-provider": { useTheme: () => ({ resolvedTheme: "dark", setTheme: mock(() => {}) }) },
+      "@/components/language": { Language: () => <button>Language</button> },
+      "service/http": { fetch: mock(async () => ({})) },
+      "react-router": { Link: ({ to, ...props }: any) => <a href={to} {...props} /> },
+      "utils/authStorage": { clearAuthState: logout },
+    },
+  );
   const view = renderFrontend(<Header />);
   return { ...view, reset, logout };
 }

@@ -4,11 +4,7 @@ import { canReloadWithoutLosingDrafts, draftFlushEvent } from "@/features/shared
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
-export function DeploymentRecovery({
-  reload = () => window.location.reload(),
-}: {
-  reload?: () => void;
-}) {
+export function DeploymentRecovery({ reload = () => window.location.reload() }: { reload?: () => void }) {
   const { t } = useTranslation();
   const [failed, setFailed] = useState(false);
   const [blocked, setBlocked] = useState(false);
@@ -22,10 +18,7 @@ export function DeploymentRecovery({
   }, []);
   if (!failed) return null;
   return (
-    <Alert
-      variant="destructive"
-      className="fixed inset-x-4 bottom-4 z-[100] mx-auto max-w-xl shadow-lg"
-    >
+    <Alert variant="destructive" className="fixed inset-x-4 bottom-4 z-[100] mx-auto max-w-xl shadow-lg">
       <AlertDescription className="space-y-3">
         <p>
           {t("deploymentRecovery.message", {
@@ -36,8 +29,7 @@ export function DeploymentRecovery({
         {blocked && (
           <p>
             {t("deploymentRecovery.blocked", {
-              defaultValue:
-                "Your browser could not save a draft. Save or discard your edits before reloading.",
+              defaultValue: "Your browser could not save a draft. Save or discard your edits before reloading.",
             })}
           </p>
         )}

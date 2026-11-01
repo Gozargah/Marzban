@@ -11,21 +11,22 @@ import { Spinner } from "@/components/ui/spinner";
 import { useDashboard } from "@/contexts/dashboard-context";
 import { cn } from "@/lib/utils";
 
-export const ReloadIcon = React.forwardRef<
-  SVGSVGElement,
-  React.ComponentProps<typeof RefreshCw>
->(({ className, ...props }, ref) => (
-  <RefreshCw ref={ref} className={cn("size-4 shrink-0", className)} {...props} />
-));
+export const ReloadIcon = React.forwardRef<SVGSVGElement, React.ComponentProps<typeof RefreshCw>>(
+  ({ className, ...props }, ref) => <RefreshCw ref={ref} className={cn("size-4 shrink-0", className)} {...props} />,
+);
 ReloadIcon.displayName = "ReloadIcon";
 
 export type FilterProps = React.ComponentProps<"div">;
 
 export const Filters: FC<FilterProps> = ({ className, ...props }) => {
   const { loading, initialLoading, usersError, refetchUsers, dataUpdatedAt, isPaused } = useUsersQuery();
-  const setSearchField = useMemo(() => debounce((search: string) => {
-    useDashboard.getState().onFilterChange({ offset: 0, search });
-  }, 300), []);
+  const setSearchField = useMemo(
+    () =>
+      debounce((search: string) => {
+        useDashboard.getState().onFilterChange({ offset: 0, search });
+      }, 300),
+    [],
+  );
   const filters = useDashboard((state) => state.filters);
   const onFilterChange = useDashboard((state) => state.onFilterChange);
   const onCreateUser = useDashboard((state) => state.onCreateUser);
@@ -75,12 +76,21 @@ export const Filters: FC<FilterProps> = ({ className, ...props }) => {
       className={cn(
         "sticky top-0 z-10 -mx-3 px-3 lg:-mx-6 lg:px-6 py-4",
         "grid grid-cols-1 gap-4 md:grid-cols-4 lg:grid-cols-3",
-        className
+        className,
       )}
       {...props}
     >
-      <div className="col-span-full"><QueryFeedback loading={initialLoading} refreshing={loading && !initialLoading} failed={usersError}
-        updatedAt={dataUpdatedAt} offline={isPaused} retry={refetchUsers} message={t("usersLoadError", { defaultValue: "Could not load users. Use refresh to try again." })} /></div>
+      <div className="col-span-full">
+        <QueryFeedback
+          loading={initialLoading}
+          refreshing={loading && !initialLoading}
+          failed={usersError}
+          updatedAt={dataUpdatedAt}
+          offline={isPaused}
+          retry={refetchUsers}
+          message={t("usersLoadError", { defaultValue: "Could not load users. Use refresh to try again." })}
+        />
+      </div>
       <div className="col-span-1 order-2 md:order-1 md:col-span-2 lg:col-span-1">
         <div className="relative w-full">
           <Search
@@ -124,13 +134,7 @@ export const Filters: FC<FilterProps> = ({ className, ...props }) => {
         >
           <ReloadIcon className={cn(loading && "animate-spin")} />
         </Button>
-        <Button
-          type="button"
-          variant="default"
-          size="sm"
-          className="px-5"
-          onClick={() => onCreateUser(true)}
-        >
+        <Button type="button" variant="default" size="sm" className="px-5" onClick={() => onCreateUser(true)}>
           {t("createUser")}
         </Button>
       </div>

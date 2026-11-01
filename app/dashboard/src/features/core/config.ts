@@ -1,5 +1,8 @@
 export class CoreConfigError extends Error {
-  constructor() { super("core.objectRequired"); this.name = "CoreConfigError"; }
+  constructor() {
+    super("core.objectRequired");
+    this.name = "CoreConfigError";
+  }
 }
 export function parseCoreConfig(json: string): Record<string, unknown> {
   const body: unknown = JSON.parse(json);

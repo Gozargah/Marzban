@@ -11,7 +11,8 @@ function setup() {
   const navigate = mock(async () => {});
   const clear = mock(() => {});
   const { Login } = loadSource<typeof import("../../src/pages/login")>("pages/login.tsx", {
-    ...localeAdapter, "service/http": { ...net, setCsrfToken },
+    ...localeAdapter,
+    "service/http": { ...net, setCsrfToken },
     "react-router": { useNavigate: () => navigate, useLocation: () => ({ pathname: "/login" }) },
     "utils/react-query": { queryClient: { clear } },
     "assets/logo.svg?react": () => <svg aria-hidden="true" />,
@@ -39,19 +40,25 @@ describe("login", () => {
     expect(localStorage.getItem("token")).toBeNull();
   });
   test("empty fields prevent authentication and report errors", async () => {
-    const { submit, net } = setup(); submit();
+    const { submit, net } = setup();
+    submit();
     await waitFor(() => expect(screen.getByPlaceholderText("Username")).toHaveAttribute("aria-invalid", "true"));
     expect(screen.getByPlaceholderText("Password")).toHaveAttribute("aria-invalid", "true");
     expect(net.calls).toHaveLength(0);
   });
   test("submits credentials to the cookie session endpoint and navigates", async () => {
     const { submit, net, navigate, clear, setCsrfToken } = setup();
-    await credentials(); submit();
+    await credentials();
+    submit();
     await waitFor(() => expect(net.calls).toHaveLength(1));
     const request = net.calls[0];
     expect(request.url).toBe("/admin/session");
     expect(request.options).toMatchObject({ method: "POST", retry: 0 });
-    expect(Object.fromEntries(request.options.body)).toEqual({ username: "alice", password: "secret", grant_type: "password" });
+    expect(Object.fromEntries(request.options.body)).toEqual({
+      username: "alice",
+      password: "secret",
+      grant_type: "password",
+    });
     expect(screen.getByRole("button", { name: "Login" })).toBeDisabled();
     expect(screen.getByPlaceholderText("Password")).toHaveAttribute("readonly");
     request.resolve({ username: "alice", is_sudo: false, csrf_token: "csrf" });
@@ -62,13 +69,15 @@ describe("login", () => {
   });
   test("network failure shows an error and permits retry", async () => {
     const { submit, net, navigate } = setup();
-    await credentials(); submit();
+    await credentials();
+    submit();
     await waitFor(() => expect(net.calls).toHaveLength(1));
     net.calls[0].reject(new Error("offline"));
     expect(await screen.findByRole("alert")).toHaveTextContent(/try again/i);
     expect(navigate).not.toHaveBeenCalled();
     expect(localStorage.getItem("token")).toBeNull();
-    submit(); await waitFor(() => expect(net.calls).toHaveLength(2));
+    submit();
+    await waitFor(() => expect(net.calls).toHaveLength(2));
     net.calls[1].resolve({ username: "alice", is_sudo: false, csrf_token: "csrf" });
     await waitFor(() => expect(navigate).toHaveBeenCalledWith("/", { replace: true }));
   });

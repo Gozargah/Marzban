@@ -10,12 +10,27 @@ function setup(patch: Record<string, unknown> = {}) {
   const onFilterChange = mock((_filters: unknown) => {});
   const onCreateUser = mock((_open: boolean) => {});
   const onEditingUser = mock((_user: unknown) => {});
-  const store = create(() => ({ filters: { sort: "-created_at", limit: 10 }, users: { users: [], total: 0 }, loading: false, usersError: false,
-    onFilterChange, onCreateUser, onEditingUser, setQRCode: mock(() => {}), setSubLink: mock(() => {}), ...patch }));
-  const { UsersTable } = loadSource<typeof import("../../src/components/dashboard/table/users-table")>("components/dashboard/table/users-table.tsx", {
-    ...localeAdapter, ...usersAdapter(store), "@/contexts/dashboard-context": { useDashboard: store },
-    "assets/add_file.svg?react": () => <svg aria-hidden="true" />,
-  });
+  const store = create(() => ({
+    filters: { sort: "-created_at", limit: 10 },
+    users: { users: [], total: 0 },
+    loading: false,
+    usersError: false,
+    onFilterChange,
+    onCreateUser,
+    onEditingUser,
+    setQRCode: mock(() => {}),
+    setSubLink: mock(() => {}),
+    ...patch,
+  }));
+  const { UsersTable } = loadSource<typeof import("../../src/components/dashboard/table/users-table")>(
+    "components/dashboard/table/users-table.tsx",
+    {
+      ...localeAdapter,
+      ...usersAdapter(store),
+      "@/contexts/dashboard-context": { useDashboard: store },
+      "assets/add_file.svg?react": () => <svg aria-hidden="true" />,
+    },
+  );
   return { ...renderFrontend(<UsersTable />), onFilterChange, onCreateUser, onEditingUser };
 }
 
@@ -43,8 +58,10 @@ test("users render identity and sorting resets pagination", () => {
 });
 
 test("desktop row can open the user editor with the keyboard", () => {
-  const user = makeUser(); const { onEditingUser } = setup({ users: { users: [user], total: 1 } });
+  const user = makeUser();
+  const { onEditingUser } = setup({ users: { users: [user], total: 1 } });
   const row = screen.getByRole("row", { name: "Edit alice" });
-  expect(row).toHaveAttribute("tabindex", "0"); fireEvent.keyDown(row, { key: "Enter" });
+  expect(row).toHaveAttribute("tabindex", "0");
+  fireEvent.keyDown(row, { key: "Enter" });
   expect(onEditingUser).toHaveBeenCalledWith(user);
 });

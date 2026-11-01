@@ -1,15 +1,27 @@
-import { fireEvent,screen } from "@testing-library/react";
-import { expect,test } from "bun:test";
-import { ThemeProvider,useTheme } from "../../src/components/theme-provider";
+import { fireEvent, screen } from "@testing-library/react";
+import { expect, test } from "bun:test";
+import { ThemeProvider, useTheme } from "../../src/components/theme-provider";
 import { renderFrontend } from "../helpers/render";
 
 function Consumer() {
   const { theme, resolvedTheme, setTheme } = useTheme();
-  return <><output>{theme}:{resolvedTheme}</output><button onClick={() => setTheme("light")}>Light</button><button onClick={() => setTheme("dark")}>Dark</button></>;
+  return (
+    <>
+      <output>
+        {theme}:{resolvedTheme}
+      </output>
+      <button onClick={() => setTheme("light")}>Light</button>
+      <button onClick={() => setTheme("dark")}>Dark</button>
+    </>
+  );
 }
 
 test("theme changes root class, color scheme and saved preference", () => {
-  renderFrontend(<ThemeProvider defaultTheme="dark"><Consumer /></ThemeProvider>);
+  renderFrontend(
+    <ThemeProvider defaultTheme="dark">
+      <Consumer />
+    </ThemeProvider>,
+  );
   expect(document.documentElement).toHaveClass("dark");
   fireEvent.click(screen.getByRole("button", { name: "Light" }));
   expect(document.documentElement).toHaveClass("light");
@@ -19,22 +31,45 @@ test("theme changes root class, color scheme and saved preference", () => {
 });
 test("valid stored preference overrides default", () => {
   localStorage.setItem("theme-test", "light");
-  renderFrontend(<ThemeProvider defaultTheme="dark" storageKey="theme-test"><Consumer /></ThemeProvider>);
+  renderFrontend(
+    <ThemeProvider defaultTheme="dark" storageKey="theme-test">
+      <Consumer />
+    </ThemeProvider>,
+  );
   expect(screen.getByText("light:light")).toBeInTheDocument();
 });
 test("invalid stored theme uses default", () => {
   localStorage.setItem("vite-ui-theme", "invalid");
-  renderFrontend(<ThemeProvider defaultTheme="dark"><Consumer /></ThemeProvider>);
+  renderFrontend(
+    <ThemeProvider defaultTheme="dark">
+      <Consumer />
+    </ThemeProvider>,
+  );
   expect(screen.getByText("dark:dark")).toBeInTheDocument();
 });
 test("theme remains usable when storage is blocked", () => {
   const descriptor = Object.getOwnPropertyDescriptor(globalThis, "localStorage")!;
-  Object.defineProperty(globalThis, "localStorage", { configurable: true, value: {
-    getItem() { throw new Error("blocked"); }, setItem() { throw new Error("blocked"); }, clear() {},
-  } });
+  Object.defineProperty(globalThis, "localStorage", {
+    configurable: true,
+    value: {
+      getItem() {
+        throw new Error("blocked");
+      },
+      setItem() {
+        throw new Error("blocked");
+      },
+      clear() {},
+    },
+  });
   try {
-    renderFrontend(<ThemeProvider defaultTheme="dark"><Consumer /></ThemeProvider>);
+    renderFrontend(
+      <ThemeProvider defaultTheme="dark">
+        <Consumer />
+      </ThemeProvider>,
+    );
     fireEvent.click(screen.getByRole("button", { name: "Light" }));
     expect(screen.getByText("light:light")).toBeInTheDocument();
-  } finally { Object.defineProperty(globalThis, "localStorage", descriptor); }
+  } finally {
+    Object.defineProperty(globalThis, "localStorage", descriptor);
+  }
 });

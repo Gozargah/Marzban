@@ -9,10 +9,27 @@ function setup(open = true) {
   const onConfirm = mock(() => request.promise);
   const onClose = mock(() => {});
   const success = mock(() => {});
-  const { ConfirmationDialog } = loadSource<typeof import("../../src/components/dashboard/confirmation-dialog")>("components/dashboard/confirmation-dialog.tsx", {
-    ...localeAdapter, sonner: { toast: { success } },
-  });
-  renderFrontend(<ConfirmationDialog open={open} onClose={onClose} onConfirm={onConfirm} title="Delete user" description="This deletes Alice." actionLabel="Delete" successMessage="Deleted" errorMessage="Could not delete" icon={<span />} destructive />);
+  const { ConfirmationDialog } = loadSource<typeof import("../../src/components/dashboard/confirmation-dialog")>(
+    "components/dashboard/confirmation-dialog.tsx",
+    {
+      ...localeAdapter,
+      sonner: { toast: { success } },
+    },
+  );
+  renderFrontend(
+    <ConfirmationDialog
+      open={open}
+      onClose={onClose}
+      onConfirm={onConfirm}
+      title="Delete user"
+      description="This deletes Alice."
+      actionLabel="Delete"
+      successMessage="Deleted"
+      errorMessage="Could not delete"
+      icon={<span />}
+      destructive
+    />,
+  );
   return { request, onConfirm, onClose, success };
 }
 
@@ -30,7 +47,8 @@ test("cancel closes without mutation", async () => {
 test("pending confirmation blocks repeated submissions and cancel; success closes", async () => {
   const { onConfirm, onClose, success, request } = setup();
   const action = await screen.findByRole("button", { name: "Delete" });
-  fireEvent.click(action); fireEvent.click(action);
+  fireEvent.click(action);
+  fireEvent.click(action);
   expect(onConfirm).toHaveBeenCalledTimes(1);
   expect(action).toBeDisabled();
   expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
@@ -44,7 +62,8 @@ test("failure leaves dialog open with error and permits retry", async () => {
   fireEvent.click(await screen.findByRole("button", { name: "Delete" }));
   request.reject(new Error("offline"));
   expect(await screen.findByRole("alert")).toHaveTextContent("Could not delete");
-  expect(onClose).not.toHaveBeenCalled(); expect(success).not.toHaveBeenCalled();
+  expect(onClose).not.toHaveBeenCalled();
+  expect(success).not.toHaveBeenCalled();
   onConfirm.mockResolvedValueOnce(undefined);
   fireEvent.click(screen.getByRole("button", { name: "Delete" }));
   await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));

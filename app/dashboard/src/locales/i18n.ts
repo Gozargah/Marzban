@@ -46,13 +46,10 @@ i18n
         caches: ["localStorage", "sessionStorage", "cookie"],
       },
       backend: {
-        loadPath: joinPaths([
-          import.meta.env.BASE_URL,
-          `statics/locales/{{lng}}.json`,
-        ]),
+        loadPath: joinPaths([import.meta.env.BASE_URL, `statics/locales/{{lng}}.json`]),
       },
     },
-    syncLanguageMetadata
+    syncLanguageMetadata,
   );
 
 // DataPicker

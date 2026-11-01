@@ -2,7 +2,10 @@
 export function createPreloader(load: () => Promise<unknown>) {
   let pending: Promise<unknown> | undefined;
   return () => {
-    if (!pending) pending = load().catch(() => { pending = undefined; });
+    if (!pending)
+      pending = load().catch(() => {
+        pending = undefined;
+      });
     return pending;
   };
 }
