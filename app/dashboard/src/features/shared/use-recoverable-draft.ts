@@ -3,7 +3,11 @@ import { useFormState, useWatch, type FieldValues, type UseFormReturn } from "re
 import { readDraft, saveDraft } from "./drafts";
 
 /** Tab-scoped, short-lived drafts are cleared on save/discard/logout. Never reload automatically. */
-export function useRecoverableDraft<T extends FieldValues>(key: string, form: UseFormReturn<T>, open: boolean) {
+export function useRecoverableDraft<T extends FieldValues>(
+  key: string,
+  form: UseFormReturn<T, any, any>,
+  open: boolean,
+) {
   const values = useWatch({ control: form.control });
   const { isDirty } = useFormState({ control: form.control });
   useEffect(() => {

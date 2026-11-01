@@ -6,6 +6,7 @@ from app.utils.helpers import UUIDEncoder
 from jinja2.exceptions import TemplateNotFound
 
 from app.subscription.funcs import get_grpc_gun
+from app.subscription.host_extras import ech_config_b64
 from app.templates import render_template
 from config import (
     MUX_TEMPLATE,
@@ -319,6 +320,13 @@ class SingBoxConfiguration(str):
             ais=inbound.get('ais', ''),
             mux_enable=inbound.get('mux_enable', False),
             random_user_agent=inbound.get('random_user_agent', False),)
+
+        # sing-box pins public keys rather than certificates, so only ECH is mapped.
+        if (ech := ech_config_b64(inbound.get('tls_extra'))) and 'tls' in outbound and inbound['tls'] == 'tls':
+            outbound['tls']['ech'] = {
+                "enabled": True,
+                "config": ["-----BEGIN ECH CONFIGS-----", ech, "-----END ECH CONFIGS-----"],
+            }
 
         if inbound['protocol'] == 'vmess':
             outbound['uuid'] = settings['id']

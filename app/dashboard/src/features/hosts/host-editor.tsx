@@ -24,9 +24,17 @@ import {
   type HostFormValues,
   type HostValues,
 } from "@/features/hosts/form";
+import { InboundCoefficient } from "@/features/hosts/inbound-coefficient";
 import { useLocale } from "@/hooks/use-locale";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { proxyALPN, proxyFingerprint, proxyHostSecurity } from "constants/Proxies";
+import {
+  echForceQueryModes,
+  proxyALPN,
+  proxyFingerprint,
+  proxyHostSecurity,
+  xhttpModes,
+  xudpProxyUdp443Modes,
+} from "constants/Proxies";
 import { ArrowDown, ArrowUp, ChevronDown, Copy, Info, Plus, Search, Server, Trash2, Undo2, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { Controller, FormProvider, useFieldArray, useForm, useFormContext, useWatch } from "react-hook-form";
@@ -137,8 +145,20 @@ function HostCard({
   const [advancedSections, setAdvancedSections] = useState<string[]>([]);
   const errorSections = [
     { key: "transport", fields: ["host", "path", "mux_enable", "random_user_agent"] },
-    { key: "security", fields: ["security", "sni", "alpn", "fingerprint", "use_sni_as_host", "allowinsecure"] },
-    { key: "advanced", fields: ["fragment_setting", "noise_setting"] },
+    {
+      key: "security",
+      fields: [
+        "security",
+        "sni",
+        "alpn",
+        "fingerprint",
+        "use_sni_as_host",
+        "allowinsecure",
+        "tls_extra",
+        "reality_extra",
+      ],
+    },
+    { key: "advanced", fields: ["fragment_setting", "noise_setting", "xhttp_extra", "mux_settings"] },
   ]
     .filter((section) => section.fields.some((name) => form.getFieldState(`${prefix}.${name}`, form.formState).invalid))
     .map((section) => section.key);
@@ -159,10 +179,12 @@ function HostCard({
         <Field className="gap-1.5" data-invalid={fieldState.invalid}>
           <div className="flex items-center justify-between gap-2">
             <FieldLabel htmlFor={`${id}-${name}`}>{title}</FieldLabel>
-            <FieldHelp
-              title={title}
-              name={name === "fragment_setting" ? "fragment" : name === "noise_setting" ? "noise" : name}
-            />
+            {!name.includes(".") && (
+              <FieldHelp
+                title={title}
+                name={name === "fragment_setting" ? "fragment" : name === "noise_setting" ? "noise" : name}
+              />
+            )}
           </div>
           <Input
             {...field}
@@ -171,8 +193,8 @@ function HostCard({
             placeholder={placeholder}
             type={type}
             dir={name === "remark" ? undefined : "ltr"}
-            min={type === "number" ? 1 : undefined}
-            max={type === "number" ? 65535 : undefined}
+            min={type === "number" && name === "port" ? 1 : undefined}
+            max={type === "number" && name === "port" ? 65535 : undefined}
             disabled={disabled}
             aria-invalid={fieldState.invalid}
             aria-describedby={fieldState.invalid ? `${id}-${name}-error` : undefined}
@@ -337,6 +359,35 @@ function HostCard({
               </div>
               {checkbox("use_sni_as_host", "useSniAsHost")}
               {checkbox("allowinsecure", "allowinsecure")}
+              {values?.security === "tls" && (
+                <div className="grid gap-4 border-t pt-4 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    {field("tls_extra.ech_config_list", t("hostsDialog.tls_extra.ech_config_list"), "AEX+DQBB...")}
+                  </div>
+                  {select("tls_extra.ech_force_query", echForceQueryModes)}
+                  {field(
+                    "tls_extra.verify_peer_cert_by_name",
+                    t("hostsDialog.tls_extra.verify_peer_cert_by_name"),
+                    "cloudflare-dns.com",
+                  )}
+                  <div className="sm:col-span-2">
+                    {field(
+                      "tls_extra.pinned_peer_cert_sha256",
+                      t("hostsDialog.tls_extra.pinned_peer_cert_sha256"),
+                      "64-char hex, comma separated",
+                    )}
+                  </div>
+                </div>
+              )}
+              {values?.security === "reality" && (
+                <div className="grid gap-4 border-t pt-4 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    {field("reality_extra.public_key", t("hostsDialog.reality_extra.public_key"), "pbk")}
+                  </div>
+                  {field("reality_extra.short_id", t("hostsDialog.reality_extra.short_id"), "a1b2c3d4")}
+                  {field("reality_extra.spider_x", t("hostsDialog.reality_extra.spider_x"), "/")}
+                </div>
+              )}
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="advanced" className="border-0">
@@ -344,6 +395,34 @@ function HostCard({
             <AccordionContent className="grid gap-4 px-0 sm:grid-cols-2">
               {field("fragment_setting", t("hostsDialog.fragment"), "100-200,10-20,tlshello")}
               {field("noise_setting", t("hostsDialog.noise"), "rand:10-20,10-20")}
+              <div className="grid gap-4 border-t pt-4 sm:col-span-2 sm:grid-cols-2">
+                <p className="text-sm font-medium sm:col-span-2">{t("hostsDialog.muxSettings")}</p>
+                {field("mux_settings.concurrency", t("hostsDialog.mux_settings.concurrency"), "8", "number")}
+                {field("mux_settings.xudp_concurrency", t("hostsDialog.mux_settings.xudp_concurrency"), "16", "number")}
+                {select("mux_settings.xudp_proxy_udp443", xudpProxyUdp443Modes)}
+              </div>
+              <div className="grid gap-4 border-t pt-4 sm:col-span-2 sm:grid-cols-2">
+                <p className="text-sm font-medium sm:col-span-2">{t("hostsDialog.xhttpSettings")}</p>
+                {select("xhttp_extra.mode", xhttpModes)}
+                {field("xhttp_extra.x_padding_bytes", t("hostsDialog.xhttp_extra.x_padding_bytes"), "100-1000")}
+                {field(
+                  "xhttp_extra.sc_max_each_post_bytes",
+                  t("hostsDialog.xhttp_extra.sc_max_each_post_bytes"),
+                  "1000000",
+                )}
+                {field("xhttp_extra.xmux.max_concurrency", t("hostsDialog.xhttp_extra.xmux.max_concurrency"), "16-32")}
+                {field("xhttp_extra.xmux.max_connections", t("hostsDialog.xhttp_extra.xmux.max_connections"), "0")}
+                {field(
+                  "xhttp_extra.xmux.c_max_reuse_times",
+                  t("hostsDialog.xhttp_extra.xmux.c_max_reuse_times"),
+                  "64-128",
+                )}
+                {field(
+                  "xhttp_extra.xmux.h_max_reusable_secs",
+                  t("hostsDialog.xhttp_extra.xmux.h_max_reusable_secs"),
+                  "1800-3000",
+                )}
+              </div>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
@@ -474,6 +553,7 @@ function InboundHosts({
           <h3 className="break-all text-sm font-semibold">{toInboundTag(hostKey)}</h3>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <InboundCoefficient tag={toInboundTag(hostKey)} disabled={disabled} />
           <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={add}>
             <Plus />
             {t("hostsDialog.addHost")}
@@ -808,10 +888,10 @@ export function CreateHostSheet({
             <form
               noValidate
               className="flex min-h-0 flex-1 flex-col"
-              onSubmit={form.handleSubmit((values) => {
+              onSubmit={form.handleSubmit(() => {
                 if (!targets.length || addLock.current) return;
                 addLock.current = true;
-                onCreate(values.template[0], targets);
+                onCreate(form.getValues().template[0], targets);
                 onClose();
               })}
             >

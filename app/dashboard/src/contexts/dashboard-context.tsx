@@ -26,6 +26,7 @@ export type InboundType = {
   network: string;
   tls: string;
   port?: number;
+  usage_coefficient?: number;
 };
 export type Inbounds = Map<ProtocolType, InboundType[]>;
 

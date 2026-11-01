@@ -10,6 +10,7 @@ from uuid import UUID
 from jinja2.exceptions import TemplateNotFound
 
 from app.subscription.funcs import get_grpc_gun, get_grpc_multi
+from app.subscription.host_extras import link_tls_extra, xray_mux, xray_tls_extra
 from app.templates import render_template
 from app.utils.helpers import UUIDEncoder
 from config import (
@@ -82,7 +83,8 @@ class V2rayShareLink(str):
                 keepAlivePeriod=inbound.get("keepAlivePeriod", 0),
                 scStreamUpServerSecs=inbound.get("scStreamUpServerSecs"),
                 xmux=inbound.get("xmux", {}),
-                downloadSettings=inbound.get("downloadSettings", {})
+                downloadSettings=inbound.get("downloadSettings", {}),
+                tls_extra=inbound.get("tls_extra"),
             )
 
         elif inbound["protocol"] == "vless":
@@ -116,7 +118,8 @@ class V2rayShareLink(str):
                 keepAlivePeriod=inbound.get("keepAlivePeriod", 0),
                 scStreamUpServerSecs=inbound.get("scStreamUpServerSecs"),
                 xmux=inbound.get("xmux", {}),
-                downloadSettings=inbound.get("downloadSettings", {})
+                downloadSettings=inbound.get("downloadSettings", {}),
+                tls_extra=inbound.get("tls_extra"),
             )
 
         elif inbound["protocol"] == "trojan":
@@ -150,7 +153,8 @@ class V2rayShareLink(str):
                 keepAlivePeriod=inbound.get("keepAlivePeriod", 0),
                 xmux=inbound.get("xmux", {}),
                 scStreamUpServerSecs=inbound.get("scStreamUpServerSecs"),
-                downloadSettings=inbound.get("downloadSettings", {})
+                downloadSettings=inbound.get("downloadSettings", {}),
+                tls_extra=inbound.get("tls_extra"),
             )
 
         elif inbound["protocol"] == "shadowsocks":
@@ -198,6 +202,7 @@ class V2rayShareLink(str):
             keepAlivePeriod: int = 0,
             xmux: dict = {},
             downloadSettings: dict = {},
+            tls_extra: dict | None = None,
     ):
         payload = {
             "add": address,
@@ -226,6 +231,7 @@ class V2rayShareLink(str):
                 payload["fragment"] = fs
             if ais:
                 payload["allowInsecure"] = 1
+            link_tls_extra(payload, tls_extra)
 
         elif tls == "reality":
             payload["sni"] = sni
@@ -308,6 +314,7 @@ class V2rayShareLink(str):
               keepAlivePeriod: int = 0,
               xmux: dict = {},
               downloadSettings: dict = {},
+              tls_extra: dict | None = None,
               ):
 
         payload = {
@@ -379,6 +386,7 @@ class V2rayShareLink(str):
                 payload["fragment"] = fs
             if ais:
                 payload["allowInsecure"] = 1
+            link_tls_extra(payload, tls_extra)
 
         elif tls == "reality":
             payload["sni"] = sni
@@ -427,6 +435,7 @@ class V2rayShareLink(str):
                keepAlivePeriod: int = 0,
                xmux: dict = {},
                downloadSettings: dict = {},
+               tls_extra: dict | None = None,
                ):
 
         payload = {
@@ -498,6 +507,7 @@ class V2rayShareLink(str):
                 payload["fragment"] = fs
             if ais:
                 payload["allowInsecure"] = 1
+            link_tls_extra(payload, tls_extra)
         elif tls == "reality":
             payload["sni"] = sni
             payload["fp"] = fp
@@ -565,7 +575,7 @@ class V2rayJsonConfig(str):
         return json.dumps(self.config, indent=4, cls=UUIDEncoder)
 
     @staticmethod
-    def tls_config(sni=None, fp=None, alpn=None, ais: bool = False) -> dict:
+    def tls_config(sni=None, fp=None, alpn=None, ais: bool = False, tls_extra: dict | None = None) -> dict:
 
         tlsSettings = {}
         if sni is not None:
@@ -579,6 +589,7 @@ class V2rayJsonConfig(str):
             tlsSettings["alpn"] = [alpn] if not isinstance(
                 alpn, list) else alpn
 
+        tlsSettings.update(xray_tls_extra(tls_extra))
         tlsSettings["show"] = False
 
         return tlsSettings
@@ -984,6 +995,7 @@ class V2rayJsonConfig(str):
                             scStreamUpServerSecs: int | None = None,
                             heartbeatPeriod: int = 0,
                             keepAlivePeriod: int = 0,
+                            tls_extra: dict | None = None,
                             ) -> dict:
 
         if net == "ws":
@@ -1024,7 +1036,7 @@ class V2rayJsonConfig(str):
             network_setting = {}
 
         if tls == "tls":
-            tls_settings = self.tls_config(sni=sni, fp=fp, alpn=alpn, ais=ais)
+            tls_settings = self.tls_config(sni=sni, fp=fp, alpn=alpn, ais=ais, tls_extra=tls_extra)
         elif tls == "reality":
             tls_settings = self.reality_config(
                 sni=sni, fp=fp, pbk=pbk, sid=sid, spx=spx)
@@ -1132,13 +1144,13 @@ class V2rayJsonConfig(str):
             heartbeatPeriod=inbound.get("heartbeatPeriod", 0),
             keepAlivePeriod=inbound.get("keepAlivePeriod", 0),
             scStreamUpServerSecs=inbound.get("scStreamUpServerSecs"),
+            tls_extra=inbound.get("tls_extra"),
         )
 
         mux_json = json.loads(self.mux_template)
         mux_config = mux_json["v2ray"]
 
         if inbound.get('mux_enable', False):
-            outbound["mux"] = mux_config
-            outbound["mux"]["enabled"] = True
+            outbound["mux"] = xray_mux(inbound.get("mux_settings"), mux_config)
 
         self.add_config(remarks=remark, outbounds=outbounds)

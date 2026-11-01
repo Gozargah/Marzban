@@ -6,6 +6,7 @@ from uuid import UUID
 import yaml
 from jinja2.exceptions import TemplateNotFound
 
+from app.subscription.host_extras import ech_config_b64
 from app.subscription.funcs import get_grpc_gun
 from app.templates import render_template
 from app.utils.helpers import yml_uuid_representer
@@ -393,6 +394,14 @@ class ClashMetaConfiguration(ClashConfiguration):
 
         else:
             return
+
+        if inbound['tls'] == 'tls':
+            tls_extra = inbound.get('tls_extra') or {}
+            if ech := ech_config_b64(tls_extra):
+                node['ech-opts'] = {"enable": True, "config": ech}
+            # Clash Meta's `fingerprint` pins the certificate SHA256 (single value).
+            if pins := tls_extra.get('pinned_peer_cert_sha256'):
+                node['fingerprint'] = pins[0]
 
         self.data['proxies'].append(node)
         self.proxy_remarks.append(proxy_remark)

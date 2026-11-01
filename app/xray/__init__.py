@@ -63,11 +63,27 @@ def hosts(storage: dict):
                     "noise_setting": host.noise_setting,
                     "random_user_agent": host.random_user_agent,
                     "use_sni_as_host": host.use_sni_as_host,
+                    "tls_extra": host.tls_extra or None,
+                    "reality_extra": host.reality_extra or None,
+                    "xhttp_extra": host.xhttp_extra or None,
+                    "mux_settings": host.mux_settings or None,
                 } for host in inbound_hosts if not host.is_disabled
             ]
 
 
+@DictStorage
+def inbound_coefficients(storage: dict):
+    from app.db import GetDB, crud
+
+    storage.clear()
+    with GetDB() as db:
+        stored = crud.get_inbound_coefficients(db)
+    for inbound_tag in config.inbounds_by_tag:
+        storage[inbound_tag] = stored.get(inbound_tag, 1.0)
+
+
 __all__ = [
+    "inbound_coefficients",
     "config",
     "hosts",
     "core",

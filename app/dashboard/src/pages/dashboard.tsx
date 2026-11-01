@@ -19,6 +19,7 @@ import { createImmediateDialog } from "@/components/dashboard/deferred-dialog";
 import { router } from "@/pages/router";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/dashboard/header";
+import { InboundsUsage } from "@/components/dashboard/inbounds-usage";
 import { Statistics } from "@/components/dashboard/statistics";
 import { Filters } from "@/components/dashboard/filters";
 import { UsersTable } from "@/components/dashboard/table/users-table";
@@ -91,6 +92,7 @@ export function Dashboard() {
       <main className="w-full">
         <Header />
         <Statistics />
+        <InboundsUsage />
         {inbounds.failed && (
           <Alert variant="destructive">
             <AlertDescription className="flex flex-wrap items-center justify-between gap-3">

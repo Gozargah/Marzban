@@ -138,5 +138,6 @@ def modify_core_config(
             xray.operations.restart_node(node_id, startup_config)
 
     xray.hosts.update()
+    xray.inbound_coefficients.update()
 
     return payload

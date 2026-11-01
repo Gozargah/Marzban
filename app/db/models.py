@@ -226,6 +226,7 @@ class ProxyInbound(Base):
 
     id = Column(Integer, primary_key=True)
     tag = Column(String(256), unique=True, nullable=False, index=True)
+    usage_coefficient = Column(Float, nullable=False, default=1.0, server_default="1")
     hosts = relationship(
         "ProxyHost", back_populates="inbound", cascade="all, delete-orphan"
     )
@@ -254,15 +255,15 @@ class ProxyHost(Base):
         Enum(ProxyHostALPN),
         unique=False,
         nullable=False,
-        default=ProxyHostSecurity.none,
-        server_default=ProxyHostSecurity.none.name
+        default=ProxyHostALPN.none,
+        server_default=ProxyHostALPN.none.name
     )
     fingerprint = Column(
         Enum(ProxyHostFingerprint),
         unique=False,
         nullable=False,
-        default=ProxyHostSecurity.none,
-        server_default=ProxyHostSecurity.none.name
+        default=ProxyHostFingerprint.none,
+        server_default=ProxyHostFingerprint.none.name
     )
 
     inbound_tag = Column(String(256), ForeignKey("inbounds.tag"), nullable=False)
@@ -274,6 +275,10 @@ class ProxyHost(Base):
     noise_setting = Column(String(2000), nullable=True)
     random_user_agent = Column(Boolean, nullable=False, default=False, server_default='0')
     use_sni_as_host = Column(Boolean, nullable=False, default=False, server_default="0")
+    tls_extra = Column(JSON, nullable=True)
+    reality_extra = Column(JSON, nullable=True)
+    xhttp_extra = Column(JSON, nullable=True)
+    mux_settings = Column(JSON, nullable=True)
 
 
 class System(Base):
@@ -334,6 +339,20 @@ class NodeUserUsage(Base):
     node_id = Column(Integer, ForeignKey("nodes.id"))
     node = relationship("Node", back_populates="user_usages")
     used_traffic = Column(BigInteger, default=0)
+
+
+class InboundUsage(Base):
+    __tablename__ = "inbound_usages"
+    __table_args__ = (
+        UniqueConstraint('created_at', 'inbound_tag', 'node_id'),
+    )
+
+    id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime, nullable=False)  # one hour per record
+    inbound_tag = Column(String(256), nullable=False, index=True)
+    node_id = Column(Integer, ForeignKey("nodes.id"), nullable=True)
+    uplink = Column(BigInteger, nullable=False, default=0, server_default="0")
+    downlink = Column(BigInteger, nullable=False, default=0, server_default="0")
 
 
 class NodeUsage(Base):

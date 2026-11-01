@@ -17,6 +17,7 @@ from app.db.models import (
     AdminUsageLogs,
     NextPlan,
     Node,
+    InboundUsage,
     NodeUsage,
     NodeUserUsage,
     NotificationReminder,
@@ -127,6 +128,20 @@ def add_host(db: Session, inbound_tag: str, host: ProxyHostModify) -> List[Proxy
     return inbound.hosts
 
 
+def get_inbound_coefficients(db: Session) -> Dict[str, float]:
+    """Usage coefficient per inbound tag (only inbounds that have a row)."""
+    return {tag: coefficient for tag, coefficient in db.query(ProxyInbound.tag, ProxyInbound.usage_coefficient)}
+
+
+def set_inbound_coefficient(db: Session, inbound_tag: str, coefficient: float) -> float:
+    """Stores the coefficient and returns the previous one."""
+    inbound = get_or_create_inbound(db, inbound_tag)
+    previous = inbound.usage_coefficient
+    inbound.usage_coefficient = coefficient
+    db.commit()
+    return previous
+
+
 def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostModify]) -> List[ProxyHost]:
     """
     Updates hosts for a given inbound tag.
@@ -159,6 +174,10 @@ def update_hosts(db: Session, inbound_tag: str, modified_hosts: List[ProxyHostMo
             noise_setting=host.noise_setting,
             random_user_agent=host.random_user_agent,
             use_sni_as_host=host.use_sni_as_host,
+            tls_extra=host.tls_extra.model_dump() if host.tls_extra else None,
+            reality_extra=host.reality_extra.model_dump() if host.reality_extra else None,
+            xhttp_extra=host.xhttp_extra.model_dump(exclude_none=True) if host.xhttp_extra else None,
+            mux_settings=host.mux_settings.model_dump() if host.mux_settings else None,
         ) for host in modified_hosts
     ]
     db.commit()
@@ -1291,6 +1310,36 @@ def get_nodes_usage(db: Session, start: datetime, end: datetime) -> List[NodeUsa
             pass
 
     return list(usages.values())
+
+
+def get_inbounds_usage(db: Session, start: datetime, end: datetime) -> List[dict]:
+    """
+    Aggregates inbound traffic within a time range and computes each inbound's
+    share of the total.
+
+    Returns:
+        List[dict]: tag, uplink, downlink, total, ratio (0..1), sorted by total descending.
+    """
+    rows = db.query(
+        InboundUsage.inbound_tag,
+        func.coalesce(func.sum(InboundUsage.uplink), 0),
+        func.coalesce(func.sum(InboundUsage.downlink), 0),
+    ).filter(
+        and_(InboundUsage.created_at >= start, InboundUsage.created_at <= end)
+    ).group_by(InboundUsage.inbound_tag).all()
+
+    grand_total = sum(int(up) + int(down) for _, up, down in rows)
+    usages = [
+        {
+            "tag": tag,
+            "uplink": int(up),
+            "downlink": int(down),
+            "total": int(up) + int(down),
+            "ratio": (int(up) + int(down)) / grand_total if grand_total else 0.0,
+        }
+        for tag, up, down in rows
+    ]
+    return sorted(usages, key=lambda u: u["total"], reverse=True)
 
 
 def create_node(db: Session, node: NodeCreate) -> Node:

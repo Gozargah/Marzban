@@ -14,6 +14,7 @@ import { useDashboard } from "@/contexts/dashboard-context";
 import { useHostsSettings } from "@/contexts/hosts-context";
 import {
   firstErrorPath,
+  hostRowToForm,
   hostsSchema,
   toFormKey,
   toHostFormValues,
@@ -82,7 +83,14 @@ export function HostsDialog() {
     try {
       await setHosts(Object.fromEntries(Object.entries(values).map(([key, rows]) => [toInboundTag(key), rows])));
       toast.success(t("hostsDialog.savedSuccess"));
-      form.reset(values);
+      form.reset(
+        Object.fromEntries(
+          Object.entries(values).map(([key, rows]) => [
+            key,
+            rows.map((row) => hostRowToForm(row as unknown as Parameters<typeof hostRowToForm>[0])),
+          ]),
+        ),
+      );
       clearDraft("hosts");
     } catch (error: any) {
       const detail = error?.response?._data?.detail;

@@ -203,7 +203,7 @@ test("admin session migration upgrades and downgrades safely from the prior rele
     { username: "alice", is_sudo: true },
     { username: "bob", is_sudo: false },
   ]);
-  expect(migrationSnapshot.revision).toBe("31d941bdb713");
+  expect(migrationSnapshot.revision).toBe("d4f8b1a6c3e9");
   expect(migrationSnapshot.admins).toEqual([
     { username: "alice", is_sudo: true },
     { username: "bob", is_sudo: false },

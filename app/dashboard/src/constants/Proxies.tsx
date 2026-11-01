@@ -10,9 +10,35 @@ export const proxyHostSecurity: { title: string; value: ProxyHostSecurity }[] = 
     value: "tls",
   },
   {
+    title: "Reality",
+    value: "reality",
+  },
+  {
     title: "None",
     value: "none",
   },
+];
+
+export const xhttpModes: { title: string; value: string }[] = [
+  { title: "", value: "" },
+  { title: "auto", value: "auto" },
+  { title: "packet-up", value: "packet-up" },
+  { title: "stream-up", value: "stream-up" },
+  { title: "stream-one", value: "stream-one" },
+];
+
+export const echForceQueryModes: { title: string; value: string }[] = [
+  { title: "", value: "" },
+  { title: "none", value: "none" },
+  { title: "half", value: "half" },
+  { title: "full", value: "full" },
+];
+
+export const xudpProxyUdp443Modes: { title: string; value: string }[] = [
+  { title: "", value: "" },
+  { title: "reject", value: "reject" },
+  { title: "allow", value: "allow" },
+  { title: "skip", value: "skip" },
 ];
 
 export const proxyALPN: { title: string; value: string }[] = [

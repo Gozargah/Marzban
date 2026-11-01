@@ -13,6 +13,7 @@ from app.db import GetDB
 from app.db import models as db_models
 from app.models.proxy import ProxyTypes
 from app.models.user import UserStatus
+from app.xray.emails import build_email
 from app.utils.crypto import get_cert_SANs, get_x25519_public_key
 from config import DEBUG, XRAY_EXCLUDE_INBOUND_TAGS, XRAY_FALLBACKS_INBOUND_TAG
 
@@ -86,8 +87,8 @@ class XRayConfig(dict):
                 }
             },
             "system": {
-                "statsInboundDownlink": False,
-                "statsInboundUplink": False,
+                "statsInboundDownlink": True,
+                "statsInboundUplink": True,
                 "statsOutboundDownlink": True,
                 "statsOutboundUplink": True
             }
@@ -366,6 +367,11 @@ class XRayConfig(dict):
         config = self.copy()
 
         with GetDB() as db:
+            coefficients = {
+                tag: coefficient
+                for tag, coefficient in db.query(
+                    db_models.ProxyInbound.tag, db_models.ProxyInbound.usage_coefficient)
+            }
             query = db.query(
                 db_models.User.id,
                 db_models.User.username,
@@ -417,7 +423,8 @@ class XRayConfig(dict):
                             continue
 
                         client = {
-                            "email": f"{user_id}.{username}",
+                            "email": build_email(
+                                user_id, username, inbound['tag'], coefficients.get(inbound['tag'], 1.0)),
                             **settings
                         }
 

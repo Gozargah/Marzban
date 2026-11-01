@@ -8,6 +8,7 @@ from app.db import GetDB, crud
 from app.models.node import NodeStatus
 from app.models.user import UserResponse
 from app.utils.concurrency import threaded_function
+from app.xray.emails import build_email, candidate_emails
 from app.xray.node import XRayNode
 from xray_api import XRay as XRayAPI
 from xray_api.types.account import Account, XTLSFlows
@@ -78,11 +79,11 @@ def _alter_inbound_user(api: XRayAPI, inbound_tag: str, account: Account):
 
 def add_user(dbuser: "DBUser"):
     user = UserResponse.model_validate(dbuser)
-    email = f"{dbuser.id}.{dbuser.username}"
 
     for proxy_type, inbound_tags in user.inbounds.items():
         for inbound_tag in inbound_tags:
             inbound = xray.config.inbounds_by_tag.get(inbound_tag, {})
+            email = _inbound_email(dbuser, inbound_tag)
 
             try:
                 proxy_settings = user.proxies[proxy_type].dict(no_obj=True)
@@ -110,25 +111,36 @@ def add_user(dbuser: "DBUser"):
                     _add_user_to_inbound(node.api, inbound_tag, account)
 
 
-def remove_user(dbuser: "DBUser"):
-    email = f"{dbuser.id}.{dbuser.username}"
+def _inbound_email(dbuser: "DBUser", inbound_tag: str) -> str:
+    return build_email(dbuser.id, dbuser.username, inbound_tag, xray.inbound_coefficients.get(inbound_tag, 1.0))
 
-    for inbound_tag in xray.config.inbounds_by_tag:
+
+def _remove_all_emails(dbuser: "DBUser", inbound_tag: str, except_email: str = None):
+    """Remove every email variant a user may have on an inbound (the coefficient may have changed)."""
+    for email in candidate_emails(dbuser.id, dbuser.username, inbound_tag):
+        if email == except_email:
+            continue
         _remove_user_from_inbound(xray.api, inbound_tag, email)
         for node in list(xray.nodes.values()):
             if node.connected and node.started:
                 _remove_user_from_inbound(node.api, inbound_tag, email)
 
 
+def remove_user(dbuser: "DBUser"):
+    for inbound_tag in xray.config.inbounds_by_tag:
+        _remove_all_emails(dbuser, inbound_tag)
+
+
 def update_user(dbuser: "DBUser"):
     user = UserResponse.model_validate(dbuser)
-    email = f"{dbuser.id}.{dbuser.username}"
 
     active_inbounds = []
     for proxy_type, inbound_tags in user.inbounds.items():
         for inbound_tag in inbound_tags:
             active_inbounds.append(inbound_tag)
             inbound = xray.config.inbounds_by_tag.get(inbound_tag, {})
+            email = _inbound_email(dbuser, inbound_tag)
+            _remove_all_emails(dbuser, inbound_tag, except_email=email)  # stale variant after a coefficient change
 
             try:
                 proxy_settings = user.proxies[proxy_type].dict(no_obj=True)
@@ -159,10 +171,17 @@ def update_user(dbuser: "DBUser"):
         if inbound_tag in active_inbounds:
             continue
         # remove disabled inbounds
-        _remove_user_from_inbound(xray.api, inbound_tag, email)
-        for node in list(xray.nodes.values()):
-            if node.connected and node.started:
-                _remove_user_from_inbound(node.api, inbound_tag, email)
+        _remove_all_emails(dbuser, inbound_tag)
+
+
+def resync_active_users():
+    """Re-add every active user so changed inbound coefficients take effect on running cores."""
+    from app.db.models import User
+    from app.models.user import UserStatus
+
+    with GetDB() as db:
+        for dbuser in db.query(User).filter(User.status.in_([UserStatus.active, UserStatus.on_hold])):
+            update_user(dbuser)
 
 
 def remove_node(node_id: int):

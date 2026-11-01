@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, List, Literal, Union
 from jdatetime import date as jd
 
 from app import xray
+from app.subscription.host_extras import apply_host_extras
 from app.utils.system import get_public_ip, get_public_ipv6, readable_size
 
 from . import *
@@ -278,7 +279,6 @@ def process_inbounds_and_tags(
                 continue
 
             format_variables.update({"TRANSPORT": inbound["network"]})
-            host_inbound = inbound.copy()
             for host in xray.hosts.get(tag, []):
                 sni = ""
                 sni_list = host["sni"] or inbound["sni"]
@@ -309,6 +309,7 @@ def process_inbounds_and_tags(
                 if host.get("use_sni_as_host", False) and sni:
                     req_host = sni
 
+                host_inbound = inbound.copy()  # per host: optional host extras must not leak across hosts
                 host_inbound.update(
                     {
                         "port": host["port"] or inbound["port"],
@@ -326,6 +327,7 @@ def process_inbounds_and_tags(
                         "random_user_agent": host["random_user_agent"],
                     }
                 )
+                apply_host_extras(host_inbound, host)
 
                 conf.add(
                     remark=host["remark"].format_map(format_variables),

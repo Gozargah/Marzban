@@ -11,7 +11,8 @@ from sqlalchemy.sql.dml import Insert
 
 from app import scheduler, xray
 from app.db import GetDB
-from app.db.models import Admin, NodeUsage, NodeUserUsage, System, User
+from app.xray.emails import split_stat_name
+from app.db.models import Admin, InboundUsage, NodeUsage, NodeUserUsage, System, User
 from config import (
     DISABLE_RECORDING_NODE_USAGE,
     JOB_RECORD_NODE_USAGES_INTERVAL,
@@ -107,11 +108,56 @@ def record_node_stats(params: dict, node_id: Union[int, None]):
         safe_execute(db, stmt, params)
 
 
-def get_users_stats(api: XRayAPI):
+def record_inbound_stats(params: dict, node_id: Union[int, None]):
+    """params: {tag: {"up": int, "down": int}}"""
+    if not params:
+        return
+
+    created_at = datetime.fromisoformat(datetime.utcnow().strftime('%Y-%m-%dT%H:00:00'))
+
+    with GetDB() as db:
+        for tag, usage in params.items():
+            exists = db.execute(
+                select(InboundUsage.id).where(and_(
+                    InboundUsage.inbound_tag == tag,
+                    InboundUsage.node_id == node_id,
+                    InboundUsage.created_at == created_at,
+                ))
+            ).first()
+            if exists is None:
+                safe_execute(db, insert(InboundUsage).values(
+                    created_at=created_at, inbound_tag=tag, node_id=node_id, uplink=0, downlink=0))
+
+            safe_execute(db, update(InboundUsage).values(
+                uplink=InboundUsage.uplink + usage["up"],
+                downlink=InboundUsage.downlink + usage["down"],
+            ).where(and_(
+                InboundUsage.inbound_tag == tag,
+                InboundUsage.node_id == node_id,
+                InboundUsage.created_at == created_at,
+            )))
+
+
+def get_inbounds_stats(api: XRayAPI):
+    try:
+        params = defaultdict(lambda: {"up": 0, "down": 0})
+        for stat in filter(attrgetter('value'), api.get_inbounds_stats(reset=True, timeout=10)):
+            if stat.name == "API_INBOUND":
+                continue
+            params[stat.name]["up" if stat.link == "uplink" else "down"] += stat.value
+        return dict(params)
+    except xray_exc.XrayError:
+        return {}
+
+
+def get_users_stats(api: XRayAPI, coefficients: Union[dict, None] = None):
     try:
         params = defaultdict(int)
         for stat in filter(attrgetter('value'), api.get_users_stats(reset=True, timeout=30)):
-            params[stat.name.split('.', 1)[0]] += stat.value
+            uid, inbound_tag = split_stat_name(stat.name)
+            # inbounds with a usage coefficient have per-inbound emails (see app.xray.emails)
+            coefficient = (coefficients or {}).get(inbound_tag, 1.0) if inbound_tag else 1.0
+            params[uid] += int(stat.value * coefficient)
         params = list({"uid": uid, "value": value} for uid, value in params.items())
         return params
     except xray_exc.XrayError:
@@ -136,8 +182,12 @@ def record_user_usages():
             api_instances[node_id] = node.api
             usage_coefficient[node_id] = node.usage_coefficient  # fetch the usage coefficient
 
+    # snapshot once: the shared cache may be refreshed concurrently by another thread
+    coefficients = dict(xray.inbound_coefficients)
+
     with ThreadPoolExecutor(max_workers=10) as executor:
-        futures = {node_id: executor.submit(get_users_stats, api) for node_id, api in api_instances.items()}
+        futures = {node_id: executor.submit(get_users_stats, api, coefficients)
+                   for node_id, api in api_instances.items()}
     api_params = {node_id: future.result() for node_id, future in futures.items()}
 
     users_usage = defaultdict(int)
@@ -217,9 +267,27 @@ def record_node_usages():
         record_node_stats(params, node_id)
 
 
+def record_inbound_usages():
+    if DISABLE_RECORDING_NODE_USAGE:
+        return
+
+    api_instances = {None: xray.api}
+    for node_id, node in list(xray.nodes.items()):
+        if node.connected and node.started:
+            api_instances[node_id] = node.api
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = {node_id: executor.submit(get_inbounds_stats, api) for node_id, api in api_instances.items()}
+    for node_id, future in futures.items():
+        record_inbound_stats(future.result(), node_id)
+
+
 scheduler.add_job(record_user_usages, 'interval',
                   seconds=JOB_RECORD_USER_USAGES_INTERVAL,
                   coalesce=True, max_instances=1)
 scheduler.add_job(record_node_usages, 'interval',
+                  seconds=JOB_RECORD_NODE_USAGES_INTERVAL,
+                  coalesce=True, max_instances=1)
+scheduler.add_job(record_inbound_usages, 'interval',
                   seconds=JOB_RECORD_NODE_USAGES_INTERVAL,
                   coalesce=True, max_instances=1)
