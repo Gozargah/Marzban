@@ -37,11 +37,11 @@ function EmptySection({ isFiltered, onResetFilters }: { isFiltered: boolean; onR
         <p className="text-xs text-muted-foreground max-w-sm">
           {isFiltered
             ? t("usersTable.noUserMatchedHint", {
-                defaultValue: "Try adjusting your search or filters to find what you're looking for.",
-              })
+              defaultValue: "Try adjusting your search or filters to find what you're looking for.",
+            })
             : t("usersTable.noUserHint", {
-                defaultValue: "Get started by adding your first VPN user.",
-              })}
+              defaultValue: "Get started by adding your first VPN user.",
+            })}
         </p>
       </div>
       <div className="flex items-center gap-2 pt-2">

@@ -110,7 +110,7 @@ export function Login() {
           </div>
 
           <form onSubmit={handleSubmit(login)} aria-busy={isPending} className="mx-auto mt-8 w-full max-w-[300px]">
-            <FieldGroup>
+            <FieldGroup className='gap-2'>
               <Field data-invalid={!!errors.username}>
                 <FieldLabel htmlFor="login-username">{t("username")}</FieldLabel>
                 <Input

@@ -80,17 +80,6 @@ export const Filters: FC<FilterProps> = ({ className, ...props }) => {
       )}
       {...props}
     >
-      <div className="col-span-full">
-        <QueryFeedback
-          loading={initialLoading}
-          refreshing={loading && !initialLoading}
-          failed={usersError}
-          updatedAt={dataUpdatedAt}
-          offline={isPaused}
-          retry={refetchUsers}
-          message={t("usersLoadError", { defaultValue: "Could not load users. Use refresh to try again." })}
-        />
-      </div>
       <div className="col-span-1 order-2 md:order-1 md:col-span-2 lg:col-span-1">
         <div className="relative w-full">
           <Search

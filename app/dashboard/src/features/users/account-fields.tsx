@@ -116,6 +116,7 @@ export function UserAccountFields({
                   id={fieldId("on-hold")}
                   name={field.name}
                   ref={field.ref}
+                  className='mt-3'
                   onBlur={field.onBlur}
                   disabled={disabled}
                   checked={field.value === "on_hold"}

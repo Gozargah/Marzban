@@ -103,7 +103,7 @@ export function Header({ actions }: HeaderProps) {
       label: t("header.nodeSettings"),
       icon: Network,
       description: t("header.nodesHint", { defaultValue: "Add servers and manage their connection settings." }),
-      preload: () => {},
+      preload: () => { },
       action: () => onEditingNodes(true),
     },
     {
@@ -164,10 +164,55 @@ export function Header({ actions }: HeaderProps) {
   return (
     <DirectionProvider direction={direction}>
       <header dir={direction} className="space-y-4 border-b border-border pb-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
-            <p className="text-xs text-muted-foreground">Marzban</p>
-            <h1 className="text-2xl font-semibold tracking-tight">{t("users")}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">{t("Marzban")}</h1>
+          </div>
+          <div className='flex grow justify-end gap-2'>
+
+            {isSudo && (
+              <nav
+                aria-label={t("header.manage", { defaultValue: "Manage" })}
+                className="space-y-2 md:col-span-2 xl:col-span-1"
+              >
+                <div className="flex flex-wrap gap-2">
+                  {destinations.map(({ label, icon: Icon, action, preload }) => (
+                    <Button
+                      key={label}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onPointerEnter={preload}
+                      onFocus={preload}
+                      onTouchStart={preload}
+                      onClick={() => {
+                        preload();
+                        action();
+                      }}
+                    >
+                      <Icon aria-hidden="true" />
+                      {label}
+                    </Button>
+                  ))}
+                </div>
+
+              </nav>
+            )}
+
+            <div className="flex flex-wrap gap-2">
+              <a
+                href={DONATION_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+                onClick={acknowledgeDonation}
+              >
+                <CircleDollarSign aria-hidden="true" />
+                {t("header.donation")}
+                <ArrowUpRight aria-hidden="true" />
+              </a>
+            </div>
+
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             {actions}
@@ -397,58 +442,6 @@ export function Header({ actions }: HeaderProps) {
               </Sheet>
             )}
           </div>
-        </div>
-        <div
-          className={`hidden gap-x-6 gap-y-4 md:grid md:grid-cols-2 ${isSudo ? "xl:grid-cols-[minmax(0,1fr)_auto]" : "md:grid-cols-1"}`}
-        >
-          {isSudo && (
-            <nav
-              aria-label={t("header.manage", { defaultValue: "Manage" })}
-              className="space-y-2 md:col-span-2 xl:col-span-1"
-            >
-              <p className="text-xs font-medium text-muted-foreground">
-                {t("header.manage", { defaultValue: "Manage" })}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {destinations.map(({ label, icon: Icon, action, preload }) => (
-                  <Button
-                    key={label}
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onPointerEnter={preload}
-                    onFocus={preload}
-                    onTouchStart={preload}
-                    onClick={() => {
-                      preload();
-                      action();
-                    }}
-                  >
-                    <Icon aria-hidden="true" />
-                    {label}
-                  </Button>
-                ))}
-              </div>
-            </nav>
-          )}
-          <nav aria-label={t("header.project", { defaultValue: "Project & support" })} className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground">
-              {t("header.project", { defaultValue: "Project & support" })}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <a
-                href={DONATION_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-                onClick={acknowledgeDonation}
-              >
-                <CircleDollarSign aria-hidden="true" />
-                {t("header.donation")}
-                <ArrowUpRight aria-hidden="true" />
-              </a>
-            </div>
-          </nav>
         </div>
       </header>
     </DirectionProvider>

@@ -86,7 +86,7 @@ export const UsageSlider: FC<UsageSliderProps> = ({
   const resetLabel = resetTitle ? t(`userDialog.resetStrategy${resetTitle}`, { defaultValue: resetTitle }) : "";
 
   return (
-    <div className={cn("flex flex-col gap-1.5 w-full", className)}>
+    <div className={cn("flex flex-col gap-0.5 w-full", className)}>
       <div className="flex items-center justify-between text-xs font-medium">
         <div className="flex items-center gap-1.5 truncate">
           <span className="font-semibold text-foreground">{formatBytes(used)}</span>
@@ -96,9 +96,9 @@ export const UsageSlider: FC<UsageSliderProps> = ({
             aria-label={
               isUnlimited
                 ? t("usersTable.unlimitedUsage", {
-                    defaultValue: "{{used}} used, unlimited allowance",
-                    used: formatBytes(used),
-                  })
+                  defaultValue: "{{used}} used, unlimited allowance",
+                  used: formatBytes(used),
+                })
                 : undefined
             }
           >
@@ -494,28 +494,13 @@ export const columns = helper.columns([
     cell: ({ row }) => {
       const user = row.original;
       return (
-        <div className="flex items-center gap-2.5 py-1">
-          <OnlineBadge lastOnline={user.online_at} className="shrink-0" />
-          <div className="flex flex-col min-w-0">
+        <div className="flex flex-col min-w-0 pl-2">
+          <div className='flex gap-1 items-center'>
+            <OnlineBadge lastOnline={user.online_at} className="shrink-0" />
             <UsernameButton user={user} />
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <OnlineStatus lastOnline={user.online_at} className="m-0 text-[11px]" />
-              {user.note && (
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <span
-                        tabIndex={0}
-                        className="max-w-[140px] truncate text-[11px] text-muted-foreground/70 focus-visible:rounded-none focus-visible:outline-2 focus-visible:outline-ring"
-                      />
-                    }
-                  >
-                    • {user.note}
-                  </TooltipTrigger>
-                  <TooltipContent className="rounded-none break-words">{user.note}</TooltipContent>
-                </Tooltip>
-              )}
-            </div>
+          </div>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <OnlineStatus lastOnline={user.online_at} className="m-0 text-[11px]" />
           </div>
         </div>
       );
@@ -527,7 +512,7 @@ export const columns = helper.columns([
     cell: ({ row }) => {
       const user = row.original;
       return (
-        <div className="flex flex-col gap-1 py-1">
+        <div className="flex flex-col gap-0.5 py-1">
           <StatusBadge status={user.status} showDetail={true} />
           <ExpiryInfo expire={user.expire} status={user.status} onHoldDuration={user.on_hold_expire_duration} />
         </div>

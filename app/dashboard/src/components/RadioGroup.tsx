@@ -26,7 +26,7 @@ const InboundCard: FC<{
         onToggle();
       }}
       className={cn(
-        "flex items-center justify-between gap-2 rounded-md border p-2 text-xs transition-colors cursor-pointer select-none",
+        "flex items-center justify-between gap-2 rounded-none border p-2 text-xs transition-colors cursor-pointer select-none",
         isChecked
           ? "border-primary/50 bg-primary/5 text-foreground font-medium"
           : "border-border bg-card/50 text-muted-foreground hover:bg-muted/40",
@@ -96,7 +96,7 @@ const RadioCard: FC<{
   return (
     <div
       className={cn(
-        "rounded-lg border transition-all overflow-hidden",
+        "rounded-none border transition-all overflow-hidden",
         isSelected ? "border-primary/50 bg-card shadow-xs" : "border-border bg-card/60 hover:bg-card",
         shouldBeDisabled && "opacity-50 pointer-events-none",
       )}
